@@ -44,10 +44,11 @@ export default function Handover({ open }) {
       </p>
 
       <Cypher>{`
-MATCH (l:Person)-[:KNOWS]->(k) WHERE l.id IN ['arjun', 'priya']
-  AND (k:File OR (k:Decision AND k.status = 'active'))
-  AND NOT EXISTS { MATCH (o:Person {active: true})-[:KNOWS|LEARNED]->(k) }
-RETURN DISTINCT coalesce(k.id, k.path) AS still_orphaned`}</Cypher>
+// after the last day: what a former member knows and no active person KNOWS or LEARNED
+MATCH (l:Person {active: false})-[:KNOWS]->(k) WHERE k:File OR (k:Decision AND k.status = 'active')
+OPTIONAL MATCH (o:Person {active: true})-[:KNOWS|LEARNED]->(k)
+WITH k, count(o) AS backups WHERE backups = 0
+RETURN coalesce(k.id, k.path) AS still_orphaned`}</Cypher>
     </>
   );
 }

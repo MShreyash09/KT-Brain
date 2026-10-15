@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Cypher, Header, Item, Pill, Score, data, first, status } from "../ui.jsx";
+import KnowsGraph from "./KnowsGraph.jsx";
 
 export default function Team({ open }) {
   const [sel, setSel] = useState("arjun");
@@ -31,6 +32,8 @@ export default function Team({ open }) {
           );
         })}
       </div>
+
+      <KnowsGraph sel={sel} onPerson={setSel} open={open} />
 
       <section className="card">
         <h2>{first(sel)} knows</h2>

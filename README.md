@@ -187,11 +187,14 @@ Scores below a threshold don't count, so dependency bumps and typo fixes don't m
 **The core query** (the KT agenda, run on the dry-run copy):
 
 ```cypher
-MATCH (l:Person {id:$leaver})-[:KNOWS]->(k)
-WHERE NOT k:Decision OR k.status = 'active'
-OPTIONAL MATCH (o:Person {active:true})-[:KNOWS|LEARNED]->(k) WHERE o <> l
-WITH k, count(o) AS backups WHERE backups = 0
-RETURN labels(k)[0] AS kind, k.id, k.criticality ORDER BY k.criticality DESC
+// after GRAPH.COPY and SET p.active = false for the leavers
+MATCH (l:Person)-[:KNOWS]->(k) WHERE l.id IN $leavers AND (k:File OR (k:Decision AND k.status = 'active'))
+WITH DISTINCT k
+MATCH (p:Person)-[:KNOWS]->(k)
+WITH k, sum(CASE WHEN p.id IN $leavers THEN 1 ELSE 0 END) AS leavers_knowing,
+     sum(CASE WHEN p.active THEN 1 ELSE 0 END) AS backups
+WHERE backups = 0
+RETURN coalesce(k.id, k.path) AS item, leavers_knowing > 1 AS combination_risk
 ```
 
 Every Cypher query the product uses will be listed here from `backend/graph.py` as it is written.

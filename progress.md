@@ -34,18 +34,26 @@ uv run python test_answer_key.py            # Day 1 gate (Sep 21 snapshot)
 | `design.md` | ✅ | principles, IA, wireframes for the 6 steps, light/dark tokens. Mobbin + Google Stitch MCP not connected yet: **TODO** refine with their references once connected |
 | `frontend/` React + Vite app | ✅ | Landing → Team → Radar → Departure → Why → Handover → Ask, with a "Next" button on each step and a collapsible Cypher block on each screen |
 | Light/dark toggle | ✅ | follows the OS by default, saved in localStorage, set before first paint (no flash) |
-| Data | ⚠ mock | `frontend/src/data/tiffinbox.json` is exported from the real graph. The export asserts radar, all 3 dry runs and the 12 → 6 handover against the answer key. Ask searches the exported chunks in the browser. Replace with `/api/*` calls next |
+| Data | ✅ live | `GET /api/workspace` (all six screens, loaded once in `ui.jsx`) and `GET /api/search` (Ask, FalkorDB full-text). The mock `tiffinbox.json` is deleted. Vite proxies `/api` to `:8000` |
 | Checked | ✅ | `vite build` clean; screenshots of every step in light and dark, and at 390 px phone width (no sideways scroll) |
 
 Run: `cd frontend && npm install && npm run dev` → http://localhost:5173
 
-**Next for the UI:** FastAPI endpoints with the same JSON shapes (`/api/team`, `/api/radar`, `/api/dryrun?leavers=`, `/api/why/{id}`, `/api/handover`, `/api/search?q=`). Then the dry run runs live on a `GRAPH.COPY`, Ask uses the FalkorDB full-text index, and FastAPI serves `frontend/dist`.
+Run: `cd backend && uv run uvicorn app:app` (builds `tiffinbox_sep21` and `tiffinbox_template` on first start if missing), then `cd frontend && npm run dev`.
 
-## Day 2, Fri Oct 16: thesis + generic ingest (next)
+**Next for the UI:** FastAPI serves `frontend/dist` (Day 3 deploy).
 
-- [ ] Dry run on `GRAPH.COPY` → KT agenda. Tests: `dry_runs` in the answer key (D8 only when both leave, no D2, no D13).
-- [ ] Orphaned items (known by no active person) + handover counter 12 → 6 using LEARNED.
-- [ ] Why-trace (D1, D6, D15 paths in the answer key) + mentor query (Kavya).
+## Day 2, Fri Oct 16: thesis + generic ingest
+
+- [x] Dry run on `GRAPH.COPY` → KT agenda (`graph.dry_run`, `AGENDA`, `WEAK_BACKUP`). 3 / 6 / 12, D8 only when both leave, combination risk = items two leavers know. The copy is deleted after every run.
+- [x] Orphaned items (`ORPHANED`) + handover counter 12 → 6 (`COVERED`: LEARNED from the KT session, or KNOWS from her own commits).
+- [x] Why-trace (`graph.trace`: sources, replaced decisions + incidents, research + external sources, insights, patterns, features) + mentor query (`MENTOR` → Kavya).
+- [x] API: `/api/workspace`, `/api/dryrun?leavers=`, `/api/search?q=`. `test_answer_key.py` 9/9.
+
+**FalkorDB 6.0.2 bug found:** an `OPTIONAL MATCH` that follows `WITH ... count()` returns no rows, so `count(o)` is always 0 and every item looks orphaned. `AGENDA` uses one `MATCH` over all knowers instead (`ponytail:` note in `graph.py`). Worth reporting upstream with the 4-line repro.
+
+**Weak backup rule:** the only remaining knower has one KNOWS link and took no part in a source that RECORDS the item (Kavya: one commit to `ci.yml`). This keeps Neha's ADR on D2 as real coverage. For Priya alone it also flags Arjun on `rotate_secrets.sh` and `api-deploy.yaml`, which is the combination risk showing early.
+
 - [ ] Embeddings + vector index on Chunk; extraction scored against the answer key.
 - [ ] Upload ingest for md/pdf docs and Claude Code JSONL (reuse `chunk_rows`).
 - [ ] LLM-reads-everything baseline vs the graph.

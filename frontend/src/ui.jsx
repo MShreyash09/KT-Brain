@@ -1,5 +1,11 @@
-// Shared data + small components. The data is a snapshot of the real graph (see design.md); the API replaces it later.
-import data from "./data/tiffinbox.json";
+// Shared data + small components. `data` is read live from the graph (backend/app.py, GET /api/workspace) before the
+// first render; every screen reads it from here.
+const res = await fetch("/api/workspace").catch(() => null);
+if (!res?.ok) {
+  document.getElementById("root").textContent = "The KT Brain API is not running. Start it with: cd backend && uv run uvicorn app:app";
+  throw new Error("KT Brain API unreachable");
+}
+const data = await res.json();
 
 export { data };
 export const person = Object.fromEntries(data.people.map((p) => [p.id, p]));

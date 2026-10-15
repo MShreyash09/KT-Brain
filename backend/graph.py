@@ -1,5 +1,6 @@
 """Every FalkorDB call in KT Brain goes through this file."""
 import os
+from uuid import uuid4
 
 from falkordb import FalkorDB
 
@@ -160,8 +161,9 @@ SEARCH = """
 CALL db.idx.fulltext.queryNodes('Chunk', $q) YIELD node, score
 MATCH (node)-[:PART_OF]->(s:Source)
 OPTIONAL MATCH (node)-[:MENTIONS]->(f:File)
-RETURN s.ref AS source, node.seq AS chunk, score, collect(f.path) AS files
-ORDER BY score DESC LIMIT 5"""
+RETURN s.ref AS ref, node.seq AS seq, score, collect(f.path) AS files,
+       [l IN labels(s) WHERE l <> 'Source'][0] AS kind, s.title AS title, node.text AS text
+ORDER BY score DESC LIMIT 6"""
 
 
 # ── Derive: who KNOWS what ───────────────────────────────────────────────────
@@ -221,3 +223,124 @@ WITH k, collect(p.id) AS knowers, max(e.score) AS score
 WHERE size(knowers) = 1
 RETURN coalesce(k.id, k.path) AS item, labels(k)[0] AS kind, knowers[0] AS only_knower, score
 ORDER BY only_knower, kind, item"""
+
+
+# ── Departure dry run (on a GRAPH.COPY, the workspace graph is never touched) ─
+# Agenda items are active decisions and files. An item is on the KT agenda when a leaver KNOWS it and no active
+# person does once the leavers are deactivated. It is combination risk when two or more leavers know it: it would not
+# be on any single leaver's agenda. A weak backup is an item whose only remaining knower touched it once in code
+# (one KNOWS link, and they took no part in a source that RECORDS it), e.g. Kavya and ci.yml.
+DEACTIVATE = "MATCH (p:Person) WHERE p.id IN $leavers SET p.active = false"
+
+# ponytail: one MATCH over all knowers, because FalkorDB 6.0.2 returns no rows from an OPTIONAL MATCH that follows a
+# WITH ... count() (count(o) is always 0); switch back to OPTIONAL MATCH once that is fixed upstream
+AGENDA = """
+MATCH (l:Person)-[:KNOWS]->(k) WHERE l.id IN $leavers AND (k:File OR (k:Decision AND k.status = 'active'))
+WITH DISTINCT k
+MATCH (p:Person)-[:KNOWS]->(k)
+WITH k, sum(CASE WHEN p.id IN $leavers THEN 1 ELSE 0 END) AS leavers_knowing,
+     sum(CASE WHEN p.active THEN 1 ELSE 0 END) AS backups
+WHERE backups = 0
+RETURN coalesce(k.id, k.path) AS item, leavers_knowing > 1 AS combination_risk ORDER BY item"""
+
+WEAK_BACKUP = """
+MATCH (l:Person)-[:KNOWS]->(k) WHERE l.id IN $leavers AND (k:File OR (k:Decision AND k.status = 'active'))
+WITH DISTINCT k
+MATCH (o:Person {active: true})-[e:KNOWS]->(k)
+WITH k, collect(o) AS backups, max(e.links) AS links WHERE size(backups) = 1 AND links = 1
+WITH k, backups[0] AS o
+WHERE NOT (o)-[:AUTHORED|REVIEWED|POSTED_IN|ASSIGNED|RAN]->(:Source)-[:RECORDS]->(k)
+RETURN coalesce(k.id, k.path) AS item, o.id AS backup ORDER BY item"""
+
+
+def dry_run(name: str, leavers: list) -> dict:
+    copy = graph(f"dryrun_{uuid4().hex[:8]}")
+    graph(name).copy(copy.name)
+    try:
+        copy.query(DEACTIVATE, {"leavers": leavers})
+        agenda = copy.ro_query(AGENDA, {"leavers": leavers}).result_set
+        weak = copy.ro_query(WEAK_BACKUP, {"leavers": leavers}).result_set
+    finally:
+        copy.delete()
+    return {"agenda": [i for i, _ in agenda], "combination_risk": [i for i, combo in agenda if combo],
+            "weak_backup": dict(weak)}
+
+
+# ── Handover ─────────────────────────────────────────────────────────────────
+# After the leavers' last day: items a former member KNOWS that no active person KNOWS or has LEARNED.
+ORPHANED = """
+MATCH (l:Person {active: false})-[:KNOWS]->(k) WHERE k:File OR (k:Decision AND k.status = 'active')
+OPTIONAL MATCH (o:Person {active: true})-[:KNOWS|LEARNED]->(k)
+WITH k, count(o) AS backups WHERE backups = 0
+RETURN coalesce(k.id, k.path) AS item ORDER BY item"""
+
+# How the learner covered each agenda item: a LEARNED edge (KT session) or a KNOWS edge from their own work.
+COVERED = """
+MATCH (m:Person {id: $learner})-[e:KNOWS|LEARNED]->(k) WHERE coalesce(k.id, k.path) IN $items
+OPTIONAL MATCH (t:Person {id: e.taught_by})
+RETURN coalesce(k.id, k.path) AS item, type(e) AS how, t.name AS taught_by, coalesce(e.ts, e.last_touched) AS ts
+ORDER BY item, how DESC"""
+
+# Mentor for what is left: the active person (not the learner) with the most KNOWS score in the same services.
+MENTOR = """
+MATCH (f:File)-[:PART_OF]->(s:Service) WHERE f.path IN $items
+WITH collect(DISTINCT s.id) AS services
+MATCH (p:Person {active: true})-[e:KNOWS]->(k)-[:ABOUT|PART_OF*1..2]->(s:Service)
+WHERE s.id IN services AND p.id <> $learner
+WITH p, collect(DISTINCT coalesce(k.id, k.path)) AS knows, sum(e.score) AS score
+RETURN p.id AS person, knows ORDER BY score DESC LIMIT 1"""
+
+
+# ── Why-trace: a decision and every path to its sources ──────────────────────
+TRACE_SOURCES = """
+MATCH (s:Source)-[:RECORDS]->(:Decision {id: $id})
+OPTIONAL MATCH (p:Person)-[:AUTHORED|REVIEWED|POSTED_IN|ASSIGNED|RAN]->(s)
+OPTIONAL MATCH (c:Chunk {seq: 0})-[:PART_OF]->(s)
+RETURN s.ref AS ref, [l IN labels(s) WHERE l <> 'Source'][0] AS kind, coalesce(s.title, split(c.text, '\n')[0]) AS title,
+       substring(s.at, 0, 10) AS at, s.ts AS ts, collect(DISTINCT p.id) AS people
+ORDER BY ts"""
+
+TRACE_REPLACED = """
+MATCH (:Decision {id: $id})-[:SUPERSEDES]->(o:Decision)
+OPTIONAL MATCH (i:Incident)-[:CAUSED_BY]->(o)
+RETURN o.id, o.what, i.id, i.title, substring(i.at, 0, 10), i.severity"""
+
+TRACE_RESEARCH = """
+MATCH (:Decision {id: $id})-[:INFORMED_BY]->(r:Research)-[:WRITTEN_IN]->(doc:Doc)
+OPTIONAL MATCH (r)-[:CITES]->(x:ExternalSource)
+RETURN r.id, r.title, doc.id, x.title, x.publisher, x.url, x.date"""
+
+TRACE_INSIGHTS = """
+MATCH (r:Research)-[:FOUND]->(i:Insight)-[:JUSTIFIES]->(:Decision {id: $id})
+RETURN i.id AS id, i.text AS text, r.title AS research ORDER BY id"""
+
+TRACE_TAGS = """
+MATCH (:Decision {id: $id})-[:APPLIES|ABOUT]->(x) WHERE x:Pattern OR x:Feature
+RETURN labels(x)[0], x.name"""
+
+
+def rows(g, query: str, params: dict = None) -> list:
+    """Query results as dicts keyed by the RETURN aliases."""
+    res = g.ro_query(query, params)
+    cols = [c[1] if isinstance(c, (list, tuple)) else c for c in res.header]
+    return [dict(zip(cols, r)) for r in res.result_set]
+
+
+def trace(g, decision: str) -> dict:
+    p = {"id": decision}
+    replaced, research = {}, {}
+    for oid, what, iid, title, at, severity in g.ro_query(TRACE_REPLACED, p).result_set:
+        o = replaced.setdefault(oid, {"id": oid, "what": what, "incidents": []})
+        if iid:
+            o["incidents"].append({"id": iid, "title": title, "at": at, "severity": severity})
+    for rid, title, doc, xtitle, publisher, url, date in g.ro_query(TRACE_RESEARCH, p).result_set:
+        r = research.setdefault(rid, {"id": rid, "title": title, "doc": doc, "cites": []})
+        if url:
+            r["cites"].append({"title": xtitle, "publisher": publisher, "url": url, "date": date})
+    tags = g.ro_query(TRACE_TAGS, p).result_set
+    sources = [{k: sorted(v) if k == "people" else v for k, v in s.items() if k != "ts"}
+               for s in rows(g, TRACE_SOURCES, p)]
+    return {"sources": sources, "supersedes": list(replaced.values()),
+            "research": list(research.values()), "insights": rows(g, TRACE_INSIGHTS, p),
+            "patterns": sorted(n for kind, n in tags if kind == "Pattern"),
+            "features": sorted(n for kind, n in tags if kind == "Feature")}

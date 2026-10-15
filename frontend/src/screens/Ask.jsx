@@ -1,27 +1,14 @@
-import { useState } from "react";
-import { Cypher, Header, Kind, data } from "../ui.jsx";
+import { useEffect, useState } from "react";
+import { Cypher, Header, Kind } from "../ui.jsx";
 
 const SUGGEST = ["retries", "canary rollback", "pause cap", "taste quiz", "Redis memory"];
-const STOP = new Set(["the", "and", "why", "are", "is", "what", "how", "who", "does", "our", "for", "with"]);
-
-// ponytail: in-browser word match over the exported chunks, stands in for db.idx.fulltext.queryNodes until the API exists
-function search(q) {
-  const words = q.toLowerCase().match(/[a-z0-9_.]+/g)?.filter((w) => w.length > 2 && !STOP.has(w)) ?? [];
-  if (!words.length) return { words, hits: [] };
-  const hits = data.chunks
-    .map((c) => {
-      const text = c.text.toLowerCase();
-      return { c, score: words.reduce((s, w) => s + text.split(w).length - 1, 0), all: words.every((w) => text.includes(w)) };
-    })
-    .filter((h) => h.score > 0)
-    .sort((a, b) => b.all - a.all || b.score - a.score)
-    .slice(0, 6);
-  return { words, hits };
-}
+// the same words the API sends to the full-text index (backend/app.py search), used here to highlight them
+const terms = (q) => q.toLowerCase().match(/[a-z0-9_]+/g)?.filter((w) => w.length > 2) ?? [];
 
 function Snippet({ text, words }) {
   const lower = text.toLowerCase();
-  const at = Math.max(0, Math.min(...words.map((w) => lower.indexOf(w)).filter((i) => i >= 0)) - 90);
+  const found = words.map((w) => lower.indexOf(w)).filter((i) => i >= 0); // none when the index matched a stem
+  const at = found.length ? Math.max(0, Math.min(...found) - 90) : 0;
   const part = (at ? "…" : "") + text.slice(at, at + 260).replace(/\s+/g, " ") + "…";
   const re = new RegExp(`(${words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "gi");
   return <p className="snippet">{part.split(re).map((s, i) => (i % 2 ? <mark key={i}>{s}</mark> : s))}</p>;
@@ -29,7 +16,14 @@ function Snippet({ text, words }) {
 
 export default function Ask() {
   const [q, setQ] = useState("retries");
-  const { words, hits } = search(q);
+  const [hits, setHits] = useState([]);
+  const words = terms(q);
+  useEffect(() => {
+    const ask = new AbortController();
+    fetch(`/api/search?q=${encodeURIComponent(q)}`, { signal: ask.signal })
+      .then((r) => r.json()).then(setHits).catch(() => {});
+    return () => ask.abort();
+  }, [q]);
 
   return (
     <>
@@ -45,7 +39,7 @@ export default function Ask() {
       </p>
 
       {q && !hits.length && <p className="muted">No chunk mentions that.</p>}
-      {hits.map(({ c }) => (
+      {hits.map((c) => (
         <section key={`${c.ref}#${c.seq}`} className="card hit">
           <div className="hit-head">
             <Kind kind={c.kind} />
@@ -62,7 +56,7 @@ CALL db.idx.fulltext.queryNodes('Chunk', $q) YIELD node, score
 MATCH (node)-[:PART_OF]->(s:Source)
 OPTIONAL MATCH (node)-[:MENTIONS]->(f:File)
 RETURN s.ref AS source, node.seq AS chunk, score, collect(f.path) AS files
-ORDER BY score DESC LIMIT 5`}</Cypher>
+ORDER BY score DESC LIMIT 6`}</Cypher>
     </>
   );
 }

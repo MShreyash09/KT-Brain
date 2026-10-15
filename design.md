@@ -1,8 +1,7 @@
 # KT Brain: UI design
 
-_2026-10-15. UI-only pass. The screens read `frontend/src/data/tiffinbox.json`, a snapshot exported from the real
-`tiffinbox_template` graph and checked against `answer_key.json`. When the API lands, each screen swaps that import for
-a `fetch('/api/...')` that returns the same shape._
+_2026-10-15. The screens read live graph data: `GET /api/workspace` (loaded once in `frontend/src/ui.jsx`) and
+`GET /api/search` (Ask). Both come from `backend/app.py`._
 
 **References:** Mobbin and Google Stitch were not connected to this session (`claude mcp list` shows neither). These
 wireframes are hand-drawn from common SaaS dashboard patterns (Linear, Vercel, Raycast settings). **TODO:** once both
