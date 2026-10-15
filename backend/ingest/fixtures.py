@@ -14,6 +14,7 @@ from datetime import datetime
 from pathlib import Path
 
 from graph import EDGE_COUNTS, INDEXES, LINKS, NODE_COUNTS, RADAR, chunk_rows, db, derive, graph, load
+from ingest.uploads import parse_claude_session
 
 DATA = Path(__file__).resolve().parents[2] / "data" / "tiffinbox"
 ORDER = ["person", "service", "depends_on", "file", "commit", "pr", "review", "ticket", "thread", "posted_in",
@@ -45,7 +46,7 @@ def build_rows(until):
     for p in people:
         if p["joined_at"] <= until[:10]:
             rows["person"].append({"id": p["id"], "props": {
-                "name": p["name"], "role": p["role"], "email": p["email"], "joined_at": p["joined_at"],
+                "name": p["name"], "role": p["role"], "email": p["email"], "github": p["github"], "joined_at": p["joined_at"],
                 "resigned_at": p["resigned_at"], "last_day": p["last_day"],
                 "active": p["last_day"] is None or p["last_day"] > until[:10]}})
 
@@ -99,28 +100,15 @@ def build_rows(until):
 
     # Claude Code logs, slimmed: prompts + assistant text + edited file paths
     for path in sorted((DATA / "sessions").glob("*.jsonl")):
-        lines = [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()]
-        turns = [l for l in lines if l["type"] in ("user", "assistant")]
-        start, cwd = turns[0]["timestamp"], turns[0]["cwd"]
-        if not ok(start):
+        sess = parse_claude_session([json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()])
+        if not ok(sess["started"]):
             continue
-        text, files = [], set()
-        for l in turns:
-            content = l["message"]["content"]
-            if isinstance(content, str):
-                text.append(f"user: {content}")
-                continue
-            for c in content:
-                if c["type"] == "text":
-                    text.append(f"assistant: {c['text']}")
-                elif c["type"] == "tool_use" and c["name"] in ("Edit", "Write"):
-                    files.add(c["input"]["file_path"].removeprefix(cwd + "/"))
         rows["session"].append({
-            "id": turns[0]["sessionId"], "files": sorted(files),
-            "person": re.search(r"/home/([^/]+)/", cwd).group(1),  # fixture convention; uploads use the uploader
-            "props": event(start, tool="claude-code", branch=turns[0]["gitBranch"], ended_at=turns[-1]["timestamp"],
-                           title=next((l["aiTitle"] for l in lines if l["type"] == "ai-title"), ""))})
-        rows["chunk"] += chunk_rows(f"session:{turns[0]['sessionId']}", "\n".join(text))
+            "id": sess["id"], "files": sess["files"],
+            "person": re.search(r"/home/([^/]+)/", sess["cwd"]).group(1),  # fixture convention; uploads use the uploader
+            "props": event(sess["started"], tool="claude-code", branch=sess["branch"], ended_at=sess["ended"],
+                           title=sess["title"])})
+        rows["chunk"] += chunk_rows(f"session:{sess['id']}", sess["text"])
 
     for path in sorted((DATA / "docs").rglob("*.md")):
         _, front, body = path.read_text(encoding="utf-8").split("---\n", 2)

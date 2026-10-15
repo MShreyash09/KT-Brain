@@ -3,9 +3,9 @@ import { Cypher, Header, Kind } from "../ui.jsx";
 
 const SUGGEST = ["retries", "canary rollback", "pause cap", "taste quiz", "Redis memory"];
 // the same words the API sends to the full-text index (backend/app.py search), used here to highlight them
-const terms = (q) => q.toLowerCase().match(/[a-z0-9_]+/g)?.filter((w) => w.length > 2) ?? [];
+export const terms = (q) => q.toLowerCase().match(/[a-z0-9_]+/g)?.filter((w) => w.length > 2) ?? [];
 
-function Snippet({ text, words }) {
+export function Snippet({ text, words }) {
   const lower = text.toLowerCase();
   const found = words.map((w) => lower.indexOf(w)).filter((i) => i >= 0); // none when the index matched a stem
   const at = found.length ? Math.max(0, Math.min(...found) - 90) : 0;

@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Cypher, Header, Item, Pill, Score, data, first, status } from "../ui.jsx";
+import { Cypher, Header, Item, Pill, Score, useData } from "../ui.jsx";
 import KnowsGraph from "./KnowsGraph.jsx";
 
 export default function Team({ open }) {
+  const data = useData();
+  const { first, status } = data;
   const [sel, setSel] = useState("arjun");
   const knows = data.knows.filter((k) => k.person === sel);
   const max = Math.max(...data.knows.map((k) => k.score));

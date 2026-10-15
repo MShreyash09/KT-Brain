@@ -1,6 +1,8 @@
-import { Cypher, Header, Item, Pill, data, first, fmt } from "../ui.jsx";
+import { Cypher, Header, Item, Pill, fmt, useData } from "../ui.jsx";
 
 export default function Handover({ open }) {
+  const data = useData();
+  const { first } = data;
   const h = data.handover;
   const covered = Object.entries(h.covered);
   const left = h.remaining.length;

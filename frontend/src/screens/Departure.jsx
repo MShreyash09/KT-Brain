@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Cypher, Header, Item, Pill, data, first } from "../ui.jsx";
+import { Cypher, Header, Item, Pill, useData } from "../ui.jsx";
 
 const CASES = [
   { id: "arjun", name: "Arjun" },
@@ -9,6 +9,8 @@ const CASES = [
 
 // the toggle, agenda and combination callout; the landing page shows the first `limit` items, combination risk first
 export function DryRun({ open, limit, more }) {
+  const data = useData();
+  const { first } = data;
   const [c, setC] = useState("arjun+priya");
   const run = data.dry_runs[c];
   const n = (id) => data.dry_runs[id].agenda.length;

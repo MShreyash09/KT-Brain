@@ -181,6 +181,9 @@ _KNOWS_LINKS = [
     # file: committed to it
     """MATCH (p:Person)-[:AUTHORED]->(c:Commit)-[:CHANGED]->(k:File)
     WITH p, k, CASE WHEN c.message =~ $trivial THEN 0.05 ELSE 1.0 END AS w, c.ts AS ts""",
+    # file: ran an AI coding session that edited it
+    """MATCH (p:Person)-[:RAN]->(s:AgentSession)-[:TOUCHED]->(k:File)
+    WITH p, k, 0.8 AS w, s.ts AS ts""",
     # file: reviewed a PR that touched it
     """MATCH (p:Person)-[v:REVIEWED]->(:PR)-[:CONTAINS]->(:Commit)-[:CHANGED]->(k:File)
     WITH DISTINCT p, k, v
@@ -344,3 +347,62 @@ def trace(g, decision: str) -> dict:
             "research": list(research.values()), "insights": rows(g, TRACE_INSIGHTS, p),
             "patterns": sorted(n for kind, n in tags if kind == "Pattern"),
             "features": sorted(n for kind, n in tags if kind == "Feature")}
+
+
+# ── Company workspaces (one graph each) ──────────────────────────────────────
+PEOPLE = """
+MATCH (p:Person) RETURN p.id AS id, p.name AS name, p.role AS role, p.email AS email, p.github AS github,
+       p.active AS active, p.joined_at AS joined, p.last_day AS last_day ORDER BY p.joined_at"""
+
+DECISIONS = """
+MATCH (d:Decision) OPTIONAL MATCH (d)-[:ABOUT]->(f:File)
+RETURN d.id AS id, d.what AS what, d.why AS why, d.evidence AS evidence, d.status AS status,
+       substring(d.at, 0, 10) AS at, collect(f.path) AS about ORDER BY d.ts"""
+
+KNOWS = """
+MATCH (p:Person)-[e:KNOWS]->(k)
+RETURN p.id AS person, coalesce(k.id, k.path) AS item, labels(k)[0] AS kind, e.score AS score, e.links AS links,
+       e.last_touched AS last ORDER BY person, score DESC"""
+
+# Decisions recorded in sources these people took part in (their own uploads count even before KNOWS is derived).
+RECORDED_BY = """
+MATCH (p:Person)-[:AUTHORED|REVIEWED|POSTED_IN|ASSIGNED|RAN]->(:Source)-[:RECORDS]->(d:Decision)
+WHERE p.id IN $people RETURN DISTINCT d.id"""
+
+# Uploaded or synced docs and AI sessions, with who added them and the decision-extraction status.
+SOURCES = """
+MATCH (p:Person)-[:AUTHORED|RAN]->(s:Source) WHERE (s:Doc OR s:AgentSession) AND ($people IS NULL OR p.id IN $people)
+OPTIONAL MATCH (s)-[:RECORDS]->(d:Decision)
+RETURN s.ref AS ref, [l IN labels(s) WHERE l <> 'Source'][0] AS kind, s.title AS title, substring(s.at, 0, 10) AS at,
+       p.id AS person, s.extract AS extract, count(d) AS decisions ORDER BY at DESC"""
+
+SUCCESSORS = "MATCH (a:Person)-[:SUCCEEDED_BY]->(b:Person) RETURN a.id AS leaver, b.id AS successor"
+
+SEARCH_MINE = """
+CALL db.idx.fulltext.queryNodes('Chunk', $q) YIELD node, score
+MATCH (node)-[:PART_OF]->(s:Source)<-[:AUTHORED|REVIEWED|POSTED_IN|ASSIGNED|RAN]-(p:Person) WHERE p.id IN $people
+WITH DISTINCT node, score, s
+OPTIONAL MATCH (node)-[:MENTIONS]->(f:File)
+RETURN s.ref AS ref, node.seq AS seq, score, collect(f.path) AS files,
+       [l IN labels(s) WHERE l <> 'Source'][0] AS kind, s.title AS title, node.text AS text
+ORDER BY score DESC LIMIT 6"""
+
+# A leaver's brain as seen by their successor: everything they KNOW, who else still knows it, and whether the
+# successor has picked it up (LEARNED in a KT session or "mark learned", or KNOWS from their own work).
+# ponytail: MATCH over all knowers instead of OPTIONAL MATCH, same FalkorDB 6.0.2 bug as AGENDA
+INHERITED = """
+MATCH (l:Person {id: $leaver})-[e:KNOWS]->(k) WHERE k:File OR (k:Decision AND k.status = 'active')
+WITH k, e.score AS score
+MATCH (p:Person)-[:KNOWS|LEARNED]->(k)
+WITH k, score, collect(DISTINCT CASE WHEN p.active AND p.id <> $successor THEN p.id ELSE null END) AS others,
+     sum(CASE WHEN p.id = $successor THEN 1 ELSE 0 END) > 0 AS learned
+RETURN coalesce(k.id, k.path) AS item, labels(k)[0] AS kind, score, others, learned ORDER BY score DESC"""
+
+MARK_LEARNED = """
+MATCH (m:Person {id: $person}), (k) WHERE (k:Decision AND k.id = $item) OR (k:File AND k.path = $item)
+MERGE (m)-[l:LEARNED]->(k) ON CREATE SET l.via = 'self_study', l.at = $at, l.ts = $ts"""
+
+OFFBOARD = """
+MATCH (p:Person {id: $person}), (s:Person {id: $successor})
+SET p.active = false, p.last_day = $day
+MERGE (p)-[:SUCCEEDED_BY]->(s)"""

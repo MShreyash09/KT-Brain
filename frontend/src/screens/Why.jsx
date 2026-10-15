@@ -1,4 +1,4 @@
-import { Cypher, Header, Kind, Pill, data, first, fmt } from "../ui.jsx";
+import { Cypher, Header, Kind, Pill, fmt, useData } from "../ui.jsx";
 
 function where(ref) {
   const [kind, id] = [ref.slice(0, ref.indexOf(":")), ref.slice(ref.indexOf(":") + 1)];
@@ -18,24 +18,11 @@ const Node = ({ kind, muted, children }) => (
 
 const Group = ({ title }) => <li className="group">{title}</li>;
 
-export default function Why({ focus, setFocus }) {
-  const d = data.decisions[focus];
-  const t = data.traces[focus];
-  const options = Object.values(data.decisions).filter((x) => x.status === "active");
-
+// a decision and every path to its sources; the story and the dashboards both render it
+export function Trace({ d, t }) {
+  const { first } = useData();
   return (
     <>
-      <Header title="Why is it like this?">
-        Every answer is a path through the graph, with sources. Pick a decision, or click any row on the other steps.
-      </Header>
-
-      <label className="picker">
-        <span className="muted small">Decision</span>
-        <select value={focus} onChange={(e) => setFocus(e.target.value)}>
-          {options.map((x) => <option key={x.id} value={x.id}>{x.id} · {x.what}</option>)}
-        </select>
-      </label>
-
       <ol className="trace card">
         {d.about.map((f) => <Node key={f} kind="File"><code>{f}</code></Node>)}
         <Node kind="Decision">
@@ -86,6 +73,30 @@ export default function Why({ focus, setFocus }) {
           {t.features.map((f) => <Pill key={f} tone="accent">Feature: {f}</Pill>)}
         </p>
       )}
+    </>
+  );
+}
+
+export default function Why({ focus, setFocus }) {
+  const data = useData();
+  const d = data.decisions[focus];
+  const t = data.traces[focus];
+  const options = Object.values(data.decisions).filter((x) => x.status === "active");
+
+  return (
+    <>
+      <Header title="Why is it like this?">
+        Every answer is a path through the graph, with sources. Pick a decision, or click any row on the other steps.
+      </Header>
+
+      <label className="picker">
+        <span className="muted small">Decision</span>
+        <select value={focus} onChange={(e) => setFocus(e.target.value)}>
+          {options.map((x) => <option key={x.id} value={x.id}>{x.id} · {x.what}</option>)}
+        </select>
+      </label>
+
+      <Trace d={d} t={t} />
 
       <Cypher>{`
 MATCH (d:Decision {id: $id})

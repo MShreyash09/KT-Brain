@@ -1,8 +1,7 @@
-import { data } from "../ui.jsx";
+import { useData } from "../ui.jsx";
 import { DryRun } from "./Departure.jsx";
 
-const h = data.handover;
-const STEPS = [
+const steps = (data, h = data.handover) => [
   ["team", "Team", "Commits, reviews, tickets, chat, docs and AI sessions become weighted KNOWS edges. Nobody fills in a skills matrix."],
   ["radar", "Radar", `${data.radar.length} things only one person knows, found while everyone is still here.`],
   ["departure", "Departure", "Dry-run a resignation on a copy of the graph. What nobody else knows becomes the KT agenda."],
@@ -12,6 +11,8 @@ const STEPS = [
 ];
 
 export default function Landing({ start }) {
+  const data = useData();
+  const STEPS = steps(data);
   const c = data.workspace.counts;
   return (
     <main className="landing">

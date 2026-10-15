@@ -1,15 +1,16 @@
 import { useMemo, useState } from "react";
-import { data, first, isDecision, label, whyFor } from "../ui.jsx";
+import { useData } from "../ui.jsx";
 
 const W = 880, H = 540, PAD = 28;
 
 // People, the files and decisions they KNOW, and which file each decision is ABOUT.
-function build() {
-  const radar = new Set(data.radar.map((r) => r.item));
+function build(data) {
+  const { first, isDecision } = data;
+  const radar = new Set((data.radar ?? []).map((r) => r.item));
   const people = data.people.filter((p) => data.knows.some((k) => k.person === p.id));
   const items = [...new Set(data.knows.map((k) => k.item))];
   const nodes = [
-    ...people.map((p) => ({ id: `p:${p.id}`, person: p.id, text: first(p.id), leaving: !!p.last_day })),
+    ...people.map((p) => ({ id: `p:${p.id}`, person: p.id, text: first(p.id), leaving: !!p.last_day || p.active === false })),
     ...items.map((i) => ({ id: i, item: i, text: isDecision(i) ? i : i.split("/").pop(), decision: isDecision(i),
       superseded: data.decisions[i]?.status === "superseded", only: radar.has(i) })),
   ];
@@ -52,12 +53,15 @@ function layout({ nodes, edges }) {
 }
 
 export default function KnowsGraph({ sel, onPerson, open }) {
-  const g = useMemo(build, []);
+  const data = useData();
+  const { label, whyFor } = data;
+  const g = useMemo(() => build(data), [data]);
   const at = useMemo(() => layout(g), [g]);
   const [hover, setHover] = useState(null);
   const focus = hover ?? `p:${sel}`;
   const near = new Set([focus, ...g.edges.flatMap((e) => (e.a === focus ? [e.b] : e.b === focus ? [e.a] : []))]);
 
+  if (!g.nodes.length) return <p className="muted">No knowledge yet.</p>;
   const act = (n) => (n.person ? onPerson(n.person) : whyFor(n.item) && open(whyFor(n.item)));
 
   return (

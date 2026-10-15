@@ -1,6 +1,8 @@
-import { Cypher, Header, Item, Pill, Score, data, first, status } from "../ui.jsx";
+import { Cypher, Header, Item, Pill, Score, useData } from "../ui.jsx";
 
 export default function Radar({ open }) {
+  const data = useData();
+  const { first, status } = data;
   const max = Math.max(...data.radar.map((r) => r.score));
   const groups = data.people
     .map((p) => ({ p, rows: data.radar.filter((r) => r.person === p.id) }))

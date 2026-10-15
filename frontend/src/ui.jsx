@@ -1,31 +1,57 @@
-// Shared data + small components. `data` is read live from the graph (backend/app.py, GET /api/workspace) before the
-// first render; every screen reads it from here.
-const res = await fetch("/api/workspace").catch(() => null);
-if (!res?.ok) {
-  document.getElementById("root").textContent = "The KT Brain API is not running. Start it with: cd backend && uv run uvicorn app:app";
-  throw new Error("KT Brain API unreachable");
-}
-const data = await res.json();
+// Shared data + small components. Each view (the public TiffinBox story, the admin dashboard, a member's brain) puts
+// its own graph data in <DataCtx>; `useData()` returns it with the helpers below bound to it.
+import { createContext, useContext, useMemo } from "react";
 
-export { data };
-export const person = Object.fromEntries(data.people.map((p) => [p.id, p]));
-export const first = (id) => person[id]?.name.split(" ")[0] ?? id;
-export const isDecision = (item) => item in data.decisions;
-export const label = (item) => data.decisions[item]?.what ?? item;
+export const DataCtx = createContext(null);
 export const fmt = (day) =>
   day ? new Date(day + "T00:00:00Z").toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "UTC" }) : "";
 
-// the decision a why-trace starts from: the item itself, or the active decision about a file
-export function whyFor(item) {
-  if (isDecision(item)) return data.traces[item] ? item : null;
-  const d = Object.values(data.decisions).find((d) => d.status === "active" && d.about.includes(item));
-  return d ? d.id : null;
+export function withHelpers(data) {
+  const person = Object.fromEntries(data.people.map((p) => [p.id, p]));
+  const isDecision = (item) => item in data.decisions;
+  return {
+    ...data,
+    person,
+    isDecision,
+    first: (id) => person[id]?.name.split(" ")[0] ?? id,
+    label: (item) => data.decisions[item]?.what ?? item,
+    // the decision a why-trace starts from: the item itself, or the active decision about a file
+    whyFor(item) {
+      if (isDecision(item)) return !data.traces || data.traces[item] ? item : null;
+      const d = Object.values(data.decisions).find((d) => d.status === "active" && d.about.includes(item));
+      return d ? d.id : null;
+    },
+    status(p) {
+      if (p.joined > data.workspace.snapshot) return { text: `Joins ${fmt(p.joined)}`, tone: "accent" };
+      if (p.active === false) return { text: p.last_day ? `Left ${fmt(p.last_day)}` : "Left", tone: "muted" };
+      if (p.last_day) return { text: `Leaving ${fmt(p.last_day)}`, tone: "risk" };
+      return { text: "Active", tone: "muted" };
+    },
+  };
 }
 
-export function status(p) {
-  if (p.joined > data.workspace.snapshot) return { text: `Joins ${fmt(p.joined)}`, tone: "accent" };
-  if (p.last_day) return { text: `Leaving ${fmt(p.last_day)}`, tone: "risk" };
-  return { text: "Active", tone: "muted" };
+export const useData = () => useContext(DataCtx);
+
+export function DataProvider({ data, children }) {
+  const value = useMemo(() => withHelpers(data), [data]);
+  return <DataCtx.Provider value={value}>{children}</DataCtx.Provider>;
+}
+
+export const go = (...parts) => {
+  location.hash = `/${parts.join("/")}`;
+  scrollTo(0, 0);
+};
+
+// JSON fetch for the dashboards; throws the API's own error message
+export async function api(path, body, method) {
+  const res = await fetch(`/api/${path}`, {
+    method: method ?? (body === undefined ? "GET" : "POST"),
+    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const out = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(out?.detail ?? `Request failed (${res.status})`);
+  return out;
 }
 
 export const Pill = ({ tone = "muted", children }) => <span className={`pill ${tone}`}>{children}</span>;
@@ -36,6 +62,7 @@ export const Kind = ({ kind }) => <span className={`kind k-${kind}`}>{KIND[kind]
 
 // one agenda / knowledge row; clicking opens its why-trace when there is one
 export function Item({ item, open, children }) {
+  const { whyFor, isDecision, label, decisions } = useData();
   const why = whyFor(item);
   const body = (
     <>
@@ -46,7 +73,7 @@ export function Item({ item, open, children }) {
         <code className="item-label">{item}</code>
       )}
       <span className="item-extra">
-        {data.decisions[item]?.status === "superseded" && <Pill>superseded</Pill>}
+        {decisions[item]?.status === "superseded" && <Pill>superseded</Pill>}
         {children}
       </span>
     </>

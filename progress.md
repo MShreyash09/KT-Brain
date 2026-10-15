@@ -57,3 +57,18 @@ Run: `cd backend && uv run uvicorn app:app` (builds `tiffinbox_sep21` and `tiffi
 - [ ] Embeddings + vector index on Chunk; extraction scored against the answer key.
 - [ ] Upload ingest for md/pdf docs and Claude Code JSONL (reuse `chunk_rows`).
 - [ ] LLM-reads-everything baseline vs the graph.
+
+## SaaS layer (Oct 16): companies, admin and member dashboards
+
+| Item | Status | Notes |
+|---|---|---|
+| Accounts (`backend/accounts.py`) | ✅ | Companies, users and tokens live in the `kt_system` graph. Passwords are scrypt-hashed; a session cookie `kt` keeps you signed in. Offboarded users can't sign in |
+| Demo company | ✅ | Seeded on first start: `ws_tiffinbox` = copy of `tiffinbox_template`, admin + 6 employees, Arjun and Priya offboarded with Meera as successor. All demo passwords are `demo123`, printed on the login page |
+| Admin dashboard (`#/admin`) | ✅ | Overview (only-one-person items), Employees (add, simulate leaving on a `GRAPH.COPY`, offboard with a successor), Knowledge graph, Handovers (agenda learned / total), Sources (GitHub repo + every upload), Settings (AI provider, GitHub token) |
+| Member dashboard (`#/me`) | ✅ | My brain (own graph only), one page per person you succeeded (their agenda, "Mark learned", their decisions with why-traces, their graph), Add sources (upload, CLI token), Ask (search scoped to what you may see) |
+| Uploads (`ingest/uploads.py`) | ✅ | .md .txt .pdf → Doc; Claude Code .jsonl → AgentSession. Secrets redacted before storing. New KNOWS rule: running an AI session that edited a file (weight 0.8). Answer key unchanged (62 KNOWS) |
+| GitHub (`ingest/github.py`) | ✅ | Public repo → commits with files, PRs, reviews. 25 commits / 10 PRs without a token (fits the 60/h limit), 100 / 40 with one. Unmatched authors become "GitHub contributor" people |
+| AI provider (`extract.py`) | ✅ | Any OpenAI-compatible `/chat/completions` (OpenRouter, Groq, Google AI Studio, Ollama, custom). Decisions whose evidence quote isn't in the text are dropped. Runs in the background; status shows per source. `test_extract.py` checks it with a canned reply |
+| CLI (`cli/ktbrain.py`) | ✅ | `python cli/ktbrain.py sync --server … --token … --repo .` Stdlib only; slims + redacts on the laptop. Dry run finds this repo's 12 real sessions |
+
+**Not tested live:** a real AI provider call (no key yet) and a real GitHub repo sync (network). Both paths are covered by the code's error handling: failures show on the source or the repo status line.
