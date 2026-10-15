@@ -1,0 +1,742 @@
+[
+  {
+    "key": "WEB-61",
+    "fields": {
+      "summary": "Storybook for shared components",
+      "description": "Storybook for shared components.",
+      "assignee": {
+        "accountId": "acc-kavya",
+        "displayName": "Kavya Nair",
+        "emailAddress": "kavya@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-04-01T11:35:00Z",
+      "labels": [],
+      "resolutiondate": "2026-04-04T11:35:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "ORD-46",
+    "fields": {
+      "summary": "Order cancel window",
+      "description": "Order cancel window.",
+      "assignee": {
+        "accountId": "acc-arjun",
+        "displayName": "Arjun Mehta",
+        "emailAddress": "arjun@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-arjun",
+        "displayName": "Arjun Mehta",
+        "emailAddress": "arjun@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-04-15T06:20:00Z",
+      "labels": [],
+      "resolutiondate": "2026-04-18T06:20:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "REC-53",
+    "fields": {
+      "summary": "Add weather to ETA features",
+      "description": "Add weather to ETA features.",
+      "assignee": {
+        "accountId": "acc-rohan",
+        "displayName": "Rohan Das",
+        "emailAddress": "rohan@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-04-23T07:20:00Z",
+      "labels": [],
+      "resolutiondate": "2026-04-26T07:20:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "WEB-42",
+    "fields": {
+      "summary": "Dark mode contrast on price tags",
+      "description": "Dark mode contrast on price tags.",
+      "assignee": {
+        "accountId": "acc-kavya",
+        "displayName": "Kavya Nair",
+        "emailAddress": "kavya@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-kavya",
+        "displayName": "Kavya Nair",
+        "emailAddress": "kavya@tiffinbox.example"
+      },
+      "status": {
+        "name": "To Do"
+      },
+      "created": "2026-04-28T11:20:00Z",
+      "labels": [],
+      "resolutiondate": null
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "ORD-45",
+    "fields": {
+      "summary": "Export kitchen prep list",
+      "description": "Export kitchen prep list.",
+      "assignee": {
+        "accountId": "acc-arjun",
+        "displayName": "Arjun Mehta",
+        "emailAddress": "arjun@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-arjun",
+        "displayName": "Arjun Mehta",
+        "emailAddress": "arjun@tiffinbox.example"
+      },
+      "status": {
+        "name": "To Do"
+      },
+      "created": "2026-05-04T04:35:00Z",
+      "labels": [],
+      "resolutiondate": null
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "WEB-14",
+    "fields": {
+      "summary": "Customers charged twice after double-clicking Pay",
+      "description": "Three support tickets this week. Double click on Pay sends two payment requests.",
+      "assignee": {
+        "accountId": "acc-kavya",
+        "displayName": "Kavya Nair",
+        "emailAddress": "kavya@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-05-04T06:40:00Z",
+      "labels": [],
+      "resolutiondate": "2026-05-07T06:40:00Z"
+    },
+    "links": {
+      "pull_requests": [
+        113
+      ]
+    }
+  },
+  {
+    "key": "REC-52",
+    "fields": {
+      "summary": "ETA error dashboard",
+      "description": "ETA error dashboard.",
+      "assignee": {
+        "accountId": "acc-rohan",
+        "displayName": "Rohan Das",
+        "emailAddress": "rohan@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-05-22T07:35:00Z",
+      "labels": [],
+      "resolutiondate": "2026-05-25T07:35:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "ORD-31",
+    "fields": {
+      "summary": "Duplicate orders during lunch rush",
+      "description": "Two orders created for one cart when the customer taps twice on a slow network.",
+      "assignee": {
+        "accountId": "acc-arjun",
+        "displayName": "Arjun Mehta",
+        "emailAddress": "arjun@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-05-26T07:55:00Z",
+      "labels": [],
+      "resolutiondate": "2026-05-29T07:55:00Z"
+    },
+    "links": {
+      "pull_requests": [
+        115
+      ]
+    }
+  },
+  {
+    "key": "SEC-4",
+    "fields": {
+      "summary": "Security review findings",
+      "description": "Access tokens live for 24 h. Recommend <= 15 min with refresh.",
+      "assignee": {
+        "accountId": "acc-arjun",
+        "displayName": "Arjun Mehta",
+        "emailAddress": "arjun@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-05-30T04:30:00Z",
+      "labels": [],
+      "resolutiondate": "2026-06-02T04:30:00Z"
+    },
+    "links": {
+      "pull_requests": [
+        116
+      ]
+    }
+  },
+  {
+    "key": "WEB-40",
+    "fields": {
+      "summary": "Menu grid jumps when images load",
+      "description": "Menu grid jumps when images load.",
+      "assignee": {
+        "accountId": "acc-kavya",
+        "displayName": "Kavya Nair",
+        "emailAddress": "kavya@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-kavya",
+        "displayName": "Kavya Nair",
+        "emailAddress": "kavya@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-06-09T09:35:00Z",
+      "labels": [],
+      "resolutiondate": "2026-06-12T09:35:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "PAY-61",
+    "fields": {
+      "summary": "Webhook processed twice -> double refund",
+      "description": "Gateway retried a webhook after a timeout and we marked the order paid twice.",
+      "assignee": {
+        "accountId": "acc-arjun",
+        "displayName": "Arjun Mehta",
+        "emailAddress": "arjun@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-06-09T13:30:00Z",
+      "labels": [],
+      "resolutiondate": "2026-06-12T13:30:00Z"
+    },
+    "links": {
+      "pull_requests": [
+        118
+      ]
+    }
+  },
+  {
+    "key": "ORD-47",
+    "fields": {
+      "summary": "Orders API pagination",
+      "description": "Orders API pagination.",
+      "assignee": {
+        "accountId": "acc-arjun",
+        "displayName": "Arjun Mehta",
+        "emailAddress": "arjun@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-06-15T05:20:00Z",
+      "labels": [],
+      "resolutiondate": "2026-06-18T05:20:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "INF-54",
+    "fields": {
+      "summary": "Right-size Redis",
+      "description": "Right-size Redis.",
+      "assignee": {
+        "accountId": "acc-priya",
+        "displayName": "Priya Iyer",
+        "emailAddress": "priya@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-06-16T08:50:00Z",
+      "labels": [],
+      "resolutiondate": "2026-06-19T08:50:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "WEB-43",
+    "fields": {
+      "summary": "Add order history page",
+      "description": "Add order history page.",
+      "assignee": {
+        "accountId": "acc-kavya",
+        "displayName": "Kavya Nair",
+        "emailAddress": "kavya@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-kavya",
+        "displayName": "Kavya Nair",
+        "emailAddress": "kavya@tiffinbox.example"
+      },
+      "status": {
+        "name": "To Do"
+      },
+      "created": "2026-06-18T07:50:00Z",
+      "labels": [],
+      "resolutiondate": null
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "REC-50",
+    "fields": {
+      "summary": "Weekly retrain job",
+      "description": "Weekly retrain job.",
+      "assignee": {
+        "accountId": "acc-rohan",
+        "displayName": "Rohan Das",
+        "emailAddress": "rohan@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "To Do"
+      },
+      "created": "2026-06-19T08:05:00Z",
+      "labels": [],
+      "resolutiondate": null
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "REC-9",
+    "fields": {
+      "summary": "Recommendations push expensive meals",
+      "description": "App reviews and support say recommendations favour the most expensive thalis.",
+      "assignee": {
+        "accountId": "acc-rohan",
+        "displayName": "Rohan Das",
+        "emailAddress": "rohan@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-06-24T06:50:00Z",
+      "labels": [],
+      "resolutiondate": "2026-06-27T06:50:00Z"
+    },
+    "links": {
+      "pull_requests": [
+        120
+      ]
+    }
+  },
+  {
+    "key": "REC-51",
+    "fields": {
+      "summary": "Cold-start recs for new users",
+      "description": "Cold-start recs for new users.",
+      "assignee": {
+        "accountId": "acc-rohan",
+        "displayName": "Rohan Das",
+        "emailAddress": "rohan@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-rohan",
+        "displayName": "Rohan Das",
+        "emailAddress": "rohan@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-07-07T06:20:00Z",
+      "labels": [],
+      "resolutiondate": "2026-07-10T06:20:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "PAY-48",
+    "fields": {
+      "summary": "Weekly refund report",
+      "description": "Weekly refund report.",
+      "assignee": {
+        "accountId": "acc-arjun",
+        "displayName": "Arjun Mehta",
+        "emailAddress": "arjun@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-arjun",
+        "displayName": "Arjun Mehta",
+        "emailAddress": "arjun@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-07-24T05:05:00Z",
+      "labels": [],
+      "resolutiondate": "2026-07-27T05:05:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "PAY-88",
+    "fields": {
+      "summary": "Orders marked payment_failed during RupeeRail deploys",
+      "description": "RupeeRail pauses webhooks for ~5 min during deploys; our 3 retries (30/60/120s) give up after 3.5 min. Plan: 7 retries with exponential backoff.",
+      "assignee": {
+        "accountId": "acc-arjun",
+        "displayName": "Arjun Mehta",
+        "emailAddress": "arjun@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-arjun",
+        "displayName": "Arjun Mehta",
+        "emailAddress": "arjun@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-08-04T09:15:00Z",
+      "labels": [],
+      "resolutiondate": "2026-08-07T09:15:00Z"
+    },
+    "links": {
+      "pull_requests": [
+        124
+      ]
+    }
+  },
+  {
+    "key": "INF-56",
+    "fields": {
+      "summary": "Tag all AWS resources",
+      "description": "Tag all AWS resources.",
+      "assignee": {
+        "accountId": "acc-priya",
+        "displayName": "Priya Iyer",
+        "emailAddress": "priya@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-08-05T07:05:00Z",
+      "labels": [],
+      "resolutiondate": "2026-08-08T07:05:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "INF-57",
+    "fields": {
+      "summary": "Status page for customers",
+      "description": "Status page for customers.",
+      "assignee": {
+        "accountId": "acc-priya",
+        "displayName": "Priya Iyer",
+        "emailAddress": "priya@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-08-10T10:50:00Z",
+      "labels": [],
+      "resolutiondate": "2026-08-13T10:50:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "INF-55",
+    "fields": {
+      "summary": "Upgrade k8s to 1.33",
+      "description": "Upgrade k8s to 1.33.",
+      "assignee": {
+        "accountId": "acc-priya",
+        "displayName": "Priya Iyer",
+        "emailAddress": "priya@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-priya",
+        "displayName": "Priya Iyer",
+        "emailAddress": "priya@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-08-14T07:20:00Z",
+      "labels": [],
+      "resolutiondate": "2026-08-17T07:20:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "PAY-49",
+    "fields": {
+      "summary": "Show UPI handle on receipts",
+      "description": "Show UPI handle on receipts.",
+      "assignee": {
+        "accountId": "acc-arjun",
+        "displayName": "Arjun Mehta",
+        "emailAddress": "arjun@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "To Do"
+      },
+      "created": "2026-08-19T09:50:00Z",
+      "labels": [],
+      "resolutiondate": null
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "WEB-41",
+    "fields": {
+      "summary": "Address form loses state on back",
+      "description": "Address form loses state on back.",
+      "assignee": {
+        "accountId": "acc-kavya",
+        "displayName": "Kavya Nair",
+        "emailAddress": "kavya@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-08-20T08:20:00Z",
+      "labels": [],
+      "resolutiondate": "2026-08-23T08:20:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "PRD-60",
+    "fields": {
+      "summary": "Onboarding funnel analysis",
+      "description": "Onboarding funnel analysis.",
+      "assignee": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "To Do"
+      },
+      "created": "2026-08-21T04:35:00Z",
+      "labels": [],
+      "resolutiondate": null
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "PRD-58",
+    "fields": {
+      "summary": "Write skip-a-day spec",
+      "description": "Write skip-a-day spec.",
+      "assignee": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "To Do"
+      },
+      "created": "2026-08-28T07:35:00Z",
+      "labels": [],
+      "resolutiondate": null
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "WEB-44",
+    "fields": {
+      "summary": "Checkout spinner never stops on timeout",
+      "description": "Checkout spinner never stops on timeout.",
+      "assignee": {
+        "accountId": "acc-kavya",
+        "displayName": "Kavya Nair",
+        "emailAddress": "kavya@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-kavya",
+        "displayName": "Kavya Nair",
+        "emailAddress": "kavya@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-09-10T07:20:00Z",
+      "labels": [],
+      "resolutiondate": "2026-09-13T07:20:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  },
+  {
+    "key": "PRD-59",
+    "fields": {
+      "summary": "Corporate plans discovery",
+      "description": "Corporate plans discovery.",
+      "assignee": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "reporter": {
+        "accountId": "acc-neha",
+        "displayName": "Neha Kapoor",
+        "emailAddress": "neha@tiffinbox.example"
+      },
+      "status": {
+        "name": "Done"
+      },
+      "created": "2026-09-11T09:35:00Z",
+      "labels": [],
+      "resolutiondate": "2026-09-14T09:35:00Z"
+    },
+    "links": {
+      "pull_requests": []
+    }
+  }
+]

@@ -1,0 +1,509 @@
+{
+  "decisions": [
+    {
+      "id": "D13",
+      "what": "Payment retries = 3 (30s, 60s, 120s)",
+      "why": "Default from the RupeeRail quickstart",
+      "status": "superseded",
+      "at": "2026-04-06T06:00:00Z",
+      "about": [
+        "api/payments/retry.py"
+      ],
+      "evidence": "3 attempts at 30s, 60s and 120s",
+      "applies": [],
+      "supersedes": null,
+      "informed_by": [],
+      "justified_by": [],
+      "recorded_in": [
+        "pr:101"
+      ]
+    },
+    {
+      "id": "D1",
+      "what": "Payment retries = 7 with exponential backoff (about a 13 minute window)",
+      "why": "RupeeRail pauses webhook delivery for up to ~5 minutes during its deploys. 3 retries gave up after 3.5 minutes and marked paid orders as failed (PAY-88).",
+      "status": "active",
+      "at": "2026-08-04T08:25:00Z",
+      "about": [
+        "api/payments/retry.py"
+      ],
+      "evidence": "their webhooks pause ~5 min during deploys",
+      "applies": [
+        "P1"
+      ],
+      "supersedes": "D13",
+      "informed_by": [],
+      "justified_by": [],
+      "recorded_in": [
+        "thread:spaces/payments/threads/d0c2be525a4",
+        "ticket:PAY-88",
+        "session:d3cbce7c-7c94-5d99-9c94-39d06287c412",
+        "pr:124"
+      ]
+    },
+    {
+      "id": "D2",
+      "what": "Webhooks are idempotent: dedupe on RupeeRail event_id",
+      "why": "RupeeRail re-sends webhooks; one order was marked paid twice and refunded twice (PAY-61)",
+      "status": "active",
+      "at": "2026-06-11T05:30:00Z",
+      "about": [
+        "api/payments/webhooks.py"
+      ],
+      "evidence": "dedupe on event_id",
+      "applies": [
+        "P2"
+      ],
+      "supersedes": null,
+      "informed_by": [],
+      "justified_by": [],
+      "recorded_in": [
+        "pr:118",
+        "doc:docs/adr/0003-webhook-idempotency.md"
+      ]
+    },
+    {
+      "id": "D3",
+      "what": "Orders use optimistic locking on a version column",
+      "why": "Double orders during the lunch rush when two requests updated the same cart (ORD-31)",
+      "status": "active",
+      "at": "2026-05-28T05:30:00Z",
+      "about": [
+        "api/orders/service.py"
+      ],
+      "evidence": "optimistic locking on a version column",
+      "applies": [
+        "P3"
+      ],
+      "supersedes": null,
+      "informed_by": [],
+      "justified_by": [],
+      "recorded_in": [
+        "pr:115"
+      ]
+    },
+    {
+      "id": "D4",
+      "what": "Access token TTL = 15 minutes, with refresh tokens",
+      "why": "Security review: 24 h tokens are too long-lived if a phone is stolen",
+      "status": "active",
+      "at": "2026-06-02T05:30:00Z",
+      "about": [
+        "api/auth/tokens.py"
+      ],
+      "evidence": "Access tokens now expire after 15 minutes",
+      "applies": [],
+      "supersedes": null,
+      "informed_by": [],
+      "justified_by": [],
+      "recorded_in": [
+        "pr:116"
+      ]
+    },
+    {
+      "id": "D5",
+      "what": "Billing charges on day 1 of the cycle and prorates paused days",
+      "why": "Predictable revenue, and fair to customers who pause",
+      "status": "active",
+      "at": "2026-04-08T09:30:00Z",
+      "about": [
+        "api/subscriptions/billing.py"
+      ],
+      "evidence": "charge on day 1 of each cycle; paused days are prorated",
+      "applies": [],
+      "supersedes": null,
+      "informed_by": [],
+      "justified_by": [],
+      "recorded_in": [
+        "doc:docs/prd/subscriptions.md",
+        "pr:102"
+      ]
+    },
+    {
+      "id": "D16",
+      "what": "Deploys roll out to all pods at once",
+      "why": "Simplest pipeline for a small team",
+      "status": "superseded",
+      "at": "2026-04-10T05:00:00Z",
+      "about": [
+        ".github/workflows/deploy.yml"
+      ],
+      "evidence": "rolls out to all pods at once",
+      "applies": [],
+      "supersedes": null,
+      "informed_by": [],
+      "justified_by": [],
+      "recorded_in": [
+        "pr:103"
+      ]
+    },
+    {
+      "id": "D6",
+      "what": "Deploys are canary: 10% of pods for 30 minutes, auto-rollback if 5xx > 2%",
+      "why": "The May 12 checkout outage came from an all-at-once deploy (INC-1). Cloudflare's 2019 outage shows why staged rollouts matter.",
+      "status": "active",
+      "at": "2026-05-18T04:30:00Z",
+      "about": [
+        ".github/workflows/deploy.yml"
+      ],
+      "evidence": "10% of pods for 30 minutes",
+      "applies": [
+        "P4"
+      ],
+      "supersedes": "D16",
+      "informed_by": [
+        "R1"
+      ],
+      "justified_by": [],
+      "recorded_in": [
+        "session:1005a014-d2a1-0231-fd42-5aabb26ae1b0",
+        "pr:114",
+        "doc:docs/runbooks/deploy.md"
+      ]
+    },
+    {
+      "id": "D7",
+      "what": "Terraform state is remote with a lock; never run apply from a laptop",
+      "why": "A laptop apply with stale state tried to destroy the Redis cluster",
+      "status": "active",
+      "at": "2026-07-01T05:30:00Z",
+      "about": [
+        "infra/terraform/main.tf"
+      ],
+      "evidence": "never run terraform apply from a laptop",
+      "applies": [],
+      "supersedes": null,
+      "informed_by": [],
+      "justified_by": [],
+      "recorded_in": [
+        "pr:121",
+        "thread:spaces/infra/threads/37595a147be"
+      ]
+    },
+    {
+      "id": "D8",
+      "what": "Rotating the RupeeRail API key also requires updating WEBHOOK_SECRET",
+      "why": "RupeeRail issues a new webhook signing secret with each key. With the old secret every signature check fails and payment confirmations are dropped silently.",
+      "status": "active",
+      "at": "2026-08-26T09:40:00Z",
+      "about": [
+        "infra/scripts/rotate_secrets.sh"
+      ],
+      "evidence": "rotating the API key also rotates the webhook signing secret",
+      "applies": [],
+      "supersedes": null,
+      "informed_by": [],
+      "justified_by": [],
+      "recorded_in": [
+        "thread:spaces/infra/threads/84cc0678d46",
+        "pr:127"
+      ]
+    },
+    {
+      "id": "D17",
+      "what": "Nightly pg_dump with no restore test",
+      "why": "Backups felt like enough",
+      "status": "superseded",
+      "at": "2026-04-15T10:30:00Z",
+      "about": [
+        "infra/backup/db_backup.yaml"
+      ],
+      "evidence": "nightly pg_dump at 01:00 UTC",
+      "applies": [],
+      "supersedes": null,
+      "informed_by": [],
+      "justified_by": [],
+      "recorded_in": [
+        "pr:105"
+      ]
+    },
+    {
+      "id": "D9",
+      "what": "DB backups at 3 AM IST with a failure alert; restore tested every quarter",
+      "why": "Backups were silently empty for 17 days (INC-2). GitLab's 2017 incident shows untested backups fail.",
+      "status": "active",
+      "at": "2026-06-22T05:30:00Z",
+      "about": [
+        "infra/backup/db_backup.yaml"
+      ],
+      "evidence": "restore test every quarter",
+      "applies": [],
+      "supersedes": "D17",
+      "informed_by": [
+        "R2"
+      ],
+      "justified_by": [],
+      "recorded_in": [
+        "pr:119",
+        "doc:docs/runbooks/backup-restore.md"
+      ]
+    },
+    {
+      "id": "D10",
+      "what": "Recommendations exclude price as a ranking feature",
+      "why": "Customers said recommendations pushed expensive meals (REC-9); price dominated the ranking",
+      "status": "active",
+      "at": "2026-06-24T06:50:00Z",
+      "about": [
+        "ml/recommend/features.py"
+      ],
+      "evidence": "drop price and price_bucket from the ranking features",
+      "applies": [],
+      "supersedes": null,
+      "informed_by": [],
+      "justified_by": [],
+      "recorded_in": [
+        "ticket:REC-9",
+        "session:4873c75b-8409-317a-89f6-de4c496bf293",
+        "pr:120"
+      ]
+    },
+    {
+      "id": "D11",
+      "what": "ETA falls back to a static 40 minutes if the model takes over 300 ms",
+      "why": "Model timeouts during peak hours left the checkout page without an ETA",
+      "status": "active",
+      "at": "2026-07-24T09:30:00Z",
+      "about": [
+        "ml/eta/predict.py"
+      ],
+      "evidence": "fall back to a static 40 minutes",
+      "applies": [
+        "P5"
+      ],
+      "supersedes": null,
+      "informed_by": [],
+      "justified_by": [],
+      "recorded_in": [
+        "pr:123"
+      ]
+    },
+    {
+      "id": "D12",
+      "what": "Checkout Pay button disables after the first click",
+      "why": "Double clicks caused double payments (WEB-14)",
+      "status": "active",
+      "at": "2026-05-05T04:30:00Z",
+      "about": [
+        "web/checkout/CheckoutPage.tsx"
+      ],
+      "evidence": "disable the Pay button after the first click",
+      "applies": [],
+      "supersedes": null,
+      "informed_by": [],
+      "justified_by": [],
+      "recorded_in": [
+        "pr:113"
+      ]
+    },
+    {
+      "id": "D14",
+      "what": "CI cache key includes the lockfile hash",
+      "why": "Stale node_modules cache made builds flaky",
+      "status": "active",
+      "at": "2026-08-19T04:30:00Z",
+      "about": [
+        ".github/workflows/ci.yml"
+      ],
+      "evidence": "cache key includes the hash of package-lock.json",
+      "applies": [],
+      "supersedes": null,
+      "informed_by": [],
+      "justified_by": [],
+      "recorded_in": [
+        "session:5c863f11-a336-4c11-c120-e162d8bef797",
+        "pr:126"
+      ]
+    },
+    {
+      "id": "D15",
+      "what": "Subscription pauses are capped at 14 days",
+      "why": "11 of 15 interviewees pause for travel and most trips are under 2 weeks; survey and competitor scan agree",
+      "status": "active",
+      "at": "2026-07-14T05:30:00Z",
+      "about": [
+        "api/subscriptions/billing.py"
+      ],
+      "evidence": "pauses are capped at 14 days",
+      "applies": [],
+      "supersedes": null,
+      "informed_by": [],
+      "justified_by": [
+        "I1",
+        "I2",
+        "I3"
+      ],
+      "recorded_in": [
+        "doc:docs/prd/subscriptions.md",
+        "thread:spaces/product/threads/724c744b879",
+        "pr:122"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "id": "P1",
+      "name": "Retry with exponential backoff",
+      "implemented_in": [
+        "api/payments/retry.py"
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "Idempotency key",
+      "implemented_in": [
+        "api/payments/webhooks.py"
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "Optimistic locking",
+      "implemented_in": [
+        "api/orders/service.py"
+      ]
+    },
+    {
+      "id": "P4",
+      "name": "Canary release",
+      "implemented_in": [
+        ".github/workflows/deploy.yml"
+      ]
+    },
+    {
+      "id": "P5",
+      "name": "Fallback / circuit breaker",
+      "implemented_in": [
+        "ml/eta/predict.py"
+      ]
+    }
+  ],
+  "incidents": [
+    {
+      "id": "INC-1",
+      "title": "Checkout down for 38 minutes after an all-at-once deploy",
+      "at": "2026-05-12T08:35:00Z",
+      "severity": "sev1",
+      "caused_by": "D16",
+      "recorded_in": [
+        "thread:spaces/incidents/threads/3adca12f683",
+        "doc:docs/postmortems/2026-05-12-checkout-outage.md"
+      ]
+    },
+    {
+      "id": "INC-2",
+      "title": "Database backups silently empty for 17 days",
+      "at": "2026-06-16T12:00:00Z",
+      "severity": "sev2",
+      "caused_by": "D17",
+      "recorded_in": [
+        "thread:spaces/incidents/threads/499b86e2c4e"
+      ]
+    }
+  ],
+  "research": [
+    {
+      "id": "R1",
+      "title": "Progressive delivery after INC-1",
+      "author": "priya",
+      "doc": "docs/research/canary-deploys.md",
+      "cites": [
+        "X1"
+      ],
+      "found": [],
+      "informs": [
+        "D6"
+      ]
+    },
+    {
+      "id": "R2",
+      "title": "Backups we can trust",
+      "author": "priya",
+      "doc": "docs/research/backup-restore.md",
+      "cites": [
+        "X2"
+      ],
+      "found": [],
+      "informs": [
+        "D9"
+      ]
+    },
+    {
+      "id": "R3",
+      "title": "Why subscribers pause",
+      "author": "neha",
+      "doc": "docs/research/pause-interviews.md",
+      "cites": [],
+      "found": [
+        "I1"
+      ],
+      "informs": []
+    },
+    {
+      "id": "R4",
+      "title": "Pause survey",
+      "author": "neha",
+      "doc": "docs/research/pause-survey.md",
+      "cites": [],
+      "found": [
+        "I2"
+      ],
+      "informs": []
+    },
+    {
+      "id": "R5",
+      "title": "Competitor pause policies",
+      "author": "neha",
+      "doc": "docs/research/competitor-scan.md",
+      "cites": [],
+      "found": [
+        "I3"
+      ],
+      "informs": []
+    }
+  ],
+  "insights": [
+    {
+      "id": "I1",
+      "text": "11 of 15 interviewees pause during travel; most trips are under 2 weeks"
+    },
+    {
+      "id": "I2",
+      "text": "62% of surveyed subscribers would rather pause than cancel"
+    },
+    {
+      "id": "I3",
+      "text": "2 of 3 competitors cap pauses at 2-4 weeks"
+    }
+  ],
+  "external_sources": [
+    {
+      "id": "X1",
+      "title": "Details of the Cloudflare outage on July 2, 2019",
+      "publisher": "Cloudflare",
+      "date": "2019-07-12",
+      "url": "https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019/"
+    },
+    {
+      "id": "X2",
+      "title": "Postmortem of database outage of January 31",
+      "publisher": "GitLab",
+      "date": "2017-02-10",
+      "url": "https://about.gitlab.com/blog/2017/02/10/postmortem-of-database-outage-of-january-31/"
+    }
+  ],
+  "features": [
+    {
+      "id": "F1",
+      "name": "Subscription pause",
+      "decisions": [
+        "D15"
+      ],
+      "implemented_by": [
+        "pr:122"
+      ],
+      "about": [
+        "api/subscriptions/billing.py"
+      ]
+    }
+  ]
+}

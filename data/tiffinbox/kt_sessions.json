@@ -1,0 +1,16 @@
+[
+  {
+    "id": "KT-1",
+    "at": "2026-09-24T09:30:00Z",
+    "leaver": "arjun",
+    "learner": "meera",
+    "via": "kt_session",
+    "duration_min": 90,
+    "covered": [
+      "D1",
+      "D8",
+      "infra/scripts/rotate_secrets.sh"
+    ],
+    "notes": "Walked through retry.py and the PAY-88 history, then the key-rotation trap and rotate_secrets.sh."
+  }
+]

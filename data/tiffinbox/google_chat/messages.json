@@ -1,0 +1,1378 @@
+[
+  {
+    "name": "spaces/infra/messages/af8ee471be5.4a6f36f223e",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-04-03T10:20:00Z",
+    "text": "AWS bill is 8% up, mostly Redis. Will right-size next week.",
+    "thread": {
+      "name": "spaces/infra/threads/af8ee471be5"
+    },
+    "space": {
+      "name": "spaces/infra"
+    }
+  },
+  {
+    "name": "spaces/payments/messages/a9df2b5dcdd.8aa06d69990",
+    "sender": {
+      "name": "users/app",
+      "displayName": "RupeeRail Status",
+      "type": "BOT"
+    },
+    "createTime": "2026-04-15T07:20:00Z",
+    "text": "Daily settlement report is ready.",
+    "thread": {
+      "name": "spaces/payments/threads/a9df2b5dcdd"
+    },
+    "space": {
+      "name": "spaces/payments"
+    }
+  },
+  {
+    "name": "spaces/payments/messages/0c460c22fb3.2ed0f9c79c1",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-04-22T07:35:00Z",
+    "text": "Finance wants the refund report weekly instead of monthly.",
+    "thread": {
+      "name": "spaces/payments/threads/0c460c22fb3"
+    },
+    "space": {
+      "name": "spaces/payments"
+    }
+  },
+  {
+    "name": "spaces/payments/messages/0c460c22fb3.778382c1428",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-04-22T07:38:00Z",
+    "text": "Sure, I'll schedule it.",
+    "thread": {
+      "name": "spaces/payments/threads/0c460c22fb3"
+    },
+    "space": {
+      "name": "spaces/payments"
+    }
+  },
+  {
+    "name": "spaces/general/messages/4eee38ecc66.21010e5d1dd",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-06T11:50:00Z",
+    "text": "Diwali week: we pause standups Tue-Thu.",
+    "thread": {
+      "name": "spaces/general/threads/4eee38ecc66"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/general/messages/4eee38ecc66.1d251d05ab6",
+    "sender": {
+      "name": "users/10001",
+      "displayName": "Kavya Nair",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-06T11:53:00Z",
+    "text": "👍",
+    "thread": {
+      "name": "spaces/general/threads/4eee38ecc66"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/incidents/messages/3adca12f683.35635719dfc",
+    "sender": {
+      "name": "users/10001",
+      "displayName": "Kavya Nair",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-12T08:35:00Z",
+    "text": "Checkout is throwing 502s for everyone. Anyone deploying?",
+    "thread": {
+      "name": "spaces/incidents/threads/3adca12f683"
+    },
+    "space": {
+      "name": "spaces/incidents"
+    }
+  },
+  {
+    "name": "spaces/incidents/messages/1c43d7a6206.64ddf72de57",
+    "sender": {
+      "name": "users/10001",
+      "displayName": "Kavya Nair",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-12T08:35:00Z",
+    "text": "Menu images slow in Pune for 10 min, CDN issue on their side, resolved.",
+    "thread": {
+      "name": "spaces/incidents/threads/1c43d7a6206"
+    },
+    "space": {
+      "name": "spaces/incidents"
+    }
+  },
+  {
+    "name": "spaces/incidents/messages/3adca12f683.b257cb1d39e",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-12T08:38:00Z",
+    "text": "Yes, v1.8 went out 5 min ago. All api pods are crashlooping, missing env var. Rolling back.",
+    "thread": {
+      "name": "spaces/incidents/threads/3adca12f683"
+    },
+    "space": {
+      "name": "spaces/incidents"
+    }
+  },
+  {
+    "name": "spaces/incidents/messages/3adca12f683.3ba31eeb5a3",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-12T08:41:00Z",
+    "text": "Customers are posting on Instagram that they can't pay for lunch. I'll put up a banner.",
+    "thread": {
+      "name": "spaces/incidents/threads/3adca12f683"
+    },
+    "space": {
+      "name": "spaces/incidents"
+    }
+  },
+  {
+    "name": "spaces/incidents/messages/3adca12f683.9938378a47b",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-12T08:44:00Z",
+    "text": "Payments queue is backing up; nothing lost, it will drain once api is back.",
+    "thread": {
+      "name": "spaces/incidents/threads/3adca12f683"
+    },
+    "space": {
+      "name": "spaces/incidents"
+    }
+  },
+  {
+    "name": "spaces/incidents/messages/3adca12f683.4ba7b56b4db",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-12T09:13:00Z",
+    "text": "Rolled back, all green. Root cause: the deploy updates every pod at once, so one bad config took down 100% of api. Writing the postmortem.",
+    "thread": {
+      "name": "spaces/incidents/threads/3adca12f683"
+    },
+    "space": {
+      "name": "spaces/incidents"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/d4856165af4.e4f892c5f53",
+    "sender": {
+      "name": "users/10004",
+      "displayName": "Rohan Das",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-12T11:20:00Z",
+    "text": "Can someone review my ETA PR today?",
+    "thread": {
+      "name": "spaces/eng/threads/d4856165af4"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/d4856165af4.efdd44ebefc",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-12T11:23:00Z",
+    "text": "After lunch.",
+    "thread": {
+      "name": "spaces/eng/threads/d4856165af4"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/dm-arjun-priya/messages/c800a1b3247.e3f66ce676a",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-22T09:05:00Z",
+    "text": "Lunch?",
+    "thread": {
+      "name": "spaces/dm-arjun-priya/threads/c800a1b3247"
+    },
+    "space": {
+      "name": "spaces/dm-arjun-priya"
+    }
+  },
+  {
+    "name": "spaces/dm-arjun-priya/messages/c800a1b3247.115d349fc1d",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-22T09:08:00Z",
+    "text": "10 min",
+    "thread": {
+      "name": "spaces/dm-arjun-priya/threads/c800a1b3247"
+    },
+    "space": {
+      "name": "spaces/dm-arjun-priya"
+    }
+  },
+  {
+    "name": "spaces/general/messages/267b13b2473.306bf9813ee",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-25T08:35:00Z",
+    "text": "Reminder: town hall at 5 today.",
+    "thread": {
+      "name": "spaces/general/threads/267b13b2473"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/8e9cdaee195.cf37a19234c",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-26T07:50:00Z",
+    "text": "Support says some customers got two identical orders today at 12:58. ORD-31.",
+    "thread": {
+      "name": "spaces/eng/threads/8e9cdaee195"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/8e9cdaee195.03a850e3d7d",
+    "sender": {
+      "name": "users/10004",
+      "displayName": "Rohan Das",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-26T08:05:00Z",
+    "text": "I see two ETA calls 40 ms apart for the same cart in the logs. Looks like a race.",
+    "thread": {
+      "name": "spaces/eng/threads/8e9cdaee195"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/8e9cdaee195.0b61cc11872",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-26T08:20:00Z",
+    "text": "Yep, two requests both read the cart before either wrote. Fixing in orders/service.py.",
+    "thread": {
+      "name": "spaces/eng/threads/8e9cdaee195"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/product/messages/25f4d91bd2e.6ad98f08756",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-29T05:35:00Z",
+    "text": "NPS this month: 41 (up from 36).",
+    "thread": {
+      "name": "spaces/product/threads/25f4d91bd2e"
+    },
+    "space": {
+      "name": "spaces/product"
+    }
+  },
+  {
+    "name": "spaces/product/messages/25f4d91bd2e.c4d25839ef2",
+    "sender": {
+      "name": "users/10001",
+      "displayName": "Kavya Nair",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-05-29T05:38:00Z",
+    "text": "The checkout fixes helped?",
+    "thread": {
+      "name": "spaces/product/threads/25f4d91bd2e"
+    },
+    "space": {
+      "name": "spaces/product"
+    }
+  },
+  {
+    "name": "spaces/general/messages/e0a685f9bfe.936a070f678",
+    "sender": {
+      "name": "users/10004",
+      "displayName": "Rohan Das",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-01T10:35:00Z",
+    "text": "Anyone up for cricket Saturday?",
+    "thread": {
+      "name": "spaces/general/threads/e0a685f9bfe"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/general/messages/e0a685f9bfe.1b8be53a4c4",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-01T10:38:00Z",
+    "text": "In.",
+    "thread": {
+      "name": "spaces/general/threads/e0a685f9bfe"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/general/messages/e0a685f9bfe.f60d13b86ca",
+    "sender": {
+      "name": "users/10001",
+      "displayName": "Kavya Nair",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-01T10:41:00Z",
+    "text": "In!",
+    "thread": {
+      "name": "spaces/general/threads/e0a685f9bfe"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/payments/messages/4eedb3029f9.46e4d2b56af",
+    "sender": {
+      "name": "users/app",
+      "displayName": "RupeeRail Status",
+      "type": "BOT"
+    },
+    "createTime": "2026-06-08T04:35:00Z",
+    "text": "Daily settlement report is ready.",
+    "thread": {
+      "name": "spaces/payments/threads/4eedb3029f9"
+    },
+    "space": {
+      "name": "spaces/payments"
+    }
+  },
+  {
+    "name": "spaces/infra/messages/58900f7e411.3b3358b757b",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-08T06:35:00Z",
+    "text": "Rotating the DB password tonight, expect 1 minute of reconnects.",
+    "thread": {
+      "name": "spaces/infra/threads/58900f7e411"
+    },
+    "space": {
+      "name": "spaces/infra"
+    }
+  },
+  {
+    "name": "spaces/product/messages/69325eaa09e.8c32ee8d10c",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-09T04:50:00Z",
+    "text": "Adding a 'skip a day' button is the top request this week.",
+    "thread": {
+      "name": "spaces/product/threads/69325eaa09e"
+    },
+    "space": {
+      "name": "spaces/product"
+    }
+  },
+  {
+    "name": "spaces/product/messages/6d1f341d912.165d416ce71",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-09T07:20:00Z",
+    "text": "Ops asked for a printable kitchen prep list per area.",
+    "thread": {
+      "name": "spaces/product/threads/6d1f341d912"
+    },
+    "space": {
+      "name": "spaces/product"
+    }
+  },
+  {
+    "name": "spaces/product/messages/6d1f341d912.62e2ee874b2",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-09T07:23:00Z",
+    "text": "Can export from orders, I'll scope it.",
+    "thread": {
+      "name": "spaces/product/threads/6d1f341d912"
+    },
+    "space": {
+      "name": "spaces/product"
+    }
+  },
+  {
+    "name": "spaces/payments/messages/6664c07ebeb.e45da2e28cd",
+    "sender": {
+      "name": "users/app",
+      "displayName": "RupeeRail Status",
+      "type": "BOT"
+    },
+    "createTime": "2026-06-09T13:10:00Z",
+    "text": "Webhook delivery retried for 3 events due to timeouts on your endpoint.",
+    "thread": {
+      "name": "spaces/payments/threads/6664c07ebeb"
+    },
+    "space": {
+      "name": "spaces/payments"
+    }
+  },
+  {
+    "name": "spaces/payments/messages/6664c07ebeb.30733d44a5e",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-09T13:30:00Z",
+    "text": "A customer got two refunds for one order. Is that related?",
+    "thread": {
+      "name": "spaces/payments/threads/6664c07ebeb"
+    },
+    "space": {
+      "name": "spaces/payments"
+    }
+  },
+  {
+    "name": "spaces/payments/messages/6664c07ebeb.d8c74a86784",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-09T13:45:00Z",
+    "text": "Yes. RupeeRail re-sent the payment webhook and we processed it twice. Fix tomorrow. PAY-61.",
+    "thread": {
+      "name": "spaces/payments/threads/6664c07ebeb"
+    },
+    "space": {
+      "name": "spaces/payments"
+    }
+  },
+  {
+    "name": "spaces/incidents/messages/499b86e2c4e.980c2749d59",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-16T12:00:00Z",
+    "text": "Tried restoring last night's backup to staging to debug a data issue. The dump is 0 bytes. So is every dump since May 30.",
+    "thread": {
+      "name": "spaces/incidents/threads/499b86e2c4e"
+    },
+    "space": {
+      "name": "spaces/incidents"
+    }
+  },
+  {
+    "name": "spaces/incidents/messages/499b86e2c4e.3d64019e609",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-16T12:10:00Z",
+    "text": "May 30 is when we rotated the DB password. Did the backup job get the new one?",
+    "thread": {
+      "name": "spaces/incidents/threads/499b86e2c4e"
+    },
+    "space": {
+      "name": "spaces/incidents"
+    }
+  },
+  {
+    "name": "spaces/incidents/messages/499b86e2c4e.eb4b8fbd2e9",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-16T12:18:00Z",
+    "text": "No. pg_dump failed auth and the job still exited 0. We have had no backups for 17 days.",
+    "thread": {
+      "name": "spaces/incidents/threads/499b86e2c4e"
+    },
+    "space": {
+      "name": "spaces/incidents"
+    }
+  },
+  {
+    "name": "spaces/incidents/messages/499b86e2c4e.4deb465ee88",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-16T12:25:00Z",
+    "text": "Do we need to tell customers?",
+    "thread": {
+      "name": "spaces/incidents/threads/499b86e2c4e"
+    },
+    "space": {
+      "name": "spaces/incidents"
+    }
+  },
+  {
+    "name": "spaces/incidents/messages/499b86e2c4e.9c27d5ea0bc",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-16T12:40:00Z",
+    "text": "No data lost, prod is fine. Taking a manual dump now. Fixing the job properly this week.",
+    "thread": {
+      "name": "spaces/incidents/threads/499b86e2c4e"
+    },
+    "space": {
+      "name": "spaces/incidents"
+    }
+  },
+  {
+    "name": "spaces/product/messages/a8dcbdb9274.79d45cfd0ac",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-23T06:05:00Z",
+    "text": "Corporate plans are parked until Q4.",
+    "thread": {
+      "name": "spaces/product/threads/a8dcbdb9274"
+    },
+    "space": {
+      "name": "spaces/product"
+    }
+  },
+  {
+    "name": "spaces/product/messages/6528bf41b14.fb2b2f20f0e",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-24T06:30:00Z",
+    "text": "Getting a pattern in reviews: 'the app only recommends the expensive thalis'. REC-9.",
+    "thread": {
+      "name": "spaces/product/threads/6528bf41b14"
+    },
+    "space": {
+      "name": "spaces/product"
+    }
+  },
+  {
+    "name": "spaces/product/messages/6528bf41b14.0e0861f745f",
+    "sender": {
+      "name": "users/10004",
+      "displayName": "Rohan Das",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-24T07:00:00Z",
+    "text": "Price is the strongest feature in the ranker right now. I'll look at removing it.",
+    "thread": {
+      "name": "spaces/product/threads/6528bf41b14"
+    },
+    "space": {
+      "name": "spaces/product"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/ffeb0138df0.eebcc99c0c7",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-06-26T10:50:00Z",
+    "text": "Postgres upgrade to 16 next week on staging first.",
+    "thread": {
+      "name": "spaces/eng/threads/ffeb0138df0"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/8fe32196541.0c2acf4a942",
+    "sender": {
+      "name": "users/10001",
+      "displayName": "Kavya Nair",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-01T09:35:00Z",
+    "text": "Moving the web app to React 19 this sprint.",
+    "thread": {
+      "name": "spaces/eng/threads/8fe32196541"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/8fe32196541.0bc8aac129f",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-01T09:38:00Z",
+    "text": "Any user-visible change?",
+    "thread": {
+      "name": "spaces/eng/threads/8fe32196541"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/8fe32196541.d068366f1f0",
+    "sender": {
+      "name": "users/10001",
+      "displayName": "Kavya Nair",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-01T09:41:00Z",
+    "text": "No.",
+    "thread": {
+      "name": "spaces/eng/threads/8fe32196541"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/infra/messages/37595a147be.1599202d614",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-01T10:30:00Z",
+    "text": "PSA: Terraform state now lives in S3 with a DynamoDB lock. Please never run terraform apply from a laptop again; CI applies on merge to main. Last week a laptop apply with stale state tried to destroy the Redis cluster.",
+    "thread": {
+      "name": "spaces/infra/threads/37595a147be"
+    },
+    "space": {
+      "name": "spaces/infra"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/d6d68311a73.ef0a55cc32c",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-03T05:05:00Z",
+    "text": "Staging will be down 15 min at 6 PM for a node pool upgrade.",
+    "thread": {
+      "name": "spaces/eng/threads/d6d68311a73"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/general/messages/b4752b281a3.8bca64d66c7",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-03T07:05:00Z",
+    "text": "Who left the chai on the stove again",
+    "thread": {
+      "name": "spaces/general/threads/b4752b281a3"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/general/messages/b4752b281a3.4d691096dd3",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-03T07:08:00Z",
+    "text": "Not me 👀",
+    "thread": {
+      "name": "spaces/general/threads/b4752b281a3"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/fa6383d723d.89faaf5a399",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-08T10:05:00Z",
+    "text": "Sprint demo Friday 4 PM. Bring one screen each.",
+    "thread": {
+      "name": "spaces/eng/threads/fa6383d723d"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/general/messages/f76c8e34c0b.7607f210a61",
+    "sender": {
+      "name": "users/10001",
+      "displayName": "Kavya Nair",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-10T12:05:00Z",
+    "text": "Is the office AC fixed?",
+    "thread": {
+      "name": "spaces/general/threads/f76c8e34c0b"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/general/messages/f76c8e34c0b.55e78aae714",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-10T12:08:00Z",
+    "text": "Facilities say Monday.",
+    "thread": {
+      "name": "spaces/general/threads/f76c8e34c0b"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/product/messages/58754d98c16.f961ccea578",
+    "sender": {
+      "name": "users/10004",
+      "displayName": "Rohan Das",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-13T07:20:00Z",
+    "text": "Recs CTR is 7.2% this week.",
+    "thread": {
+      "name": "spaces/product/threads/58754d98c16"
+    },
+    "space": {
+      "name": "spaces/product"
+    }
+  },
+  {
+    "name": "spaces/product/messages/58754d98c16.a82679d4d86",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-13T07:23:00Z",
+    "text": "Great, keep an eye on it after the price change.",
+    "thread": {
+      "name": "spaces/product/threads/58754d98c16"
+    },
+    "space": {
+      "name": "spaces/product"
+    }
+  },
+  {
+    "name": "spaces/product/messages/724c744b879.7969a1f5921",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-14T05:30:00Z",
+    "text": "Proposal from the research: pauses are capped at 14 days. Interviews, survey and competitors all point the same way. Longer than that, cancel and resubscribe.",
+    "thread": {
+      "name": "spaces/product/threads/724c744b879"
+    },
+    "space": {
+      "name": "spaces/product"
+    }
+  },
+  {
+    "name": "spaces/product/messages/724c744b879.db5cf3101fe",
+    "sender": {
+      "name": "users/10001",
+      "displayName": "Kavya Nair",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-14T05:50:00Z",
+    "text": "UI-wise: a date picker limited to 14 days from today?",
+    "thread": {
+      "name": "spaces/product/threads/724c744b879"
+    },
+    "space": {
+      "name": "spaces/product"
+    }
+  },
+  {
+    "name": "spaces/product/messages/724c744b879.52b17cba8ee",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-14T06:05:00Z",
+    "text": "Billing already prorates paused days, so the cap is a validation in billing.py. Easy.",
+    "thread": {
+      "name": "spaces/product/threads/724c744b879"
+    },
+    "space": {
+      "name": "spaces/product"
+    }
+  },
+  {
+    "name": "spaces/general/messages/d88f418c0eb.1bffa47afb8",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-24T07:20:00Z",
+    "text": "Lunch is on the house Friday, we crossed 2,000 subscribers!",
+    "thread": {
+      "name": "spaces/general/threads/d88f418c0eb"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/general/messages/d88f418c0eb.d50acd2b181",
+    "sender": {
+      "name": "users/10001",
+      "displayName": "Kavya Nair",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-24T07:23:00Z",
+    "text": "🎉",
+    "thread": {
+      "name": "spaces/general/threads/d88f418c0eb"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/general/messages/d88f418c0eb.78fa01d2e7e",
+    "sender": {
+      "name": "users/10004",
+      "displayName": "Rohan Das",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-07-24T07:26:00Z",
+    "text": "Biryani please",
+    "thread": {
+      "name": "spaces/general/threads/d88f418c0eb"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/41fd3600317.f6943448ee0",
+    "sender": {
+      "name": "users/10001",
+      "displayName": "Kavya Nair",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-03T06:50:00Z",
+    "text": "Do we have a staging login for testing?",
+    "thread": {
+      "name": "spaces/eng/threads/41fd3600317"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/41fd3600317.2a771a24f54",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-03T06:53:00Z",
+    "text": "Use test@tiffinbox.example, OTP 000000 on staging.",
+    "thread": {
+      "name": "spaces/eng/threads/41fd3600317"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/rupeerail-shared/messages/1d35b3fb83f.0348ce15ee8",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-03T10:30:00Z",
+    "text": "Hi Vikram, we see payment webhooks arriving late around your deploy windows. Is that expected?",
+    "thread": {
+      "name": "spaces/rupeerail-shared/threads/1d35b3fb83f"
+    },
+    "space": {
+      "name": "spaces/rupeerail-shared"
+    }
+  },
+  {
+    "name": "spaces/rupeerail-shared/messages/1d35b3fb83f.47b1627a98f",
+    "sender": {
+      "name": "users/29001",
+      "displayName": "Vikram (RupeeRail)",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-03T11:15:00Z",
+    "text": "Yes, during our deploys webhook delivery pauses for up to about 5 minutes, then everything queued is delivered. We retry delivery for 1 hour.",
+    "thread": {
+      "name": "spaces/rupeerail-shared/threads/1d35b3fb83f"
+    },
+    "space": {
+      "name": "spaces/rupeerail-shared"
+    }
+  },
+  {
+    "name": "spaces/payments/messages/d0c2be525a4.3d8a63ca02d",
+    "sender": {
+      "name": "users/app",
+      "displayName": "RupeeRail Status",
+      "type": "BOT"
+    },
+    "createTime": "2026-08-04T08:25:00Z",
+    "text": "Scheduled maintenance: RupeeRail API deploy 14:00-14:10 IST. Webhook delivery may be delayed.",
+    "thread": {
+      "name": "spaces/payments/threads/d0c2be525a4"
+    },
+    "space": {
+      "name": "spaces/payments"
+    }
+  },
+  {
+    "name": "spaces/payments/messages/d0c2be525a4.ca251fd74b3",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-04T08:52:00Z",
+    "text": "12 orders flipped to payment_failed between 14:02 and 14:06 even though the customers were charged.",
+    "thread": {
+      "name": "spaces/payments/threads/d0c2be525a4"
+    },
+    "space": {
+      "name": "spaces/payments"
+    }
+  },
+  {
+    "name": "spaces/payments/messages/d0c2be525a4.da1a4e53083",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-04T09:10:00Z",
+    "text": "Found it. Our retry policy is 3 attempts at 30s, 60s and 120s, so we give up after 3.5 minutes. RupeeRail confirmed their webhooks pause ~5 min during deploys. Moving to 7 retries with exponential backoff, which covers about 13 minutes. Tracking in PAY-88.",
+    "thread": {
+      "name": "spaces/payments/threads/d0c2be525a4"
+    },
+    "space": {
+      "name": "spaces/payments"
+    }
+  },
+  {
+    "name": "spaces/payments/messages/d0c2be525a4.37703382259",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-04T09:11:00Z",
+    "text": "Re-synced the 12 orders by hand from the RupeeRail dashboard.",
+    "thread": {
+      "name": "spaces/payments/threads/d0c2be525a4"
+    },
+    "space": {
+      "name": "spaces/payments"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/ca06a924c2d.8fbc5ff4b20",
+    "sender": {
+      "name": "users/10001",
+      "displayName": "Kavya Nair",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-10T05:35:00Z",
+    "text": "Storybook is live on staging now.",
+    "thread": {
+      "name": "spaces/eng/threads/ca06a924c2d"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/ca06a924c2d.62fcff77ca9",
+    "sender": {
+      "name": "users/10004",
+      "displayName": "Rohan Das",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-10T05:38:00Z",
+    "text": "Nice",
+    "thread": {
+      "name": "spaces/eng/threads/ca06a924c2d"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/infra/messages/2ea76b9ec3e.7ca5989f63e",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-13T07:35:00Z",
+    "text": "Upgraded the k8s cluster to 1.33 on staging.",
+    "thread": {
+      "name": "spaces/infra/threads/2ea76b9ec3e"
+    },
+    "space": {
+      "name": "spaces/infra"
+    }
+  },
+  {
+    "name": "spaces/dm-arjun-priya/messages/d2d254d0ae9.ea3bc346193",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-14T08:05:00Z",
+    "text": "Coffee run, want anything?",
+    "thread": {
+      "name": "spaces/dm-arjun-priya/threads/d2d254d0ae9"
+    },
+    "space": {
+      "name": "spaces/dm-arjun-priya"
+    }
+  },
+  {
+    "name": "spaces/dm-arjun-priya/messages/d2d254d0ae9.8350cf48d6c",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-14T08:08:00Z",
+    "text": "Cold coffee pls",
+    "thread": {
+      "name": "spaces/dm-arjun-priya/threads/d2d254d0ae9"
+    },
+    "space": {
+      "name": "spaces/dm-arjun-priya"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/b20d1c2d9b2.216386767b0",
+    "sender": {
+      "name": "users/10001",
+      "displayName": "Kavya Nair",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-18T07:00:00Z",
+    "text": "Builds failed 4 times today with missing modules, then passed on retry. Is CI flaky?",
+    "thread": {
+      "name": "spaces/eng/threads/b20d1c2d9b2"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/b20d1c2d9b2.06e65db4391",
+    "sender": {
+      "name": "users/10004",
+      "displayName": "Rohan Das",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-18T07:10:00Z",
+    "text": "Same on my ml PR this morning.",
+    "thread": {
+      "name": "spaces/eng/threads/b20d1c2d9b2"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/b20d1c2d9b2.acd404ca277",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-18T07:25:00Z",
+    "text": "Probably the node_modules cache being restored from an older lockfile. Looking.",
+    "thread": {
+      "name": "spaces/eng/threads/b20d1c2d9b2"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/eng/messages/df8c754bc9f.8a9e9b50543",
+    "sender": {
+      "name": "users/10004",
+      "displayName": "Rohan Das",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-20T12:20:00Z",
+    "text": "Model training box is free tonight if anyone needs a GPU.",
+    "thread": {
+      "name": "spaces/eng/threads/df8c754bc9f"
+    },
+    "space": {
+      "name": "spaces/eng"
+    }
+  },
+  {
+    "name": "spaces/infra/messages/84cc0678d46.de190f84ce3",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-26T09:40:00Z",
+    "text": "Rotated the RupeeRail API key on staging per the quarterly checklist. Charges work but no webhooks are being processed?",
+    "thread": {
+      "name": "spaces/infra/threads/84cc0678d46"
+    },
+    "space": {
+      "name": "spaces/infra"
+    }
+  },
+  {
+    "name": "spaces/infra/messages/84cc0678d46.64dafa91854",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-26T09:52:00Z",
+    "text": "Signature check fails on every webhook. It's buried in their docs: rotating the API key also rotates the webhook signing secret. We still have the old WEBHOOK_SECRET in the k8s secret, so webhooks.py rejects everything and only logs at debug. On prod every payment confirmation would silently fail.",
+    "thread": {
+      "name": "spaces/infra/threads/84cc0678d46"
+    },
+    "space": {
+      "name": "spaces/infra"
+    }
+  },
+  {
+    "name": "spaces/infra/messages/84cc0678d46.9ca20387fd6",
+    "sender": {
+      "name": "users/10003",
+      "displayName": "Priya Iyer",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-26T10:00:00Z",
+    "text": "Yikes. I'll make rotate_secrets.sh update both in one step and refuse to finish until a test webhook verifies.",
+    "thread": {
+      "name": "spaces/infra/threads/84cc0678d46"
+    },
+    "space": {
+      "name": "spaces/infra"
+    }
+  },
+  {
+    "name": "spaces/infra/messages/84cc0678d46.151c4a6d804",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-08-26T10:02:00Z",
+    "text": "And let's never rotate one without the other.",
+    "thread": {
+      "name": "spaces/infra/threads/84cc0678d46"
+    },
+    "space": {
+      "name": "spaces/infra"
+    }
+  },
+  {
+    "name": "spaces/general/messages/52ab8db8e8a.56fcbe960f9",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-09-15T12:30:00Z",
+    "text": "Team: Arjun and Priya have resigned; their last day is Sep 30. Meera joins backend on Sep 22.",
+    "thread": {
+      "name": "spaces/general/threads/52ab8db8e8a"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/general/messages/52ab8db8e8a.d9d0e789482",
+    "sender": {
+      "name": "users/10001",
+      "displayName": "Kavya Nair",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-09-15T12:35:00Z",
+    "text": "Going to miss you both!",
+    "thread": {
+      "name": "spaces/general/threads/52ab8db8e8a"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/general/messages/52ab8db8e8a.027658398de",
+    "sender": {
+      "name": "users/10002",
+      "displayName": "Arjun Mehta",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-09-15T12:42:00Z",
+    "text": "Happy to do KT with Meera in her first week.",
+    "thread": {
+      "name": "spaces/general/threads/52ab8db8e8a"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/general/messages/9ef8cbe0d50.b3c25c446d6",
+    "sender": {
+      "name": "users/10005",
+      "displayName": "Neha Kapoor",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-09-22T04:30:00Z",
+    "text": "Welcome Meera! She takes over payments, orders and auth from Arjun.",
+    "thread": {
+      "name": "spaces/general/threads/9ef8cbe0d50"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  },
+  {
+    "name": "spaces/general/messages/9ef8cbe0d50.01567463430",
+    "sender": {
+      "name": "users/10006",
+      "displayName": "Meera Joshi",
+      "type": "HUMAN"
+    },
+    "createTime": "2026-09-22T04:34:00Z",
+    "text": "Thanks all, excited to be here.",
+    "thread": {
+      "name": "spaces/general/threads/9ef8cbe0d50"
+    },
+    "space": {
+      "name": "spaces/general"
+    }
+  }
+]

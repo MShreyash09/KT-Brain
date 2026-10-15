@@ -1,0 +1,90 @@
+{
+  "files": [
+    {
+      "path": "web/checkout/CheckoutPage.tsx",
+      "service": "web"
+    },
+    {
+      "path": "web/menu/MenuGrid.tsx",
+      "service": "web"
+    },
+    {
+      "path": "web/lib/api.ts",
+      "service": "web"
+    },
+    {
+      "path": "api/payments/retry.py",
+      "service": "api"
+    },
+    {
+      "path": "api/payments/webhooks.py",
+      "service": "api"
+    },
+    {
+      "path": "api/orders/service.py",
+      "service": "api"
+    },
+    {
+      "path": "api/auth/tokens.py",
+      "service": "api"
+    },
+    {
+      "path": "api/subscriptions/billing.py",
+      "service": "api"
+    },
+    {
+      "path": "api/recommend/endpoint.py",
+      "service": "api"
+    },
+    {
+      "path": "infra/terraform/main.tf",
+      "service": "infra"
+    },
+    {
+      "path": "infra/k8s/api-deploy.yaml",
+      "service": "infra"
+    },
+    {
+      "path": "infra/backup/db_backup.yaml",
+      "service": "infra"
+    },
+    {
+      "path": ".github/workflows/deploy.yml",
+      "service": "infra"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "service": "infra"
+    },
+    {
+      "path": "infra/scripts/rotate_secrets.sh",
+      "service": "infra"
+    },
+    {
+      "path": "ml/recommend/model.py",
+      "service": "ml"
+    },
+    {
+      "path": "ml/recommend/features.py",
+      "service": "ml"
+    },
+    {
+      "path": "ml/eta/predict.py",
+      "service": "ml"
+    }
+  ],
+  "service_depends_on": [
+    {
+      "service": "web",
+      "depends_on": "api"
+    },
+    {
+      "service": "api",
+      "depends_on": "infra"
+    },
+    {
+      "service": "ml",
+      "depends_on": "api"
+    }
+  ]
+}

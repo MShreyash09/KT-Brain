@@ -1,0 +1,1265 @@
+[
+  {
+    "number": 101,
+    "title": "payments: retry failed charges",
+    "body": "Retries failed charges: 3 attempts at 30s, 60s and 120s (RupeeRail quickstart default). After the last attempt the order goes to payment_failed.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-06T06:00:00Z",
+    "merged_at": "2026-04-06T11:20:00Z",
+    "head": {
+      "ref": "payments-retry-failed-charges"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "3e880103626e28432c58e42fdbbc67a87b1de099",
+      "9b0c00ffd34501c08985e616ae35a8bb9db833e7"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 102,
+    "title": "subscriptions: billing cycle and proration",
+    "body": "Implements the PRD billing rules: charge on day 1 of each cycle; paused days are prorated as credit.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-08T09:30:00Z",
+    "merged_at": "2026-04-08T14:50:00Z",
+    "head": {
+      "ref": "subscriptions-billing-cycle-and-proratio"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "78a67f75907f067abbdd4ab05262b5a7619d35fd",
+      "1bcaa889785291986763cfac9f383f5d8b19d30a"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 103,
+    "title": "deploy: GitHub Actions to k8s",
+    "body": "First deploy pipeline. On merge to main it builds the image and rolls out to all pods at once. Good enough while we are small.",
+    "user": {
+      "login": "priya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-10T05:00:00Z",
+    "merged_at": "2026-04-10T11:00:00Z",
+    "head": {
+      "ref": "deploy-github-actions-to-k8s"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "27dcd0f1449f1318fadc9745c50a007279170903",
+      "dadaf7c9cf0b9c78fbb83d97ce6cd28c9c52e931",
+      "f425c0b4d8a423d5b27ba37dbe77e535d10ff1ca"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 104,
+    "title": "terraform: base infra (VPC, RDS, Redis)",
+    "body": "VPC, Postgres on RDS, Redis for sessions. Applied from my machine for now.",
+    "user": {
+      "login": "priya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-13T06:30:00Z",
+    "merged_at": "2026-04-13T11:50:00Z",
+    "head": {
+      "ref": "terraform-base-infra-vpc-rds-redis"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "62398c5d38d22f0102f58695fe6017b211f0954c",
+      "91f7136f4d911f7f5d799439992efe6973f9821d"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 105,
+    "title": "backup: nightly database dump",
+    "body": "CronJob runs a nightly pg_dump at 01:00 UTC to S3, kept for 7 days.",
+    "user": {
+      "login": "priya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-15T10:30:00Z",
+    "merged_at": "2026-04-15T15:10:00Z",
+    "head": {
+      "ref": "backup-nightly-database-dump"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "83f47b62b1fb1354c878f5eda29a07bf68471253"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 106,
+    "title": "scripts: secrets rotation helper",
+    "body": "Rotates the RupeeRail API key and the DB password in the k8s secret. Run quarterly.",
+    "user": {
+      "login": "priya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-16T05:30:00Z",
+    "merged_at": "2026-04-16T10:10:00Z",
+    "head": {
+      "ref": "scripts-secrets-rotation-helper"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "18dd4c5e9fd60734fddc847436d87f6761b2bbdf"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 107,
+    "title": "web: checkout page v1",
+    "body": "Checkout with saved address and UPI/card via RupeeRail.",
+    "user": {
+      "login": "kavya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-17T04:30:00Z",
+    "merged_at": "2026-04-17T09:50:00Z",
+    "head": {
+      "ref": "web-checkout-page-v1"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "104867a186b727467c6f2d81d091ba8b3bb0224c",
+      "b135216d9e59300c326a2e40b1634b56987d7cb3"
+    ],
+    "reviews": [
+      {
+        "id": 795630839,
+        "user": {
+          "login": "arjun-tb"
+        },
+        "state": "APPROVED",
+        "body": "API calls match the orders contract. LGTM.",
+        "submitted_at": "2026-04-17T06:20:00Z"
+      }
+    ]
+  },
+  {
+    "number": 108,
+    "title": "recommend: v1 model",
+    "body": "Popularity + cuisine affinity model. Features include price and price_bucket.",
+    "user": {
+      "login": "rohan-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-20T08:30:00Z",
+    "merged_at": "2026-04-20T13:50:00Z",
+    "head": {
+      "ref": "recommend-v1-model"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "fb8bf2ec4895dd66ed91b196e487c4c4b45df5d8",
+      "857bee1b834ba15ce3e02008ba68522f30c06182"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 109,
+    "title": "api: /recommend endpoint",
+    "body": "Serves the v1 model behind the API.",
+    "user": {
+      "login": "rohan-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-21T06:30:00Z",
+    "merged_at": "2026-04-21T11:10:00Z",
+    "head": {
+      "ref": "api-recommend-endpoint"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "50876fde782422588167f0750efba37b06d1c230"
+    ],
+    "reviews": [
+      {
+        "id": 2971005582,
+        "user": {
+          "login": "arjun-tb"
+        },
+        "state": "APPROVED",
+        "body": "Endpoint looks fine; added a timeout comment.",
+        "submitted_at": "2026-04-21T07:40:00Z"
+      }
+    ]
+  },
+  {
+    "number": 110,
+    "title": "orders: create and list orders",
+    "body": "Order service with cart -> order conversion.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-22T05:30:00Z",
+    "merged_at": "2026-04-22T10:50:00Z",
+    "head": {
+      "ref": "orders-create-and-list-orders"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "146c88e97b26ed8df625b46665562df280974517",
+      "d59b499079d11c4bd60313a9355a37702b32bc39"
+    ],
+    "reviews": [
+      {
+        "id": 2822637042,
+        "user": {
+          "login": "rohan-tb"
+        },
+        "state": "APPROVED",
+        "body": "Works with the ETA call. LGTM.",
+        "submitted_at": "2026-04-22T07:20:00Z"
+      }
+    ]
+  },
+  {
+    "number": 111,
+    "title": "ci: lint and tests on every PR",
+    "body": "Runs ruff, pytest and the web build on PRs.",
+    "user": {
+      "login": "priya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-24T09:30:00Z",
+    "merged_at": "2026-04-24T14:10:00Z",
+    "head": {
+      "ref": "ci-lint-and-tests-on-every-pr"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "fe449bc63ee47f0bff6fcc4e50e96375319f8bc6"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 112,
+    "title": "eta: delivery time model v1",
+    "body": "Gradient-boosted ETA model served from the API.",
+    "user": {
+      "login": "rohan-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-28T06:30:00Z",
+    "merged_at": "2026-04-28T11:10:00Z",
+    "head": {
+      "ref": "eta-delivery-time-model-v1"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "0a1d8960bcb7a5130021d4c3627188db1828e992"
+    ],
+    "reviews": [
+      {
+        "id": 4045711234,
+        "user": {
+          "login": "arjun-tb"
+        },
+        "state": "APPROVED",
+        "body": "Call site in orders looks right.",
+        "submitted_at": "2026-04-28T07:40:00Z"
+      }
+    ]
+  },
+  {
+    "number": 113,
+    "title": "checkout: disable Pay after first click",
+    "body": "Fixes WEB-14. We disable the Pay button after the first click and show a spinner until the API answers.",
+    "user": {
+      "login": "kavya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-05-05T04:30:00Z",
+    "merged_at": "2026-05-05T09:10:00Z",
+    "head": {
+      "ref": "checkout-disable-pay-after-first-click"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "3f5012a973b68263069de550987d028224a1c85b"
+    ],
+    "reviews": [
+      {
+        "id": 390170277,
+        "user": {
+          "login": "arjun-tb"
+        },
+        "state": "APPROVED",
+        "body": "Backend also rejects a second charge for the same order within 60s, so this is belt and braces.",
+        "submitted_at": "2026-05-05T05:40:00Z"
+      }
+    ]
+  },
+  {
+    "number": 114,
+    "title": "deploy: canary 10% for 30 minutes with auto-rollback",
+    "body": "After INC-1. Deploys now go to 10% of pods for 30 minutes; if 5xx > 2% we roll back automatically. See docs/research/canary-deploys.md.",
+    "user": {
+      "login": "priya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-05-19T05:30:00Z",
+    "merged_at": "2026-05-19T10:50:00Z",
+    "head": {
+      "ref": "deploy-canary-10-for-30-minutes-with-aut"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "6c666744d9d0fc30e44fc836aca2b5262119d502",
+      "50bc9e2a47b51a34b87e6a3aaa2c9316bee70295"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 115,
+    "title": "orders: optimistic locking on cart checkout",
+    "body": "Fixes ORD-31. We use optimistic locking on a version column: the second writer gets a conflict and retries. Cheaper than row locks at lunch peak.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-05-28T05:30:00Z",
+    "merged_at": "2026-05-28T10:50:00Z",
+    "head": {
+      "ref": "orders-optimistic-locking-on-cart-checko"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "59a7ae66dd1d15003499dd7868c0d1c2796fe5d0",
+      "72a4856c903b36676d04b4f137a562643d5652c7"
+    ],
+    "reviews": [
+      {
+        "id": 3131524180,
+        "user": {
+          "login": "rohan-tb"
+        },
+        "state": "COMMENTED",
+        "body": "Should the ETA call move after the commit so we don't compute it twice?",
+        "submitted_at": "2026-05-28T07:20:00Z"
+      },
+      {
+        "id": 3571639321,
+        "user": {
+          "login": "rohan-tb"
+        },
+        "state": "APPROVED",
+        "body": "LGTM after the move.",
+        "submitted_at": "2026-05-28T07:40:00Z"
+      }
+    ]
+  },
+  {
+    "number": 116,
+    "title": "auth: 15 minute access tokens with refresh",
+    "body": "Fixes SEC-4. Access tokens now expire after 15 minutes; the web app refreshes them silently.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-06-02T05:30:00Z",
+    "merged_at": "2026-06-02T10:50:00Z",
+    "head": {
+      "ref": "auth-15-minute-access-tokens-with-refres"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "37d58e708e02b9d422e364798f88065b09d010de",
+      "bc60da382b4305c3bda556152c52cda3daa32beb"
+    ],
+    "reviews": [
+      {
+        "id": 3813682266,
+        "user": {
+          "login": "kavya-tb"
+        },
+        "state": "APPROVED",
+        "body": "Tested the silent refresh in the web app. Works.",
+        "submitted_at": "2026-06-02T07:20:00Z"
+      }
+    ]
+  },
+  {
+    "number": 117,
+    "title": "k8s: raise api memory limit to 512Mi",
+    "body": "Orders spikes at lunch were OOM-killing pods.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-06-04T09:30:00Z",
+    "merged_at": "2026-06-04T14:10:00Z",
+    "head": {
+      "ref": "k8s-raise-api-memory-limit-to-512mi"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "35ed501340f2d6c95d9cfb150851767d1f3778cf"
+    ],
+    "reviews": [
+      {
+        "id": 2508166690,
+        "user": {
+          "login": "priya-tb"
+        },
+        "state": "APPROVED",
+        "body": "Fine. Requests 256Mi, limits 512Mi.",
+        "submitted_at": "2026-06-04T10:40:00Z"
+      }
+    ]
+  },
+  {
+    "number": 118,
+    "title": "webhooks: dedupe on event_id",
+    "body": "Fixes PAY-61. We store each RupeeRail event_id and dedupe on event_id before doing anything, so a re-sent webhook is a no-op.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-06-11T05:30:00Z",
+    "merged_at": "2026-06-11T10:50:00Z",
+    "head": {
+      "ref": "webhooks-dedupe-on-event-id"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "af5e925046302be33c8765901668267051aef2b6",
+      "963338fcb6004ccd89080394bc6cefc3b228f37e"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 119,
+    "title": "backup: 3 AM IST dumps, failure alert, quarterly restore test",
+    "body": "After INC-2. Dumps run at 3 AM IST, the job fails loudly on auth errors or small dumps, and a restore test every quarter restores into a scratch DB and checks row counts.",
+    "user": {
+      "login": "priya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-06-22T05:30:00Z",
+    "merged_at": "2026-06-22T11:30:00Z",
+    "head": {
+      "ref": "backup-3-am-ist-dumps-failure-alert-quar"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "2cd79b9327286b96852e44dd5aab69a3c9bcbccd",
+      "7bfc57dd1abde18bc314022dec8bdcd0693f1a41",
+      "6e3fbe26bfb1a8e1b553c66e67810107e37e54bd"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 120,
+    "title": "recommend: remove price features",
+    "body": "REC-9. Ranking no longer uses price. NDCG 0.41 -> 0.39.",
+    "user": {
+      "login": "rohan-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-06-27T04:30:00Z",
+    "merged_at": "2026-06-27T09:50:00Z",
+    "head": {
+      "ref": "recommend-remove-price-features"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "1083574a9044c527317e42296834b4a2eab22291",
+      "29f5bb01ca92f7ca531b7b720884bd149de320cb"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 121,
+    "title": "terraform: remote state with locking",
+    "body": "State moves to S3 with a DynamoDB lock. Applies only run from CI on merge.",
+    "user": {
+      "login": "priya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-07-01T05:30:00Z",
+    "merged_at": "2026-07-01T10:50:00Z",
+    "head": {
+      "ref": "terraform-remote-state-with-locking"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "42f7fd412b85de635ac4466b838bf3566794bd5f",
+      "46cff3b3f9c4fddd00b9c88d30d4e727eb845a61"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 122,
+    "title": "subscriptions: pause up to 14 days",
+    "body": "Implements the PRD update: pauses are capped at 14 days. Validation in billing.py; the web date picker is limited too.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-07-22T05:30:00Z",
+    "merged_at": "2026-07-22T10:10:00Z",
+    "head": {
+      "ref": "subscriptions-pause-up-to-14-days"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "d2b10290c61cba0fc61705045b77fe87afddb458"
+    ],
+    "reviews": [
+      {
+        "id": 2123770973,
+        "user": {
+          "login": "kavya-tb"
+        },
+        "state": "APPROVED",
+        "body": "Matches the date picker. LGTM.",
+        "submitted_at": "2026-07-22T06:40:00Z"
+      }
+    ]
+  },
+  {
+    "number": 123,
+    "title": "eta: static fallback on model timeout",
+    "body": "At lunch peak the ETA model sometimes takes over a second. If it takes over 300 ms we fall back to a static 40 minutes so checkout never waits.",
+    "user": {
+      "login": "rohan-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-07-24T09:30:00Z",
+    "merged_at": "2026-07-24T14:50:00Z",
+    "head": {
+      "ref": "eta-static-fallback-on-model-timeout"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "cbe63fc811d96894fdfa62cd735e663404ab7fcf",
+      "fac0160fad2b41597fc260bac97fb05a0404b267"
+    ],
+    "reviews": [
+      {
+        "id": 2605041252,
+        "user": {
+          "login": "arjun-tb"
+        },
+        "state": "APPROVED",
+        "body": "Orders already handles a missing ETA, so the fallback is safe.",
+        "submitted_at": "2026-07-24T11:20:00Z"
+      }
+    ]
+  },
+  {
+    "number": 124,
+    "title": "payments: 7 retries with exponential backoff",
+    "body": "Fixes PAY-88. RupeeRail pauses webhook delivery for up to ~5 minutes during deploys and our 3 retries gave up after 3.5 minutes. Now 7 retries, 15 s base, 180 s cap, jitter: about 13 minutes of cover.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-08-05T06:30:00Z",
+    "merged_at": "2026-08-05T11:50:00Z",
+    "head": {
+      "ref": "payments-7-retries-with-exponential-back"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "886780a41d3af09f79a4405c0953147c42c20929",
+      "e4e5e7410630f1431ac052b936cb7e6bcbc5a2be"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 125,
+    "title": "ci: frontend lint and type-check step",
+    "body": "Adds eslint and tsc to the CI workflow for web/.",
+    "user": {
+      "login": "kavya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-08-12T05:30:00Z",
+    "merged_at": "2026-08-12T10:10:00Z",
+    "head": {
+      "ref": "ci-frontend-lint-and-type-check-step"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "60d7a2f50921b8c96d6c2749f530bfab277a400f"
+    ],
+    "reviews": [
+      {
+        "id": 4055458579,
+        "user": {
+          "login": "priya-tb"
+        },
+        "state": "APPROVED",
+        "body": "Put it in its own job so it runs in parallel. LGTM.",
+        "submitted_at": "2026-08-12T06:40:00Z"
+      }
+    ]
+  },
+  {
+    "number": 126,
+    "title": "ci: cache key includes lockfile hash",
+    "body": "Fixes the flaky builds: the cache key includes the hash of package-lock.json.",
+    "user": {
+      "login": "priya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-08-20T05:30:00Z",
+    "merged_at": "2026-08-20T10:10:00Z",
+    "head": {
+      "ref": "ci-cache-key-includes-lockfile-hash"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "626d82df8d41017332e7e0f5bc677a634885306d"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 127,
+    "title": "scripts: rotate gateway key and webhook secret together",
+    "body": "rotate_secrets.sh now updates RUPEERAIL_API_KEY and WEBHOOK_SECRET in one step and sends a test webhook before it finishes. Rotating the API key also rotates the webhook signing secret on RupeeRail's side.",
+    "user": {
+      "login": "priya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-08-27T05:30:00Z",
+    "merged_at": "2026-08-27T10:50:00Z",
+    "head": {
+      "ref": "scripts-rotate-gateway-key-and-webhook-s"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "a319131f2f0ce5b679840e92ca24990c0a9395a4",
+      "181d68187264fffbea0ec014a48a9b68480c59c8"
+    ],
+    "reviews": [
+      {
+        "id": 1911850820,
+        "user": {
+          "login": "arjun-tb"
+        },
+        "state": "APPROVED",
+        "body": "Tested on staging: rotation + test webhook passes.",
+        "submitted_at": "2026-08-27T07:20:00Z"
+      }
+    ]
+  },
+  {
+    "number": 128,
+    "title": "payments: retry count from env (default 7)",
+    "body": "First PR. RETRIES stays 7 by default (see PAY-88: gateway deploy gaps) but can be set per environment.",
+    "user": {
+      "login": "meera-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-09-25T05:30:00Z",
+    "merged_at": "2026-09-25T10:50:00Z",
+    "head": {
+      "ref": "payments-retry-count-from-env-default-7"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "1c0966b193fa3e1617616681e8170710852a6cf6",
+      "24960e117d301a950e1ff8f0ee510f99f74cfbb2"
+    ],
+    "reviews": [
+      {
+        "id": 125876406,
+        "user": {
+          "login": "arjun-tb"
+        },
+        "state": "APPROVED",
+        "body": "Keep the default at 7. LGTM.",
+        "submitted_at": "2026-09-25T07:20:00Z"
+      }
+    ]
+  },
+  {
+    "number": 129,
+    "title": "webhooks: log signature failures at error level",
+    "body": "Signature failures were only logged at debug, which hid the staging key-rotation issue. Now error + metric.",
+    "user": {
+      "login": "meera-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-09-28T05:30:00Z",
+    "merged_at": "2026-09-28T10:10:00Z",
+    "head": {
+      "ref": "webhooks-log-signature-failures-at-error"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "fa815bf3f5194434d2f125e15f562de7c7574303"
+    ],
+    "reviews": [
+      {
+        "id": 877803633,
+        "user": {
+          "login": "arjun-tb"
+        },
+        "state": "APPROVED",
+        "body": "Good catch.",
+        "submitted_at": "2026-09-28T06:40:00Z"
+      }
+    ]
+  },
+  {
+    "number": 130,
+    "title": "menu: lazy-load dish images",
+    "body": "Menu: lazy-load dish images.",
+    "user": {
+      "login": "kavya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-08-21T10:05:00Z",
+    "merged_at": "2026-08-21T14:45:00Z",
+    "head": {
+      "ref": "menu-lazy-load-dish-images"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "b38fc353f300344412a8cf466528f26153ecc034"
+    ],
+    "reviews": [
+      {
+        "id": 330323942,
+        "user": {
+          "login": "rohan-tb"
+        },
+        "state": "APPROVED",
+        "body": "LGTM, one nit inline.",
+        "submitted_at": "2026-08-21T11:15:00Z"
+      }
+    ]
+  },
+  {
+    "number": 131,
+    "title": "menu: veg / non-veg filter",
+    "body": "Menu: veg / non-veg filter.",
+    "user": {
+      "login": "kavya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-24T09:20:00Z",
+    "merged_at": "2026-04-24T14:00:00Z",
+    "head": {
+      "ref": "menu-veg-non-veg-filter"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "cfdbaee6b61d12030a6edf7019cf75de49fb612d"
+    ],
+    "reviews": [
+      {
+        "id": 1938469883,
+        "user": {
+          "login": "rohan-tb"
+        },
+        "state": "APPROVED",
+        "body": "LGTM",
+        "submitted_at": "2026-04-24T10:30:00Z"
+      }
+    ]
+  },
+  {
+    "number": 132,
+    "title": "api client: toast on network errors",
+    "body": "Api client: toast on network errors.",
+    "user": {
+      "login": "kavya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-06-19T12:05:00Z",
+    "merged_at": "2026-06-19T16:45:00Z",
+    "head": {
+      "ref": "api-client-toast-on-network-errors"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "959e993b8ba8ec305965e4d0d0ec3456394922fe"
+    ],
+    "reviews": [
+      {
+        "id": 2487373216,
+        "user": {
+          "login": "arjun-tb"
+        },
+        "state": "APPROVED",
+        "body": "Nice, ship it.",
+        "submitted_at": "2026-06-19T13:15:00Z"
+      }
+    ]
+  },
+  {
+    "number": 133,
+    "title": "checkout: address autocomplete",
+    "body": "Checkout: address autocomplete.",
+    "user": {
+      "login": "kavya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-07-28T09:50:00Z",
+    "merged_at": "2026-07-28T14:30:00Z",
+    "head": {
+      "ref": "checkout-address-autocomplete"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "35733e093030cebafe38d92a93916e425e28b0da"
+    ],
+    "reviews": [
+      {
+        "id": 1858692670,
+        "user": {
+          "login": "arjun-tb"
+        },
+        "state": "APPROVED",
+        "body": "LGTM, one nit inline.",
+        "submitted_at": "2026-07-28T11:00:00Z"
+      }
+    ]
+  },
+  {
+    "number": 134,
+    "title": "menu: skeleton loaders",
+    "body": "Menu: skeleton loaders.",
+    "user": {
+      "login": "kavya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-05-04T08:20:00Z",
+    "merged_at": "2026-05-04T13:40:00Z",
+    "head": {
+      "ref": "menu-skeleton-loaders"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "55aed2ac7b126b0dc0c700333ffb39ce8723f5fc",
+      "2883bfc8196296555dfdf52c491d486ca7f7f67a"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 135,
+    "title": "orders: filter by status",
+    "body": "Orders: filter by status.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-08-19T08:50:00Z",
+    "merged_at": "2026-08-19T13:30:00Z",
+    "head": {
+      "ref": "orders-filter-by-status"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "cb169c54bf091291d44ea3229b1000de19d5130f"
+    ],
+    "reviews": [
+      {
+        "id": 415656882,
+        "user": {
+          "login": "rohan-tb"
+        },
+        "state": "APPROVED",
+        "body": "Nice, ship it.",
+        "submitted_at": "2026-08-19T10:00:00Z"
+      }
+    ]
+  },
+  {
+    "number": 136,
+    "title": "orders: 10 minute cancel window",
+    "body": "Orders: 10 minute cancel window.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-07-07T07:50:00Z",
+    "merged_at": "2026-07-07T13:10:00Z",
+    "head": {
+      "ref": "orders-10-minute-cancel-window"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "abf3ab9c470a68d916aea195f7d310e5a2336962",
+      "14e4405843e80bfa85b65f7ed32535e75cc3faa3"
+    ],
+    "reviews": [
+      {
+        "id": 3997415067,
+        "user": {
+          "login": "rohan-tb"
+        },
+        "state": "APPROVED",
+        "body": "Looks good.",
+        "submitted_at": "2026-07-07T09:40:00Z"
+      }
+    ]
+  },
+  {
+    "number": 137,
+    "title": "billing: invoice emails",
+    "body": "Billing: invoice emails.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-08-03T07:05:00Z",
+    "merged_at": "2026-08-03T12:25:00Z",
+    "head": {
+      "ref": "billing-invoice-emails"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "93ac9aed71960b71108f06a6a684d4511c7ec9fe",
+      "156d3ed8b9a64bf6cf80aa7d9df22a50a15b70ca"
+    ],
+    "reviews": [
+      {
+        "id": 3147118204,
+        "user": {
+          "login": "kavya-tb"
+        },
+        "state": "APPROVED",
+        "body": "Looks good.",
+        "submitted_at": "2026-08-03T08:55:00Z"
+      }
+    ]
+  },
+  {
+    "number": 138,
+    "title": "auth: rate-limit login attempts",
+    "body": "Auth: rate-limit login attempts.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-08-10T05:20:00Z",
+    "merged_at": "2026-08-10T10:00:00Z",
+    "head": {
+      "ref": "auth-rate-limit-login-attempts"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "69a26aaeb87b2e39771dcaf1f6bf62915d497222"
+    ],
+    "reviews": [
+      {
+        "id": 3877812481,
+        "user": {
+          "login": "kavya-tb"
+        },
+        "state": "APPROVED",
+        "body": "LGTM, one nit inline.",
+        "submitted_at": "2026-08-10T06:30:00Z"
+      }
+    ]
+  },
+  {
+    "number": 139,
+    "title": "webhooks: structured logging",
+    "body": "Webhooks: structured logging.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-07-10T06:20:00Z",
+    "merged_at": "2026-07-10T11:00:00Z",
+    "head": {
+      "ref": "webhooks-structured-logging"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "e724c93aa9c03e799ba66d59c2ea1c79040f2e21"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 140,
+    "title": "payments: log attempt number",
+    "body": "Payments: log attempt number.",
+    "user": {
+      "login": "arjun-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-07-22T06:35:00Z",
+    "merged_at": "2026-07-22T11:55:00Z",
+    "head": {
+      "ref": "payments-log-attempt-number"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "44f0caff380e5c36bdcc02ac6743332d3f3913bc",
+      "7409b962369ebe8b94f9c1ef0330a83c3fd07a73"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 141,
+    "title": "recommend: weekly retrain job",
+    "body": "Recommend: weekly retrain job.",
+    "user": {
+      "login": "rohan-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-07-03T04:35:00Z",
+    "merged_at": "2026-07-03T09:15:00Z",
+    "head": {
+      "ref": "recommend-weekly-retrain-job"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "0d474bcc0211b65bc12430a12d4bef5ca41d62ca"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 142,
+    "title": "recommend: cuisine embeddings",
+    "body": "Recommend: cuisine embeddings.",
+    "user": {
+      "login": "rohan-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-09-10T09:05:00Z",
+    "merged_at": "2026-09-10T13:45:00Z",
+    "head": {
+      "ref": "recommend-cuisine-embeddings"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "71b0ad336800657ebbac804610f796a3e85c9e5c"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 143,
+    "title": "recommend: cache endpoint responses",
+    "body": "Recommend: cache endpoint responses.",
+    "user": {
+      "login": "rohan-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-30T12:20:00Z",
+    "merged_at": "2026-04-30T17:40:00Z",
+    "head": {
+      "ref": "recommend-cache-endpoint-responses"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "5c65e1b40928b4d8046cd8c6ec9f24efb7abe69e",
+      "e0388f774ae290f88dfcc03e3b811e08ae936a6a"
+    ],
+    "reviews": [
+      {
+        "id": 3974837373,
+        "user": {
+          "login": "arjun-tb"
+        },
+        "state": "APPROVED",
+        "body": "Nice, ship it.",
+        "submitted_at": "2026-04-30T14:10:00Z"
+      }
+    ]
+  },
+  {
+    "number": 144,
+    "title": "eta: add rain feature",
+    "body": "Eta: add rain feature.",
+    "user": {
+      "login": "rohan-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-05-12T12:35:00Z",
+    "merged_at": "2026-05-12T17:55:00Z",
+    "head": {
+      "ref": "eta-add-rain-feature"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "c167804d4914486b6969b4557b0ed220750b333a",
+      "71a78c96f161f361a1da5365546958b21cdd79bd"
+    ],
+    "reviews": [
+      {
+        "id": 3653282332,
+        "user": {
+          "login": "arjun-tb"
+        },
+        "state": "APPROVED",
+        "body": "Nice, ship it.",
+        "submitted_at": "2026-05-12T14:25:00Z"
+      }
+    ]
+  },
+  {
+    "number": 145,
+    "title": "terraform: tag all resources",
+    "body": "Terraform: tag all resources.",
+    "user": {
+      "login": "priya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-04-07T13:05:00Z",
+    "merged_at": "2026-04-07T17:45:00Z",
+    "head": {
+      "ref": "terraform-tag-all-resources"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "ae4df1ec80ad2dfb4394e0c371baa8d6fe64e7a9"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 146,
+    "title": "backup: keep dumps 30 days",
+    "body": "Backup: keep dumps 30 days.",
+    "user": {
+      "login": "priya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-08-11T09:50:00Z",
+    "merged_at": "2026-08-11T15:10:00Z",
+    "head": {
+      "ref": "backup-keep-dumps-30-days"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "89b04c3eb2b28751ec103f8902aa3e02d9b12a6d",
+      "3ac670d8ec3dfebd08bb64862b21a4aa1e6faffb"
+    ],
+    "reviews": []
+  },
+  {
+    "number": 147,
+    "title": "deploy: post deploy status to chat",
+    "body": "Deploy: post deploy status to chat.",
+    "user": {
+      "login": "priya-tb"
+    },
+    "state": "closed",
+    "created_at": "2026-08-07T09:50:00Z",
+    "merged_at": "2026-08-07T14:30:00Z",
+    "head": {
+      "ref": "deploy-post-deploy-status-to-chat"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "commits": [
+      "50bab0eed01f160ec7048b6c2ffd25b43221ca11"
+    ],
+    "reviews": []
+  }
+]

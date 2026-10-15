@@ -1,0 +1,2224 @@
+[
+  {
+    "sha": "3e880103626e28432c58e42fdbbc67a87b1de099",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-04-06T06:00:00Z"
+      },
+      "message": "payments: add retry loop for failed charges"
+    },
+    "files": [
+      {
+        "filename": "api/payments/retry.py",
+        "status": "modified",
+        "additions": 47,
+        "deletions": 30
+      }
+    ]
+  },
+  {
+    "sha": "9b0c00ffd34501c08985e616ae35a8bb9db833e7",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-04-06T06:40:00Z"
+      },
+      "message": "payments: tests for retry exhaustion"
+    },
+    "files": [
+      {
+        "filename": "api/payments/retry.py",
+        "status": "modified",
+        "additions": 25,
+        "deletions": 12
+      }
+    ]
+  },
+  {
+    "sha": "ae4df1ec80ad2dfb4394e0c371baa8d6fe64e7a9",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-04-07T13:05:00Z"
+      },
+      "message": "terraform: tag all resources"
+    },
+    "files": [
+      {
+        "filename": "infra/terraform/main.tf",
+        "status": "modified",
+        "additions": 17,
+        "deletions": 22
+      }
+    ]
+  },
+  {
+    "sha": "76c4188914405d0b5b01b08989ca24e0ee2a7f89",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-04-08T06:20:00Z"
+      },
+      "message": "run formatter"
+    },
+    "files": [
+      {
+        "filename": ".github/workflows/deploy.yml",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "78a67f75907f067abbdd4ab05262b5a7619d35fd",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-04-08T09:30:00Z"
+      },
+      "message": "subscriptions: billing cycle job"
+    },
+    "files": [
+      {
+        "filename": "api/subscriptions/billing.py",
+        "status": "modified",
+        "additions": 12,
+        "deletions": 2
+      }
+    ]
+  },
+  {
+    "sha": "1bcaa889785291986763cfac9f383f5d8b19d30a",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-04-08T10:10:00Z"
+      },
+      "message": "subscriptions: proration for paused days"
+    },
+    "files": [
+      {
+        "filename": "api/subscriptions/billing.py",
+        "status": "modified",
+        "additions": 74,
+        "deletions": 3
+      }
+    ]
+  },
+  {
+    "sha": "27dcd0f1449f1318fadc9745c50a007279170903",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-04-10T05:00:00Z"
+      },
+      "message": "deploy: build and push image"
+    },
+    "files": [
+      {
+        "filename": ".github/workflows/deploy.yml",
+        "status": "modified",
+        "additions": 52,
+        "deletions": 18
+      }
+    ]
+  },
+  {
+    "sha": "dadaf7c9cf0b9c78fbb83d97ce6cd28c9c52e931",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-04-10T05:40:00Z"
+      },
+      "message": "k8s: api deployment manifest"
+    },
+    "files": [
+      {
+        "filename": "infra/k8s/api-deploy.yaml",
+        "status": "modified",
+        "additions": 13,
+        "deletions": 29
+      }
+    ]
+  },
+  {
+    "sha": "f425c0b4d8a423d5b27ba37dbe77e535d10ff1ca",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-04-10T06:20:00Z"
+      },
+      "message": "deploy: kubectl apply on main"
+    },
+    "files": [
+      {
+        "filename": ".github/workflows/deploy.yml",
+        "status": "modified",
+        "additions": 70,
+        "deletions": 6
+      }
+    ]
+  },
+  {
+    "sha": "62398c5d38d22f0102f58695fe6017b211f0954c",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-04-13T06:30:00Z"
+      },
+      "message": "terraform: vpc and rds"
+    },
+    "files": [
+      {
+        "filename": "infra/terraform/main.tf",
+        "status": "modified",
+        "additions": 10,
+        "deletions": 2
+      }
+    ]
+  },
+  {
+    "sha": "91f7136f4d911f7f5d799439992efe6973f9821d",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-04-13T07:10:00Z"
+      },
+      "message": "terraform: redis"
+    },
+    "files": [
+      {
+        "filename": "infra/terraform/main.tf",
+        "status": "modified",
+        "additions": 61,
+        "deletions": 13
+      }
+    ]
+  },
+  {
+    "sha": "b308a6a044273bb21eb3cdf1ee660d22a0c9df01",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-04-15T07:50:00Z"
+      },
+      "message": "run formatter"
+    },
+    "files": [
+      {
+        "filename": "infra/terraform/main.tf",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "83f47b62b1fb1354c878f5eda29a07bf68471253",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-04-15T10:30:00Z"
+      },
+      "message": "backup: pg_dump cronjob"
+    },
+    "files": [
+      {
+        "filename": "infra/backup/db_backup.yaml",
+        "status": "modified",
+        "additions": 14,
+        "deletions": 7
+      }
+    ]
+  },
+  {
+    "sha": "18dd4c5e9fd60734fddc847436d87f6761b2bbdf",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-04-16T05:30:00Z"
+      },
+      "message": "scripts: rotate_secrets.sh"
+    },
+    "files": [
+      {
+        "filename": "infra/scripts/rotate_secrets.sh",
+        "status": "modified",
+        "additions": 17,
+        "deletions": 17
+      }
+    ]
+  },
+  {
+    "sha": "104867a186b727467c6f2d81d091ba8b3bb0224c",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-04-17T04:30:00Z"
+      },
+      "message": "web: checkout page"
+    },
+    "files": [
+      {
+        "filename": "web/checkout/CheckoutPage.tsx",
+        "status": "modified",
+        "additions": 60,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "b135216d9e59300c326a2e40b1634b56987d7cb3",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-04-17T05:10:00Z"
+      },
+      "message": "web: api client"
+    },
+    "files": [
+      {
+        "filename": "web/lib/api.ts",
+        "status": "modified",
+        "additions": 78,
+        "deletions": 3
+      }
+    ]
+  },
+  {
+    "sha": "fb8bf2ec4895dd66ed91b196e487c4c4b45df5d8",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-04-20T08:30:00Z"
+      },
+      "message": "ml: recommendation model"
+    },
+    "files": [
+      {
+        "filename": "ml/recommend/model.py",
+        "status": "modified",
+        "additions": 34,
+        "deletions": 20
+      }
+    ]
+  },
+  {
+    "sha": "857bee1b834ba15ce3e02008ba68522f30c06182",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-04-20T09:10:00Z"
+      },
+      "message": "ml: feature builder"
+    },
+    "files": [
+      {
+        "filename": "ml/recommend/features.py",
+        "status": "modified",
+        "additions": 80,
+        "deletions": 30
+      }
+    ]
+  },
+  {
+    "sha": "50876fde782422588167f0750efba37b06d1c230",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-04-21T06:30:00Z"
+      },
+      "message": "api: /recommend endpoint"
+    },
+    "files": [
+      {
+        "filename": "api/recommend/endpoint.py",
+        "status": "modified",
+        "additions": 13,
+        "deletions": 18
+      }
+    ]
+  },
+  {
+    "sha": "146c88e97b26ed8df625b46665562df280974517",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-04-22T05:30:00Z"
+      },
+      "message": "orders: service"
+    },
+    "files": [
+      {
+        "filename": "api/orders/service.py",
+        "status": "modified",
+        "additions": 80,
+        "deletions": 12
+      }
+    ]
+  },
+  {
+    "sha": "d59b499079d11c4bd60313a9355a37702b32bc39",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-04-22T06:10:00Z"
+      },
+      "message": "orders: list endpoint"
+    },
+    "files": [
+      {
+        "filename": "api/orders/service.py",
+        "status": "modified",
+        "additions": 12,
+        "deletions": 7
+      }
+    ]
+  },
+  {
+    "sha": "9bff1dcd67c81bc5b21fa608eca4e905a887599c",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-04-22T06:20:00Z"
+      },
+      "message": "fix typo in comment"
+    },
+    "files": [
+      {
+        "filename": "api/auth/tokens.py",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "19cbc776e503237b7008d43bdd36243cec9d9f72",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-04-22T06:50:00Z"
+      },
+      "message": "fix typo in comment"
+    },
+    "files": [
+      {
+        "filename": "api/orders/service.py",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "cfdbaee6b61d12030a6edf7019cf75de49fb612d",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-04-24T09:20:00Z"
+      },
+      "message": "menu: veg / non-veg filter"
+    },
+    "files": [
+      {
+        "filename": "web/menu/MenuGrid.tsx",
+        "status": "modified",
+        "additions": 13,
+        "deletions": 23
+      }
+    ]
+  },
+  {
+    "sha": "fe449bc63ee47f0bff6fcc4e50e96375319f8bc6",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-04-24T09:30:00Z"
+      },
+      "message": "ci: workflow"
+    },
+    "files": [
+      {
+        "filename": ".github/workflows/ci.yml",
+        "status": "modified",
+        "additions": 11,
+        "deletions": 17
+      }
+    ]
+  },
+  {
+    "sha": "8b3b903d7fddf12d86497fc2ca78f8d2f36d4819",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-04-27T08:20:00Z"
+      },
+      "message": "fix typo in comment"
+    },
+    "files": [
+      {
+        "filename": "web/menu/MenuGrid.tsx",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "0a1d8960bcb7a5130021d4c3627188db1828e992",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-04-28T06:30:00Z"
+      },
+      "message": "eta: predict"
+    },
+    "files": [
+      {
+        "filename": "ml/eta/predict.py",
+        "status": "modified",
+        "additions": 23,
+        "deletions": 9
+      }
+    ]
+  },
+  {
+    "sha": "5c65e1b40928b4d8046cd8c6ec9f24efb7abe69e",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-04-30T12:20:00Z"
+      },
+      "message": "recommend: cache endpoint responses"
+    },
+    "files": [
+      {
+        "filename": "api/recommend/endpoint.py",
+        "status": "modified",
+        "additions": 16,
+        "deletions": 4
+      }
+    ]
+  },
+  {
+    "sha": "e0388f774ae290f88dfcc03e3b811e08ae936a6a",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-04-30T13:00:00Z"
+      },
+      "message": "recommend: cache endpoint responses: tests"
+    },
+    "files": [
+      {
+        "filename": "api/recommend/endpoint.py",
+        "status": "modified",
+        "additions": 19,
+        "deletions": 23
+      }
+    ]
+  },
+  {
+    "sha": "55aed2ac7b126b0dc0c700333ffb39ce8723f5fc",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-05-04T08:20:00Z"
+      },
+      "message": "menu: skeleton loaders"
+    },
+    "files": [
+      {
+        "filename": "web/menu/MenuGrid.tsx",
+        "status": "modified",
+        "additions": 69,
+        "deletions": 2
+      }
+    ]
+  },
+  {
+    "sha": "2883bfc8196296555dfdf52c491d486ca7f7f67a",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-05-04T09:00:00Z"
+      },
+      "message": "menu: skeleton loaders: tests"
+    },
+    "files": [
+      {
+        "filename": "web/menu/MenuGrid.tsx",
+        "status": "modified",
+        "additions": 27,
+        "deletions": 14
+      }
+    ]
+  },
+  {
+    "sha": "3f5012a973b68263069de550987d028224a1c85b",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-05-05T04:30:00Z"
+      },
+      "message": "checkout: disable pay button while pending"
+    },
+    "files": [
+      {
+        "filename": "web/checkout/CheckoutPage.tsx",
+        "status": "modified",
+        "additions": 59,
+        "deletions": 4
+      }
+    ]
+  },
+  {
+    "sha": "c167804d4914486b6969b4557b0ed220750b333a",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-05-12T12:35:00Z"
+      },
+      "message": "eta: add rain feature"
+    },
+    "files": [
+      {
+        "filename": "ml/eta/predict.py",
+        "status": "modified",
+        "additions": 24,
+        "deletions": 22
+      }
+    ]
+  },
+  {
+    "sha": "71a78c96f161f361a1da5365546958b21cdd79bd",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-05-12T13:15:00Z"
+      },
+      "message": "eta: add rain feature: tests"
+    },
+    "files": [
+      {
+        "filename": "ml/eta/predict.py",
+        "status": "modified",
+        "additions": 75,
+        "deletions": 29
+      }
+    ]
+  },
+  {
+    "sha": "6c666744d9d0fc30e44fc836aca2b5262119d502",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-05-19T05:30:00Z"
+      },
+      "message": "deploy: canary stage"
+    },
+    "files": [
+      {
+        "filename": ".github/workflows/deploy.yml",
+        "status": "modified",
+        "additions": 75,
+        "deletions": 3
+      }
+    ]
+  },
+  {
+    "sha": "50bc9e2a47b51a34b87e6a3aaa2c9316bee70295",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-05-19T06:10:00Z"
+      },
+      "message": "deploy: error-rate gate and rollback"
+    },
+    "files": [
+      {
+        "filename": ".github/workflows/deploy.yml",
+        "status": "modified",
+        "additions": 79,
+        "deletions": 9
+      }
+    ]
+  },
+  {
+    "sha": "c0e93380d299fd63e924c28c546442d2268ea27a",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-05-25T05:05:00Z"
+      },
+      "message": "fix typo in comment"
+    },
+    "files": [
+      {
+        "filename": "ml/recommend/features.py",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "59a7ae66dd1d15003499dd7868c0d1c2796fe5d0",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-05-28T05:30:00Z"
+      },
+      "message": "orders: add version column"
+    },
+    "files": [
+      {
+        "filename": "api/orders/service.py",
+        "status": "modified",
+        "additions": 77,
+        "deletions": 26
+      }
+    ]
+  },
+  {
+    "sha": "72a4856c903b36676d04b4f137a562643d5652c7",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-05-28T06:10:00Z"
+      },
+      "message": "orders: retry on version conflict"
+    },
+    "files": [
+      {
+        "filename": "api/orders/service.py",
+        "status": "modified",
+        "additions": 29,
+        "deletions": 3
+      }
+    ]
+  },
+  {
+    "sha": "90be025d3167fc938ca0163d5c2ac0fa35311e01",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-06-01T10:50:00Z"
+      },
+      "message": "fix typo in comment"
+    },
+    "files": [
+      {
+        "filename": "web/lib/api.ts",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "37d58e708e02b9d422e364798f88065b09d010de",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-06-02T05:30:00Z"
+      },
+      "message": "auth: short-lived access tokens"
+    },
+    "files": [
+      {
+        "filename": "api/auth/tokens.py",
+        "status": "modified",
+        "additions": 80,
+        "deletions": 18
+      }
+    ]
+  },
+  {
+    "sha": "bc60da382b4305c3bda556152c52cda3daa32beb",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-06-02T06:10:00Z"
+      },
+      "message": "auth: refresh endpoint"
+    },
+    "files": [
+      {
+        "filename": "api/auth/tokens.py",
+        "status": "modified",
+        "additions": 30,
+        "deletions": 11
+      }
+    ]
+  },
+  {
+    "sha": "e268914bc22ad28f75f323cfb1e6edd54666dfa3",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-06-03T13:05:00Z"
+      },
+      "message": "fix lint warning"
+    },
+    "files": [
+      {
+        "filename": "infra/terraform/main.tf",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "35ed501340f2d6c95d9cfb150851767d1f3778cf",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-06-04T09:30:00Z"
+      },
+      "message": "k8s: api memory 512Mi"
+    },
+    "files": [
+      {
+        "filename": "infra/k8s/api-deploy.yaml",
+        "status": "modified",
+        "additions": 18,
+        "deletions": 17
+      }
+    ]
+  },
+  {
+    "sha": "af5e925046302be33c8765901668267051aef2b6",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-06-11T05:30:00Z"
+      },
+      "message": "webhooks: processed_events table"
+    },
+    "files": [
+      {
+        "filename": "api/payments/webhooks.py",
+        "status": "modified",
+        "additions": 14,
+        "deletions": 18
+      }
+    ]
+  },
+  {
+    "sha": "963338fcb6004ccd89080394bc6cefc3b228f37e",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-06-11T06:10:00Z"
+      },
+      "message": "webhooks: skip seen event ids"
+    },
+    "files": [
+      {
+        "filename": "api/payments/webhooks.py",
+        "status": "modified",
+        "additions": 13,
+        "deletions": 19
+      }
+    ]
+  },
+  {
+    "sha": "959e993b8ba8ec305965e4d0d0ec3456394922fe",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-06-19T12:05:00Z"
+      },
+      "message": "api client: toast on network errors"
+    },
+    "files": [
+      {
+        "filename": "web/lib/api.ts",
+        "status": "modified",
+        "additions": 8,
+        "deletions": 30
+      }
+    ]
+  },
+  {
+    "sha": "2cd79b9327286b96852e44dd5aab69a3c9bcbccd",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-06-22T05:30:00Z"
+      },
+      "message": "backup: schedule 21:30 UTC"
+    },
+    "files": [
+      {
+        "filename": "infra/backup/db_backup.yaml",
+        "status": "modified",
+        "additions": 32,
+        "deletions": 15
+      }
+    ]
+  },
+  {
+    "sha": "7bfc57dd1abde18bc314022dec8bdcd0693f1a41",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-06-22T06:10:00Z"
+      },
+      "message": "backup: fail on auth error and tiny dumps"
+    },
+    "files": [
+      {
+        "filename": "infra/backup/db_backup.yaml",
+        "status": "modified",
+        "additions": 74,
+        "deletions": 13
+      }
+    ]
+  },
+  {
+    "sha": "6e3fbe26bfb1a8e1b553c66e67810107e37e54bd",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-06-22T06:50:00Z"
+      },
+      "message": "backup: quarterly restore test job"
+    },
+    "files": [
+      {
+        "filename": "infra/backup/db_backup.yaml",
+        "status": "modified",
+        "additions": 46,
+        "deletions": 14
+      }
+    ]
+  },
+  {
+    "sha": "1083574a9044c527317e42296834b4a2eab22291",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-06-27T04:30:00Z"
+      },
+      "message": "ml: drop price features"
+    },
+    "files": [
+      {
+        "filename": "ml/recommend/features.py",
+        "status": "modified",
+        "additions": 80,
+        "deletions": 29
+      }
+    ]
+  },
+  {
+    "sha": "29f5bb01ca92f7ca531b7b720884bd149de320cb",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-06-27T05:10:00Z"
+      },
+      "message": "ml: retrain"
+    },
+    "files": [
+      {
+        "filename": "ml/recommend/model.py",
+        "status": "modified",
+        "additions": 64,
+        "deletions": 11
+      }
+    ]
+  },
+  {
+    "sha": "c34d164e1cdc2e61b32a49cb4f21fb29e74f03e2",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-06-30T11:05:00Z"
+      },
+      "message": "fix typo"
+    },
+    "files": [
+      {
+        "filename": "infra/terraform/main.tf",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "42f7fd412b85de635ac4466b838bf3566794bd5f",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-07-01T05:30:00Z"
+      },
+      "message": "terraform: s3 backend"
+    },
+    "files": [
+      {
+        "filename": "infra/terraform/main.tf",
+        "status": "modified",
+        "additions": 44,
+        "deletions": 7
+      }
+    ]
+  },
+  {
+    "sha": "46cff3b3f9c4fddd00b9c88d30d4e727eb845a61",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-07-01T06:10:00Z"
+      },
+      "message": "terraform: dynamodb lock table"
+    },
+    "files": [
+      {
+        "filename": "infra/terraform/main.tf",
+        "status": "modified",
+        "additions": 29,
+        "deletions": 22
+      }
+    ]
+  },
+  {
+    "sha": "0d474bcc0211b65bc12430a12d4bef5ca41d62ca",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-07-03T04:35:00Z"
+      },
+      "message": "recommend: weekly retrain job"
+    },
+    "files": [
+      {
+        "filename": "ml/recommend/model.py",
+        "status": "modified",
+        "additions": 54,
+        "deletions": 4
+      }
+    ]
+  },
+  {
+    "sha": "abf3ab9c470a68d916aea195f7d310e5a2336962",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-07-07T07:50:00Z"
+      },
+      "message": "orders: 10 minute cancel window"
+    },
+    "files": [
+      {
+        "filename": "api/orders/service.py",
+        "status": "modified",
+        "additions": 35,
+        "deletions": 21
+      }
+    ]
+  },
+  {
+    "sha": "14e4405843e80bfa85b65f7ed32535e75cc3faa3",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-07-07T08:30:00Z"
+      },
+      "message": "orders: 10 minute cancel window: tests"
+    },
+    "files": [
+      {
+        "filename": "api/orders/service.py",
+        "status": "modified",
+        "additions": 35,
+        "deletions": 0
+      }
+    ]
+  },
+  {
+    "sha": "e724c93aa9c03e799ba66d59c2ea1c79040f2e21",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-07-10T06:20:00Z"
+      },
+      "message": "webhooks: structured logging"
+    },
+    "files": [
+      {
+        "filename": "api/payments/webhooks.py",
+        "status": "modified",
+        "additions": 13,
+        "deletions": 6
+      }
+    ]
+  },
+  {
+    "sha": "083c7858a96b0d29ffeccc697c81116ec58b9eee",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-07-17T06:35:00Z"
+      },
+      "message": "run formatter"
+    },
+    "files": [
+      {
+        "filename": "ml/recommend/features.py",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "1e7796265a134d9c3ce330624a0674fd45bc9670",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-07-21T09:35:00Z"
+      },
+      "message": "update comment"
+    },
+    "files": [
+      {
+        "filename": "api/auth/tokens.py",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "d2b10290c61cba0fc61705045b77fe87afddb458",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-07-22T05:30:00Z"
+      },
+      "message": "subscriptions: pause cap validation"
+    },
+    "files": [
+      {
+        "filename": "api/subscriptions/billing.py",
+        "status": "modified",
+        "additions": 37,
+        "deletions": 2
+      }
+    ]
+  },
+  {
+    "sha": "44f0caff380e5c36bdcc02ac6743332d3f3913bc",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-07-22T06:35:00Z"
+      },
+      "message": "payments: log attempt number"
+    },
+    "files": [
+      {
+        "filename": "api/payments/retry.py",
+        "status": "modified",
+        "additions": 12,
+        "deletions": 3
+      }
+    ]
+  },
+  {
+    "sha": "7409b962369ebe8b94f9c1ef0330a83c3fd07a73",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-07-22T07:15:00Z"
+      },
+      "message": "payments: log attempt number: tests"
+    },
+    "files": [
+      {
+        "filename": "api/payments/retry.py",
+        "status": "modified",
+        "additions": 6,
+        "deletions": 18
+      }
+    ]
+  },
+  {
+    "sha": "cbe63fc811d96894fdfa62cd735e663404ab7fcf",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-07-24T09:30:00Z"
+      },
+      "message": "eta: timeout wrapper"
+    },
+    "files": [
+      {
+        "filename": "ml/eta/predict.py",
+        "status": "modified",
+        "additions": 79,
+        "deletions": 9
+      }
+    ]
+  },
+  {
+    "sha": "ec18e2817f1871a1bf2bfa73306bce686ca302b3",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-07-24T10:05:00Z"
+      },
+      "message": "fix typo"
+    },
+    "files": [
+      {
+        "filename": "web/checkout/CheckoutPage.tsx",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "fac0160fad2b41597fc260bac97fb05a0404b267",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-07-24T10:10:00Z"
+      },
+      "message": "eta: fall back to a static 40 minutes"
+    },
+    "files": [
+      {
+        "filename": "ml/eta/predict.py",
+        "status": "modified",
+        "additions": 73,
+        "deletions": 15
+      }
+    ]
+  },
+  {
+    "sha": "35733e093030cebafe38d92a93916e425e28b0da",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-07-28T09:50:00Z"
+      },
+      "message": "checkout: address autocomplete"
+    },
+    "files": [
+      {
+        "filename": "web/checkout/CheckoutPage.tsx",
+        "status": "modified",
+        "additions": 13,
+        "deletions": 6
+      }
+    ]
+  },
+  {
+    "sha": "86e4c455cf7afc18aab2c31f44e356407386b22b",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-07-29T07:20:00Z"
+      },
+      "message": "run formatter"
+    },
+    "files": [
+      {
+        "filename": "api/orders/service.py",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "fc824d13b5902c861976611e0c82d9b2f3ffe706",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-07-30T08:50:00Z"
+      },
+      "message": "fix lint warning"
+    },
+    "files": [
+      {
+        "filename": "web/menu/MenuGrid.tsx",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "44277eb8ac6b1ad4ce3f9f7940dd3f72cc5a0a4a",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-07-30T11:35:00Z"
+      },
+      "message": "fix typo in retry docstring"
+    },
+    "files": [
+      {
+        "filename": "api/payments/retry.py",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "4d6f0ccdb83224f98b3d00eef0378408e47e826f",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-07-31T05:35:00Z"
+      },
+      "message": "run formatter"
+    },
+    "files": [
+      {
+        "filename": ".github/workflows/deploy.yml",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "93ac9aed71960b71108f06a6a684d4511c7ec9fe",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-08-03T07:05:00Z"
+      },
+      "message": "billing: invoice emails"
+    },
+    "files": [
+      {
+        "filename": "api/subscriptions/billing.py",
+        "status": "modified",
+        "additions": 59,
+        "deletions": 17
+      }
+    ]
+  },
+  {
+    "sha": "156d3ed8b9a64bf6cf80aa7d9df22a50a15b70ca",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-08-03T07:45:00Z"
+      },
+      "message": "billing: invoice emails: tests"
+    },
+    "files": [
+      {
+        "filename": "api/subscriptions/billing.py",
+        "status": "modified",
+        "additions": 53,
+        "deletions": 19
+      }
+    ]
+  },
+  {
+    "sha": "886780a41d3af09f79a4405c0953147c42c20929",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-08-05T06:30:00Z"
+      },
+      "message": "payments: 7 retries with backoff and jitter"
+    },
+    "files": [
+      {
+        "filename": "api/payments/retry.py",
+        "status": "modified",
+        "additions": 49,
+        "deletions": 23
+      }
+    ]
+  },
+  {
+    "sha": "e4e5e7410630f1431ac052b936cb7e6bcbc5a2be",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-08-05T07:10:00Z"
+      },
+      "message": "payments: test 5 minute gateway pause"
+    },
+    "files": [
+      {
+        "filename": "api/payments/retry.py",
+        "status": "modified",
+        "additions": 63,
+        "deletions": 9
+      }
+    ]
+  },
+  {
+    "sha": "b0c8274e12d9ddfcdd5cf2aafff6edb9b42314b8",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-08-05T09:35:00Z"
+      },
+      "message": "fix typo"
+    },
+    "files": [
+      {
+        "filename": "web/menu/MenuGrid.tsx",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "367aedd53e430c367fb3bf8c10b5d70d1af47647",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-08-07T08:05:00Z"
+      },
+      "message": "run formatter"
+    },
+    "files": [
+      {
+        "filename": "ml/eta/predict.py",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "50bab0eed01f160ec7048b6c2ffd25b43221ca11",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-08-07T09:50:00Z"
+      },
+      "message": "deploy: post deploy status to chat"
+    },
+    "files": [
+      {
+        "filename": ".github/workflows/deploy.yml",
+        "status": "modified",
+        "additions": 30,
+        "deletions": 25
+      }
+    ]
+  },
+  {
+    "sha": "69a26aaeb87b2e39771dcaf1f6bf62915d497222",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-08-10T05:20:00Z"
+      },
+      "message": "auth: rate-limit login attempts"
+    },
+    "files": [
+      {
+        "filename": "api/auth/tokens.py",
+        "status": "modified",
+        "additions": 56,
+        "deletions": 12
+      }
+    ]
+  },
+  {
+    "sha": "89b04c3eb2b28751ec103f8902aa3e02d9b12a6d",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-08-11T09:50:00Z"
+      },
+      "message": "backup: keep dumps 30 days"
+    },
+    "files": [
+      {
+        "filename": "infra/backup/db_backup.yaml",
+        "status": "modified",
+        "additions": 34,
+        "deletions": 17
+      }
+    ]
+  },
+  {
+    "sha": "3ac670d8ec3dfebd08bb64862b21a4aa1e6faffb",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-08-11T10:30:00Z"
+      },
+      "message": "backup: keep dumps 30 days: tests"
+    },
+    "files": [
+      {
+        "filename": "infra/backup/db_backup.yaml",
+        "status": "modified",
+        "additions": 75,
+        "deletions": 24
+      }
+    ]
+  },
+  {
+    "sha": "0b4fcffbc9788ff6c0651948e1388652c0d719d3",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-08-11T13:20:00Z"
+      },
+      "message": "fix typo"
+    },
+    "files": [
+      {
+        "filename": ".github/workflows/deploy.yml",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "60d7a2f50921b8c96d6c2749f530bfab277a400f",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-08-12T05:30:00Z"
+      },
+      "message": "ci: web lint and tsc"
+    },
+    "files": [
+      {
+        "filename": ".github/workflows/ci.yml",
+        "status": "modified",
+        "additions": 15,
+        "deletions": 3
+      }
+    ]
+  },
+  {
+    "sha": "d0c91d7df3160b226e82c76549cf8b4dc4d473b8",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-08-13T12:35:00Z"
+      },
+      "message": "update comment"
+    },
+    "files": [
+      {
+        "filename": "ml/recommend/model.py",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "cb169c54bf091291d44ea3229b1000de19d5130f",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-08-19T08:50:00Z"
+      },
+      "message": "orders: filter by status"
+    },
+    "files": [
+      {
+        "filename": "api/orders/service.py",
+        "status": "modified",
+        "additions": 59,
+        "deletions": 11
+      }
+    ]
+  },
+  {
+    "sha": "09cb0ed069d5524b3b41c5d795d3ac490d1557cf",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-08-19T12:50:00Z"
+      },
+      "message": "fix typo"
+    },
+    "files": [
+      {
+        "filename": "api/orders/service.py",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "626d82df8d41017332e7e0f5bc677a634885306d",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-08-20T05:30:00Z"
+      },
+      "message": "ci: lockfile hash in cache key"
+    },
+    "files": [
+      {
+        "filename": ".github/workflows/ci.yml",
+        "status": "modified",
+        "additions": 71,
+        "deletions": 13
+      }
+    ]
+  },
+  {
+    "sha": "b38fc353f300344412a8cf466528f26153ecc034",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-08-21T10:05:00Z"
+      },
+      "message": "menu: lazy-load dish images"
+    },
+    "files": [
+      {
+        "filename": "web/menu/MenuGrid.tsx",
+        "status": "modified",
+        "additions": 80,
+        "deletions": 25
+      }
+    ]
+  },
+  {
+    "sha": "a319131f2f0ce5b679840e92ca24990c0a9395a4",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-08-27T05:30:00Z"
+      },
+      "message": "scripts: rotate webhook secret with the api key"
+    },
+    "files": [
+      {
+        "filename": "infra/scripts/rotate_secrets.sh",
+        "status": "modified",
+        "additions": 27,
+        "deletions": 24
+      }
+    ]
+  },
+  {
+    "sha": "181d68187264fffbea0ec014a48a9b68480c59c8",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-08-27T06:10:00Z"
+      },
+      "message": "scripts: verify with a test webhook"
+    },
+    "files": [
+      {
+        "filename": "infra/scripts/rotate_secrets.sh",
+        "status": "modified",
+        "additions": 49,
+        "deletions": 4
+      }
+    ]
+  },
+  {
+    "sha": "f211420f7b9f8e808c0ccb7d369b0a0401e888f2",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-08-28T13:20:00Z"
+      },
+      "message": "fix lint warning"
+    },
+    "files": [
+      {
+        "filename": "ml/recommend/model.py",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "3bc80c0dac499c60218c78c17de80317f9412418",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-09-03T04:50:00Z"
+      },
+      "message": "fix typo in comment"
+    },
+    "files": [
+      {
+        "filename": "ml/recommend/model.py",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "5da34bde53a200b718bb4adc9f333a66ebe97dbb",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-09-03T06:50:00Z"
+      },
+      "message": "bump actions/checkout to v5"
+    },
+    "files": [
+      {
+        "filename": ".github/workflows/deploy.yml",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "63532a9c1af0da6764d19cb942afbdeffc402f34",
+    "author": {
+      "login": "priya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Priya Iyer",
+        "email": "priya@tiffinbox.example",
+        "date": "2026-09-03T12:50:00Z"
+      },
+      "message": "run formatter"
+    },
+    "files": [
+      {
+        "filename": "infra/backup/db_backup.yaml",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "3c237ec910fa002ed13c355277983c803442c12d",
+    "author": {
+      "login": "kavya-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Kavya Nair",
+        "email": "kavya@tiffinbox.example",
+        "date": "2026-09-07T05:20:00Z"
+      },
+      "message": "run formatter"
+    },
+    "files": [
+      {
+        "filename": "web/lib/api.ts",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "71b0ad336800657ebbac804610f796a3e85c9e5c",
+    "author": {
+      "login": "rohan-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Rohan Das",
+        "email": "rohan@tiffinbox.example",
+        "date": "2026-09-10T09:05:00Z"
+      },
+      "message": "recommend: cuisine embeddings"
+    },
+    "files": [
+      {
+        "filename": "ml/recommend/features.py",
+        "status": "modified",
+        "additions": 66,
+        "deletions": 3
+      }
+    ]
+  },
+  {
+    "sha": "e65308f18cfcc319e3c0973bf7742b50de9b2dfd",
+    "author": {
+      "login": "arjun-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@tiffinbox.example",
+        "date": "2026-09-14T05:50:00Z"
+      },
+      "message": "update comment"
+    },
+    "files": [
+      {
+        "filename": "api/orders/service.py",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ]
+  },
+  {
+    "sha": "1c0966b193fa3e1617616681e8170710852a6cf6",
+    "author": {
+      "login": "meera-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Meera Joshi",
+        "email": "meera@tiffinbox.example",
+        "date": "2026-09-25T05:30:00Z"
+      },
+      "message": "payments: RETRIES from env"
+    },
+    "files": [
+      {
+        "filename": "api/payments/retry.py",
+        "status": "modified",
+        "additions": 68,
+        "deletions": 13
+      }
+    ]
+  },
+  {
+    "sha": "24960e117d301a950e1ff8f0ee510f99f74cfbb2",
+    "author": {
+      "login": "meera-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Meera Joshi",
+        "email": "meera@tiffinbox.example",
+        "date": "2026-09-25T06:10:00Z"
+      },
+      "message": "k8s: PAYMENT_RETRIES env"
+    },
+    "files": [
+      {
+        "filename": "infra/k8s/api-deploy.yaml",
+        "status": "modified",
+        "additions": 11,
+        "deletions": 30
+      }
+    ]
+  },
+  {
+    "sha": "fa815bf3f5194434d2f125e15f562de7c7574303",
+    "author": {
+      "login": "meera-tb"
+    },
+    "commit": {
+      "author": {
+        "name": "Meera Joshi",
+        "email": "meera@tiffinbox.example",
+        "date": "2026-09-28T05:30:00Z"
+      },
+      "message": "webhooks: error log and metric on bad signature"
+    },
+    "files": [
+      {
+        "filename": "api/payments/webhooks.py",
+        "status": "modified",
+        "additions": 15,
+        "deletions": 24
+      }
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+services:
+  falkordb:
+    image: falkordb/falkordb@sha256:107455e862a824e45e8e9f5a7fbfdf5e00a08b14e13eae2577c72fd9e3f59ba6  # graph module 6.0.2; check_db.py passed 2026-10-15
+    ports:
+      - "6379:6379"  # database
+      - "3000:3000"  # FalkorDB Browser UI
+    volumes:
+      - falkordb-data:/var/lib/falkordb/data
+
+volumes:
+  falkordb-data:

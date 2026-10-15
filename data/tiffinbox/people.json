@@ -1,0 +1,68 @@
+[
+  {
+    "id": "kavya",
+    "name": "Kavya Nair",
+    "role": "Frontend",
+    "email": "kavya@tiffinbox.example",
+    "github": "kavya-tb",
+    "chat_user": "users/10001",
+    "joined_at": "2025-08-04",
+    "resigned_at": null,
+    "last_day": null
+  },
+  {
+    "id": "arjun",
+    "name": "Arjun Mehta",
+    "role": "Backend (payments, orders, auth)",
+    "email": "arjun@tiffinbox.example",
+    "github": "arjun-tb",
+    "chat_user": "users/10002",
+    "joined_at": "2025-06-02",
+    "resigned_at": "2026-09-15",
+    "last_day": "2026-09-30"
+  },
+  {
+    "id": "priya",
+    "name": "Priya Iyer",
+    "role": "DevOps (CI/CD, Terraform, secrets, backups)",
+    "email": "priya@tiffinbox.example",
+    "github": "priya-tb",
+    "chat_user": "users/10003",
+    "joined_at": "2025-07-01",
+    "resigned_at": "2026-09-15",
+    "last_day": "2026-09-30"
+  },
+  {
+    "id": "rohan",
+    "name": "Rohan Das",
+    "role": "AI/ML (recommendations, ETA)",
+    "email": "rohan@tiffinbox.example",
+    "github": "rohan-tb",
+    "chat_user": "users/10004",
+    "joined_at": "2025-09-15",
+    "resigned_at": null,
+    "last_day": null
+  },
+  {
+    "id": "neha",
+    "name": "Neha Kapoor",
+    "role": "Product manager",
+    "email": "neha@tiffinbox.example",
+    "github": "neha-tb",
+    "chat_user": "users/10005",
+    "joined_at": "2025-06-02",
+    "resigned_at": null,
+    "last_day": null
+  },
+  {
+    "id": "meera",
+    "name": "Meera Joshi",
+    "role": "Backend",
+    "email": "meera@tiffinbox.example",
+    "github": "meera-tb",
+    "chat_user": "users/10006",
+    "joined_at": "2026-09-22",
+    "resigned_at": null,
+    "last_day": null
+  }
+]

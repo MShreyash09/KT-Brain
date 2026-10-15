@@ -1,0 +1,50 @@
+[
+  {
+    "name": "spaces/general",
+    "displayName": "general",
+    "spaceType": "SPACE",
+    "externalUserAllowed": false
+  },
+  {
+    "name": "spaces/eng",
+    "displayName": "eng",
+    "spaceType": "SPACE",
+    "externalUserAllowed": false
+  },
+  {
+    "name": "spaces/payments",
+    "displayName": "payments",
+    "spaceType": "SPACE",
+    "externalUserAllowed": false
+  },
+  {
+    "name": "spaces/infra",
+    "displayName": "infra",
+    "spaceType": "SPACE",
+    "externalUserAllowed": false
+  },
+  {
+    "name": "spaces/incidents",
+    "displayName": "incidents",
+    "spaceType": "SPACE",
+    "externalUserAllowed": false
+  },
+  {
+    "name": "spaces/product",
+    "displayName": "product",
+    "spaceType": "SPACE",
+    "externalUserAllowed": false
+  },
+  {
+    "name": "spaces/rupeerail-shared",
+    "displayName": "TiffinBox x RupeeRail",
+    "spaceType": "SPACE",
+    "externalUserAllowed": true
+  },
+  {
+    "name": "spaces/dm-arjun-priya",
+    "displayName": "",
+    "spaceType": "DIRECT_MESSAGE",
+    "externalUserAllowed": false
+  }
+]

@@ -1,0 +1,85 @@
+{
+  "about": "Hand-written answer key for the TiffinBox scene. build.py re-derives all of this from the raw fixtures and fails if they disagree. State = Sep 21, 2026 (after the resignations, before Meera joins).",
+  "rules": {
+    "knows_file": "made a non-trivial commit to the file, or reviewed a PR that touched it",
+    "knows_decision": "took part in a source that RECORDS it (PR author/reviewer, chat poster, ticket assignee, AI session runner, doc author), or made a non-trivial commit to a file the decision is ABOUT",
+    "company_only_chat": "only spaceType SPACE with externalUserAllowed=false, only HUMAN senders listed in people.json (no DMs, no external spaces, no bots)",
+    "trivial_commit_regex": "^(fix typo|run formatter|update comment|fix lint|bump )",
+    "agenda_items": "active Decisions and code Files (docs are sources, not agenda items); superseded decisions never count",
+    "threshold_contract": "a trivial commit must score below the KNOWS threshold; any other single link must score above it"
+  },
+  "decision_knowers": {
+    "D1": ["arjun"],
+    "D13": ["arjun"],
+    "D2": ["arjun", "neha"],
+    "D3": ["arjun", "rohan"],
+    "D4": ["arjun", "kavya"],
+    "D5": ["arjun", "neha"],
+    "D16": ["priya"],
+    "D6": ["priya"],
+    "D7": ["priya"],
+    "D8": ["arjun", "priya"],
+    "D17": ["priya"],
+    "D9": ["priya"],
+    "D10": ["rohan"],
+    "D11": ["arjun", "rohan"],
+    "D12": ["arjun", "kavya"],
+    "D14": ["kavya", "priya"],
+    "D15": ["arjun", "kavya", "neha"]
+  },
+  "file_knowers": {
+    "web/checkout/CheckoutPage.tsx": ["arjun", "kavya"],
+    "web/menu/MenuGrid.tsx": ["kavya", "rohan"],
+    "web/lib/api.ts": ["arjun", "kavya"],
+    "api/payments/retry.py": ["arjun"],
+    "api/payments/webhooks.py": ["arjun"],
+    "api/orders/service.py": ["arjun", "rohan"],
+    "api/auth/tokens.py": ["arjun", "kavya"],
+    "api/subscriptions/billing.py": ["arjun", "kavya"],
+    "api/recommend/endpoint.py": ["arjun", "rohan"],
+    "infra/terraform/main.tf": ["priya"],
+    "infra/k8s/api-deploy.yaml": ["arjun", "priya"],
+    "infra/backup/db_backup.yaml": ["priya"],
+    ".github/workflows/deploy.yml": ["priya"],
+    ".github/workflows/ci.yml": ["kavya", "priya"],
+    "infra/scripts/rotate_secrets.sh": ["arjun", "priya"],
+    "ml/recommend/model.py": ["rohan"],
+    "ml/recommend/features.py": ["rohan"],
+    "ml/eta/predict.py": ["arjun", "rohan"]
+  },
+  "trivia_traps": {
+    "api/payments/retry.py": "rohan: 'fix typo in retry docstring' must not make Rohan a knower",
+    ".github/workflows/deploy.yml": "arjun: 'bump actions/checkout to v5' must not make Arjun a knower",
+    "infra/terraform/main.tf": "kavya: 'fix typo' must not make Kavya a knower"
+  },
+  "radar_single_knower": ["D1", "D6", "D7", "D9", "D10", "api/payments/retry.py", "api/payments/webhooks.py",
+    "infra/terraform/main.tf", "infra/backup/db_backup.yaml", ".github/workflows/deploy.yml",
+    "ml/recommend/model.py", "ml/recommend/features.py"],
+  "dry_runs": {
+    "arjun": {
+      "agenda": ["D1", "api/payments/retry.py", "api/payments/webhooks.py"],
+      "must_not_contain": ["D2", "D3", "D4", "D5", "D8", "D13"]
+    },
+    "priya": {
+      "agenda": ["D6", "D7", "D9", "infra/terraform/main.tf", "infra/backup/db_backup.yaml", ".github/workflows/deploy.yml"],
+      "weak_backup": {"D14": "kavya", ".github/workflows/ci.yml": "kavya"},
+      "must_not_contain": ["D8", "D16", "D17", "infra/scripts/rotate_secrets.sh", "infra/k8s/api-deploy.yaml"]
+    },
+    "arjun+priya": {
+      "agenda": ["D1", "D6", "D7", "D8", "D9", "api/payments/retry.py", "api/payments/webhooks.py",
+        "infra/terraform/main.tf", "infra/backup/db_backup.yaml", ".github/workflows/deploy.yml",
+        "infra/scripts/rotate_secrets.sh", "infra/k8s/api-deploy.yaml"],
+      "combination_risk": ["D8", "infra/scripts/rotate_secrets.sh", "infra/k8s/api-deploy.yaml"],
+      "must_not_contain": ["D2", "D3", "D4", "D5", "D11", "D12", "D13", "D16", "D17"]
+    }
+  },
+  "after_meera": {
+    "how": "KT-1 (kt_sessions.json) covers D1, D8, rotate_secrets.sh; her PRs (Sep 25, Sep 28) touch retry.py, webhooks.py, api-deploy.yaml",
+    "counter": "12 -> 6",
+    "remaining": ["D6", "D7", "D9", "infra/terraform/main.tf", "infra/backup/db_backup.yaml", ".github/workflows/deploy.yml"],
+    "suggested_mentor": "kavya (weak backup on D14 and ci.yml), or hire DevOps"
+  },
+  "why_trace_D1": "api/payments/retry.py <- PR 'payments: 7 retries with exponential backoff' <- Arjun's AI session 'Retry policy for gateway deploy gaps' <- PAY-88 <- #payments thread 'orders failed during gateway deploy'; supersedes D13; applies P1",
+  "why_trace_D15": "api/subscriptions/billing.py <- D15 (pause cap) <- I1/I2/I3 <- Neha's interviews, survey, competitor scan; feature F1",
+  "why_trace_D6": ".github/workflows/deploy.yml <- D6 (canary) <- R1 research -> X1 Cloudflare 2019; supersedes D16 <- caused INC-1"
+}

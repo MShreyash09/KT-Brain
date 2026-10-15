@@ -1,0 +1,10 @@
+[project]
+name = "kt-brain"
+version = "0.1.0"
+description = "KT Brain backend: FastAPI + FalkorDB"
+requires-python = ">=3.11"
+dependencies = [
+    "falkordb>=1.8.0",
+    "fastapi>=0.143.1",
+    "uvicorn[standard]>=0.54.0",
+]
