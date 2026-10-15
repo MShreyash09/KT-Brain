@@ -1,0 +1,2145 @@
+{
+ "workspace": {
+  "name": "TiffinBox",
+  "synthetic": true,
+  "story": "2026-04-01 to 2026-09-30",
+  "snapshot": "2026-09-21",
+  "counts": {
+   "Feature": 1,
+   "PR": 47,
+   "Incident": 2,
+   "Commit": 101,
+   "AgentSession": 17,
+   "Pattern": 5,
+   "Person": 6,
+   "Chunk": 80,
+   "Doc": 18,
+   "Decision": 17,
+   "ExternalSource": 2,
+   "Insight": 3,
+   "File": 18,
+   "Research": 5,
+   "Service": 4,
+   "Ticket": 28,
+   "Thread": 38,
+   "edges": 802
+  }
+ },
+ "people": [
+  {
+   "id": "arjun",
+   "name": "Arjun Mehta",
+   "role": "Backend (payments, orders, auth)",
+   "joined": "2025-06-02",
+   "last_day": "2026-09-30",
+   "active_sep21": true
+  },
+  {
+   "id": "neha",
+   "name": "Neha Kapoor",
+   "role": "Product manager",
+   "joined": "2025-06-02",
+   "last_day": null,
+   "active_sep21": true
+  },
+  {
+   "id": "priya",
+   "name": "Priya Iyer",
+   "role": "DevOps (CI/CD, Terraform, secrets, backups)",
+   "joined": "2025-07-01",
+   "last_day": "2026-09-30",
+   "active_sep21": true
+  },
+  {
+   "id": "kavya",
+   "name": "Kavya Nair",
+   "role": "Frontend",
+   "joined": "2025-08-04",
+   "last_day": null,
+   "active_sep21": true
+  },
+  {
+   "id": "rohan",
+   "name": "Rohan Das",
+   "role": "AI/ML (recommendations, ETA)",
+   "joined": "2025-09-15",
+   "last_day": null,
+   "active_sep21": true
+  },
+  {
+   "id": "meera",
+   "name": "Meera Joshi",
+   "role": "Backend",
+   "joined": "2026-09-22",
+   "last_day": null,
+   "active_sep21": false
+  }
+ ],
+ "decisions": {
+  "D13": {
+   "id": "D13",
+   "what": "Payment retries = 3 (30s, 60s, 120s)",
+   "why": "Default from the RupeeRail quickstart",
+   "evidence": "3 attempts at 30s, 60s and 120s",
+   "status": "superseded",
+   "at": "2026-04-06",
+   "about": [
+    "api/payments/retry.py"
+   ]
+  },
+  "D1": {
+   "id": "D1",
+   "what": "Payment retries = 7 with exponential backoff (about a 13 minute window)",
+   "why": "RupeeRail pauses webhook delivery for up to ~5 minutes during its deploys. 3 retries gave up after 3.5 minutes and marked paid orders as failed (PAY-88).",
+   "evidence": "their webhooks pause ~5 min during deploys",
+   "status": "active",
+   "at": "2026-08-04",
+   "about": [
+    "api/payments/retry.py"
+   ]
+  },
+  "D2": {
+   "id": "D2",
+   "what": "Webhooks are idempotent: dedupe on RupeeRail event_id",
+   "why": "RupeeRail re-sends webhooks; one order was marked paid twice and refunded twice (PAY-61)",
+   "evidence": "dedupe on event_id",
+   "status": "active",
+   "at": "2026-06-11",
+   "about": [
+    "api/payments/webhooks.py"
+   ]
+  },
+  "D3": {
+   "id": "D3",
+   "what": "Orders use optimistic locking on a version column",
+   "why": "Double orders during the lunch rush when two requests updated the same cart (ORD-31)",
+   "evidence": "optimistic locking on a version column",
+   "status": "active",
+   "at": "2026-05-28",
+   "about": [
+    "api/orders/service.py"
+   ]
+  },
+  "D4": {
+   "id": "D4",
+   "what": "Access token TTL = 15 minutes, with refresh tokens",
+   "why": "Security review: 24 h tokens are too long-lived if a phone is stolen",
+   "evidence": "Access tokens now expire after 15 minutes",
+   "status": "active",
+   "at": "2026-06-02",
+   "about": [
+    "api/auth/tokens.py"
+   ]
+  },
+  "D5": {
+   "id": "D5",
+   "what": "Billing charges on day 1 of the cycle and prorates paused days",
+   "why": "Predictable revenue, and fair to customers who pause",
+   "evidence": "charge on day 1 of each cycle; paused days are prorated",
+   "status": "active",
+   "at": "2026-04-08",
+   "about": [
+    "api/subscriptions/billing.py"
+   ]
+  },
+  "D16": {
+   "id": "D16",
+   "what": "Deploys roll out to all pods at once",
+   "why": "Simplest pipeline for a small team",
+   "evidence": "rolls out to all pods at once",
+   "status": "superseded",
+   "at": "2026-04-10",
+   "about": [
+    ".github/workflows/deploy.yml"
+   ]
+  },
+  "D6": {
+   "id": "D6",
+   "what": "Deploys are canary: 10% of pods for 30 minutes, auto-rollback if 5xx > 2%",
+   "why": "The May 12 checkout outage came from an all-at-once deploy (INC-1). Cloudflare's 2019 outage shows why staged rollouts matter.",
+   "evidence": "10% of pods for 30 minutes",
+   "status": "active",
+   "at": "2026-05-18",
+   "about": [
+    ".github/workflows/deploy.yml"
+   ]
+  },
+  "D7": {
+   "id": "D7",
+   "what": "Terraform state is remote with a lock; never run apply from a laptop",
+   "why": "A laptop apply with stale state tried to destroy the Redis cluster",
+   "evidence": "never run terraform apply from a laptop",
+   "status": "active",
+   "at": "2026-07-01",
+   "about": [
+    "infra/terraform/main.tf"
+   ]
+  },
+  "D8": {
+   "id": "D8",
+   "what": "Rotating the RupeeRail API key also requires updating WEBHOOK_SECRET",
+   "why": "RupeeRail issues a new webhook signing secret with each key. With the old secret every signature check fails and payment confirmations are dropped silently.",
+   "evidence": "rotating the API key also rotates the webhook signing secret",
+   "status": "active",
+   "at": "2026-08-26",
+   "about": [
+    "infra/scripts/rotate_secrets.sh"
+   ]
+  },
+  "D17": {
+   "id": "D17",
+   "what": "Nightly pg_dump with no restore test",
+   "why": "Backups felt like enough",
+   "evidence": "nightly pg_dump at 01:00 UTC",
+   "status": "superseded",
+   "at": "2026-04-15",
+   "about": [
+    "infra/backup/db_backup.yaml"
+   ]
+  },
+  "D9": {
+   "id": "D9",
+   "what": "DB backups at 3 AM IST with a failure alert; restore tested every quarter",
+   "why": "Backups were silently empty for 17 days (INC-2). GitLab's 2017 incident shows untested backups fail.",
+   "evidence": "restore test every quarter",
+   "status": "active",
+   "at": "2026-06-22",
+   "about": [
+    "infra/backup/db_backup.yaml"
+   ]
+  },
+  "D10": {
+   "id": "D10",
+   "what": "Recommendations exclude price as a ranking feature",
+   "why": "Customers said recommendations pushed expensive meals (REC-9); price dominated the ranking",
+   "evidence": "drop price and price_bucket from the ranking features",
+   "status": "active",
+   "at": "2026-06-24",
+   "about": [
+    "ml/recommend/features.py"
+   ]
+  },
+  "D11": {
+   "id": "D11",
+   "what": "ETA falls back to a static 40 minutes if the model takes over 300 ms",
+   "why": "Model timeouts during peak hours left the checkout page without an ETA",
+   "evidence": "fall back to a static 40 minutes",
+   "status": "active",
+   "at": "2026-07-24",
+   "about": [
+    "ml/eta/predict.py"
+   ]
+  },
+  "D12": {
+   "id": "D12",
+   "what": "Checkout Pay button disables after the first click",
+   "why": "Double clicks caused double payments (WEB-14)",
+   "evidence": "disable the Pay button after the first click",
+   "status": "active",
+   "at": "2026-05-05",
+   "about": [
+    "web/checkout/CheckoutPage.tsx"
+   ]
+  },
+  "D14": {
+   "id": "D14",
+   "what": "CI cache key includes the lockfile hash",
+   "why": "Stale node_modules cache made builds flaky",
+   "evidence": "cache key includes the hash of package-lock.json",
+   "status": "active",
+   "at": "2026-08-19",
+   "about": [
+    ".github/workflows/ci.yml"
+   ]
+  },
+  "D15": {
+   "id": "D15",
+   "what": "Subscription pauses are capped at 14 days",
+   "why": "11 of 15 interviewees pause for travel and most trips are under 2 weeks; survey and competitor scan agree",
+   "evidence": "pauses are capped at 14 days",
+   "status": "active",
+   "at": "2026-07-14",
+   "about": [
+    "api/subscriptions/billing.py"
+   ]
+  }
+ },
+ "files": [
+  {
+   "path": ".github/workflows/ci.yml",
+   "service": "infra"
+  },
+  {
+   "path": ".github/workflows/deploy.yml",
+   "service": "infra"
+  },
+  {
+   "path": "api/auth/tokens.py",
+   "service": "api"
+  },
+  {
+   "path": "api/orders/service.py",
+   "service": "api"
+  },
+  {
+   "path": "api/payments/retry.py",
+   "service": "api"
+  },
+  {
+   "path": "api/payments/webhooks.py",
+   "service": "api"
+  },
+  {
+   "path": "api/recommend/endpoint.py",
+   "service": "api"
+  },
+  {
+   "path": "api/subscriptions/billing.py",
+   "service": "api"
+  },
+  {
+   "path": "infra/backup/db_backup.yaml",
+   "service": "infra"
+  },
+  {
+   "path": "infra/k8s/api-deploy.yaml",
+   "service": "infra"
+  },
+  {
+   "path": "infra/scripts/rotate_secrets.sh",
+   "service": "infra"
+  },
+  {
+   "path": "infra/terraform/main.tf",
+   "service": "infra"
+  },
+  {
+   "path": "ml/eta/predict.py",
+   "service": "ml"
+  },
+  {
+   "path": "ml/recommend/features.py",
+   "service": "ml"
+  },
+  {
+   "path": "ml/recommend/model.py",
+   "service": "ml"
+  },
+  {
+   "path": "web/checkout/CheckoutPage.tsx",
+   "service": "web"
+  },
+  {
+   "path": "web/lib/api.ts",
+   "service": "web"
+  },
+  {
+   "path": "web/menu/MenuGrid.tsx",
+   "service": "web"
+  }
+ ],
+ "knows": [
+  {
+   "person": "arjun",
+   "item": "D1",
+   "kind": "Decision",
+   "score": 6.45,
+   "links": 10,
+   "last": "2026-08-05"
+  },
+  {
+   "person": "arjun",
+   "item": "api/orders/service.py",
+   "kind": "File",
+   "score": 6.02,
+   "links": 11,
+   "last": "2026-09-14"
+  },
+  {
+   "person": "arjun",
+   "item": "api/payments/retry.py",
+   "kind": "File",
+   "score": 5.12,
+   "links": 6,
+   "last": "2026-08-05"
+  },
+  {
+   "person": "arjun",
+   "item": "D3",
+   "kind": "Decision",
+   "score": 4.9,
+   "links": 8,
+   "last": "2026-08-19"
+  },
+  {
+   "person": "arjun",
+   "item": "D13",
+   "kind": "Decision",
+   "score": 4.32,
+   "links": 7,
+   "last": "2026-08-05"
+  },
+  {
+   "person": "arjun",
+   "item": "D15",
+   "kind": "Decision",
+   "score": 4.3,
+   "links": 7,
+   "last": "2026-08-03"
+  },
+  {
+   "person": "arjun",
+   "item": "api/subscriptions/billing.py",
+   "kind": "File",
+   "score": 4.22,
+   "links": 5,
+   "last": "2026-08-03"
+  },
+  {
+   "person": "arjun",
+   "item": "D5",
+   "kind": "Decision",
+   "score": 3.69,
+   "links": 6,
+   "last": "2026-08-03"
+  },
+  {
+   "person": "arjun",
+   "item": "api/auth/tokens.py",
+   "kind": "File",
+   "score": 2.65,
+   "links": 5,
+   "last": "2026-08-10"
+  },
+  {
+   "person": "arjun",
+   "item": "D4",
+   "kind": "Decision",
+   "score": 2.62,
+   "links": 4,
+   "last": "2026-08-10"
+  },
+  {
+   "person": "arjun",
+   "item": "D2",
+   "kind": "Decision",
+   "score": 2.62,
+   "links": 4,
+   "last": "2026-07-10"
+  },
+  {
+   "person": "arjun",
+   "item": "api/payments/webhooks.py",
+   "kind": "File",
+   "score": 2.55,
+   "links": 3,
+   "last": "2026-07-10"
+  },
+  {
+   "person": "arjun",
+   "item": "ml/eta/predict.py",
+   "kind": "File",
+   "score": 1.47,
+   "links": 3,
+   "last": "2026-07-24"
+  },
+  {
+   "person": "arjun",
+   "item": "web/checkout/CheckoutPage.tsx",
+   "kind": "File",
+   "score": 1.46,
+   "links": 3,
+   "last": "2026-07-28"
+  },
+  {
+   "person": "arjun",
+   "item": "D8",
+   "kind": "Decision",
+   "score": 1.06,
+   "links": 2,
+   "last": "2026-08-27"
+  },
+  {
+   "person": "arjun",
+   "item": "web/lib/api.ts",
+   "kind": "File",
+   "score": 0.96,
+   "links": 2,
+   "last": "2026-06-19"
+  },
+  {
+   "person": "arjun",
+   "item": "api/recommend/endpoint.py",
+   "kind": "File",
+   "score": 0.92,
+   "links": 2,
+   "last": "2026-04-30"
+  },
+  {
+   "person": "arjun",
+   "item": "infra/k8s/api-deploy.yaml",
+   "kind": "File",
+   "score": 0.82,
+   "links": 1,
+   "last": "2026-06-04"
+  },
+  {
+   "person": "arjun",
+   "item": "infra/scripts/rotate_secrets.sh",
+   "kind": "File",
+   "score": 0.58,
+   "links": 1,
+   "last": "2026-08-27"
+  },
+  {
+   "person": "arjun",
+   "item": "D11",
+   "kind": "Decision",
+   "score": 0.54,
+   "links": 1,
+   "last": "2026-07-24"
+  },
+  {
+   "person": "arjun",
+   "item": "D12",
+   "kind": "Decision",
+   "score": 0.47,
+   "links": 1,
+   "last": "2026-05-05"
+  },
+  {
+   "person": "kavya",
+   "item": "web/menu/MenuGrid.tsx",
+   "kind": "File",
+   "score": 3.39,
+   "links": 7,
+   "last": "2026-08-21"
+  },
+  {
+   "person": "kavya",
+   "item": "web/checkout/CheckoutPage.tsx",
+   "kind": "File",
+   "score": 2.48,
+   "links": 4,
+   "last": "2026-07-28"
+  },
+  {
+   "person": "kavya",
+   "item": "D12",
+   "kind": "Decision",
+   "score": 2.48,
+   "links": 4,
+   "last": "2026-07-28"
+  },
+  {
+   "person": "kavya",
+   "item": "web/lib/api.ts",
+   "kind": "File",
+   "score": 1.69,
+   "links": 4,
+   "last": "2026-09-07"
+  },
+  {
+   "person": "kavya",
+   "item": "api/subscriptions/billing.py",
+   "kind": "File",
+   "score": 1.09,
+   "links": 2,
+   "last": "2026-08-03"
+  },
+  {
+   "person": "kavya",
+   "item": "api/auth/tokens.py",
+   "kind": "File",
+   "score": 1.05,
+   "links": 2,
+   "last": "2026-08-10"
+  },
+  {
+   "person": "kavya",
+   "item": "D15",
+   "kind": "Decision",
+   "score": 0.98,
+   "links": 2,
+   "last": "2026-07-22"
+  },
+  {
+   "person": "kavya",
+   "item": ".github/workflows/ci.yml",
+   "kind": "File",
+   "score": 0.94,
+   "links": 1,
+   "last": "2026-08-12"
+  },
+  {
+   "person": "kavya",
+   "item": "D14",
+   "kind": "Decision",
+   "score": 0.66,
+   "links": 1,
+   "last": "2026-08-12"
+  },
+  {
+   "person": "kavya",
+   "item": "D4",
+   "kind": "Decision",
+   "score": 0.49,
+   "links": 1,
+   "last": "2026-06-02"
+  },
+  {
+   "person": "neha",
+   "item": "D15",
+   "kind": "Decision",
+   "score": 1.34,
+   "links": 2,
+   "last": "2026-07-20"
+  },
+  {
+   "person": "neha",
+   "item": "D5",
+   "kind": "Decision",
+   "score": 0.9,
+   "links": 1,
+   "last": "2026-07-20"
+  },
+  {
+   "person": "neha",
+   "item": "D2",
+   "kind": "Decision",
+   "score": 0.83,
+   "links": 1,
+   "last": "2026-06-12"
+  },
+  {
+   "person": "priya",
+   "item": "D9",
+   "kind": "Decision",
+   "score": 5.32,
+   "links": 8,
+   "last": "2026-08-11"
+  },
+  {
+   "person": "priya",
+   "item": "infra/backup/db_backup.yaml",
+   "kind": "File",
+   "score": 5.22,
+   "links": 7,
+   "last": "2026-09-03"
+  },
+  {
+   "person": "priya",
+   "item": "D6",
+   "kind": "Decision",
+   "score": 5.04,
+   "links": 8,
+   "last": "2026-08-07"
+  },
+  {
+   "person": "priya",
+   "item": "D17",
+   "kind": "Decision",
+   "score": 4.37,
+   "links": 7,
+   "last": "2026-08-11"
+  },
+  {
+   "person": "priya",
+   "item": ".github/workflows/deploy.yml",
+   "kind": "File",
+   "score": 4.13,
+   "links": 8,
+   "last": "2026-08-11"
+  },
+  {
+   "person": "priya",
+   "item": "D7",
+   "kind": "Decision",
+   "score": 4.07,
+   "links": 7,
+   "last": "2026-07-01"
+  },
+  {
+   "person": "priya",
+   "item": "infra/terraform/main.tf",
+   "kind": "File",
+   "score": 4.03,
+   "links": 7,
+   "last": "2026-07-01"
+  },
+  {
+   "person": "priya",
+   "item": "D16",
+   "kind": "Decision",
+   "score": 3.54,
+   "links": 6,
+   "last": "2026-08-07"
+  },
+  {
+   "person": "priya",
+   "item": "D8",
+   "kind": "Decision",
+   "score": 3.32,
+   "links": 5,
+   "last": "2026-08-27"
+  },
+  {
+   "person": "priya",
+   "item": "D14",
+   "kind": "Decision",
+   "score": 2.91,
+   "links": 4,
+   "last": "2026-08-20"
+  },
+  {
+   "person": "priya",
+   "item": "infra/scripts/rotate_secrets.sh",
+   "kind": "File",
+   "score": 2.68,
+   "links": 3,
+   "last": "2026-08-27"
+  },
+  {
+   "person": "priya",
+   "item": ".github/workflows/ci.yml",
+   "kind": "File",
+   "score": 2.27,
+   "links": 3,
+   "last": "2026-08-20"
+  },
+  {
+   "person": "priya",
+   "item": "infra/k8s/api-deploy.yaml",
+   "kind": "File",
+   "score": 1.23,
+   "links": 2,
+   "last": "2026-06-04"
+  },
+  {
+   "person": "rohan",
+   "item": "ml/eta/predict.py",
+   "kind": "File",
+   "score": 4.2,
+   "links": 6,
+   "last": "2026-08-07"
+  },
+  {
+   "person": "rohan",
+   "item": "D10",
+   "kind": "Decision",
+   "score": 4.05,
+   "links": 6,
+   "last": "2026-09-10"
+  },
+  {
+   "person": "rohan",
+   "item": "D11",
+   "kind": "Decision",
+   "score": 3.81,
+   "links": 6,
+   "last": "2026-07-24"
+  },
+  {
+   "person": "rohan",
+   "item": "ml/recommend/features.py",
+   "kind": "File",
+   "score": 2.69,
+   "links": 5,
+   "last": "2026-09-10"
+  },
+  {
+   "person": "rohan",
+   "item": "ml/recommend/model.py",
+   "kind": "File",
+   "score": 2.63,
+   "links": 6,
+   "last": "2026-09-03"
+  },
+  {
+   "person": "rohan",
+   "item": "api/orders/service.py",
+   "kind": "File",
+   "score": 2.52,
+   "links": 5,
+   "last": "2026-08-19"
+  },
+  {
+   "person": "rohan",
+   "item": "api/recommend/endpoint.py",
+   "kind": "File",
+   "score": 2.3,
+   "links": 3,
+   "last": "2026-04-30"
+  },
+  {
+   "person": "rohan",
+   "item": "web/menu/MenuGrid.tsx",
+   "kind": "File",
+   "score": 1.03,
+   "links": 2,
+   "last": "2026-08-21"
+  },
+  {
+   "person": "rohan",
+   "item": "D3",
+   "kind": "Decision",
+   "score": 0.97,
+   "links": 2,
+   "last": "2026-05-28"
+  }
+ ],
+ "radar": [
+  {
+   "item": "D1",
+   "kind": "Decision",
+   "person": "arjun",
+   "score": 6.45
+  },
+  {
+   "item": "api/payments/retry.py",
+   "kind": "File",
+   "person": "arjun",
+   "score": 5.12
+  },
+  {
+   "item": "api/payments/webhooks.py",
+   "kind": "File",
+   "person": "arjun",
+   "score": 2.55
+  },
+  {
+   "item": "D6",
+   "kind": "Decision",
+   "person": "priya",
+   "score": 5.04
+  },
+  {
+   "item": "D7",
+   "kind": "Decision",
+   "person": "priya",
+   "score": 4.07
+  },
+  {
+   "item": "D9",
+   "kind": "Decision",
+   "person": "priya",
+   "score": 5.32
+  },
+  {
+   "item": ".github/workflows/deploy.yml",
+   "kind": "File",
+   "person": "priya",
+   "score": 4.13
+  },
+  {
+   "item": "infra/backup/db_backup.yaml",
+   "kind": "File",
+   "person": "priya",
+   "score": 5.22
+  },
+  {
+   "item": "infra/terraform/main.tf",
+   "kind": "File",
+   "person": "priya",
+   "score": 4.03
+  },
+  {
+   "item": "D10",
+   "kind": "Decision",
+   "person": "rohan",
+   "score": 4.05
+  },
+  {
+   "item": "ml/recommend/features.py",
+   "kind": "File",
+   "person": "rohan",
+   "score": 2.69
+  },
+  {
+   "item": "ml/recommend/model.py",
+   "kind": "File",
+   "person": "rohan",
+   "score": 2.63
+  }
+ ],
+ "dry_runs": {
+  "arjun": {
+   "agenda": [
+    "D1",
+    "api/payments/retry.py",
+    "api/payments/webhooks.py"
+   ],
+   "combination_risk": [],
+   "weak_backup": {}
+  },
+  "priya": {
+   "agenda": [
+    ".github/workflows/deploy.yml",
+    "D6",
+    "D7",
+    "D9",
+    "infra/backup/db_backup.yaml",
+    "infra/terraform/main.tf"
+   ],
+   "combination_risk": [],
+   "weak_backup": {
+    "D14": "kavya",
+    ".github/workflows/ci.yml": "kavya"
+   }
+  },
+  "arjun+priya": {
+   "agenda": [
+    ".github/workflows/deploy.yml",
+    "D1",
+    "D6",
+    "D7",
+    "D8",
+    "D9",
+    "api/payments/retry.py",
+    "api/payments/webhooks.py",
+    "infra/backup/db_backup.yaml",
+    "infra/k8s/api-deploy.yaml",
+    "infra/scripts/rotate_secrets.sh",
+    "infra/terraform/main.tf"
+   ],
+   "combination_risk": [
+    "D8",
+    "infra/scripts/rotate_secrets.sh",
+    "infra/k8s/api-deploy.yaml"
+   ],
+   "weak_backup": {}
+  }
+ },
+ "traces": {
+  "D1": {
+   "sources": [
+    {
+     "ref": "thread:spaces/payments/threads/d0c2be525a4",
+     "kind": "Thread",
+     "title": "RupeeRail Status: Scheduled maintenance: RupeeRail API deploy 14:00-14:10 IST. Webhook delivery may be delayed.",
+     "at": "2026-08-04",
+     "people": [
+      "arjun"
+     ]
+    },
+    {
+     "ref": "ticket:PAY-88",
+     "kind": "Ticket",
+     "title": "Orders marked payment_failed during RupeeRail deploys",
+     "at": "2026-08-04",
+     "people": [
+      "arjun"
+     ]
+    },
+    {
+     "ref": "session:d3cbce7c-7c94-5d99-9c94-39d06287c412",
+     "kind": "AgentSession",
+     "title": "Retry policy for gateway deploy gaps",
+     "at": "2026-08-05",
+     "people": [
+      "arjun"
+     ]
+    },
+    {
+     "ref": "pr:124",
+     "kind": "PR",
+     "title": "payments: 7 retries with exponential backoff",
+     "at": "2026-08-05",
+     "people": [
+      "arjun"
+     ]
+    }
+   ],
+   "supersedes": [
+    {
+     "id": "D13",
+     "what": "Payment retries = 3 (30s, 60s, 120s)",
+     "incidents": []
+    }
+   ],
+   "patterns": [
+    "Retry with exponential backoff"
+   ],
+   "research": [],
+   "insights": [],
+   "features": []
+  },
+  "D2": {
+   "sources": [
+    {
+     "ref": "pr:118",
+     "kind": "PR",
+     "title": "webhooks: dedupe on event_id",
+     "at": "2026-06-11",
+     "people": [
+      "arjun"
+     ]
+    },
+    {
+     "ref": "doc:docs/adr/0003-webhook-idempotency.md",
+     "kind": "Doc",
+     "title": "ADR 0003: Webhook idempotency",
+     "at": "2026-06-12",
+     "people": [
+      "neha"
+     ]
+    }
+   ],
+   "supersedes": [],
+   "patterns": [
+    "Idempotency key"
+   ],
+   "research": [],
+   "insights": [],
+   "features": []
+  },
+  "D3": {
+   "sources": [
+    {
+     "ref": "pr:115",
+     "kind": "PR",
+     "title": "orders: optimistic locking on cart checkout",
+     "at": "2026-05-28",
+     "people": [
+      "arjun",
+      "rohan"
+     ]
+    }
+   ],
+   "supersedes": [],
+   "patterns": [
+    "Optimistic locking"
+   ],
+   "research": [],
+   "insights": [],
+   "features": []
+  },
+  "D4": {
+   "sources": [
+    {
+     "ref": "pr:116",
+     "kind": "PR",
+     "title": "auth: 15 minute access tokens with refresh",
+     "at": "2026-06-02",
+     "people": [
+      "arjun",
+      "kavya"
+     ]
+    }
+   ],
+   "supersedes": [],
+   "patterns": [],
+   "research": [],
+   "insights": [],
+   "features": []
+  },
+  "D5": {
+   "sources": [
+    {
+     "ref": "pr:102",
+     "kind": "PR",
+     "title": "subscriptions: billing cycle and proration",
+     "at": "2026-04-08",
+     "people": [
+      "arjun"
+     ]
+    },
+    {
+     "ref": "doc:docs/prd/subscriptions.md",
+     "kind": "Doc",
+     "title": "PRD: Weekly tiffin subscriptions",
+     "at": "2026-07-20",
+     "people": [
+      "neha"
+     ]
+    }
+   ],
+   "supersedes": [],
+   "patterns": [],
+   "research": [],
+   "insights": [],
+   "features": []
+  },
+  "D6": {
+   "sources": [
+    {
+     "ref": "session:1005a014-d2a1-0231-fd42-5aabb26ae1b0",
+     "kind": "AgentSession",
+     "title": "Canary deploys in GitHub Actions",
+     "at": "2026-05-18",
+     "people": [
+      "priya"
+     ]
+    },
+    {
+     "ref": "pr:114",
+     "kind": "PR",
+     "title": "deploy: canary 10% for 30 minutes with auto-rollback",
+     "at": "2026-05-19",
+     "people": [
+      "priya"
+     ]
+    },
+    {
+     "ref": "doc:docs/runbooks/deploy.md",
+     "kind": "Doc",
+     "title": "Runbook: deploying the api",
+     "at": "2026-05-20",
+     "people": [
+      "priya"
+     ]
+    }
+   ],
+   "supersedes": [
+    {
+     "id": "D16",
+     "what": "Deploys roll out to all pods at once",
+     "incidents": [
+      {
+       "id": "INC-1",
+       "title": "Checkout down for 38 minutes after an all-at-once deploy",
+       "at": "2026-05-12",
+       "severity": "sev1"
+      }
+     ]
+    }
+   ],
+   "patterns": [
+    "Canary release"
+   ],
+   "research": [
+    {
+     "id": "R1",
+     "title": "Progressive delivery after INC-1",
+     "doc": "docs/research/canary-deploys.md",
+     "cites": [
+      {
+       "title": "Details of the Cloudflare outage on July 2, 2019",
+       "publisher": "Cloudflare",
+       "url": "https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019/",
+       "date": "2019-07-12"
+      }
+     ]
+    }
+   ],
+   "insights": [],
+   "features": []
+  },
+  "D7": {
+   "sources": [
+    {
+     "ref": "pr:121",
+     "kind": "PR",
+     "title": "terraform: remote state with locking",
+     "at": "2026-07-01",
+     "people": [
+      "priya"
+     ]
+    },
+    {
+     "ref": "thread:spaces/infra/threads/37595a147be",
+     "kind": "Thread",
+     "title": "Priya Iyer: PSA: Terraform state now lives in S3 with a DynamoDB lock. Please never run terraform apply from a laptop again; CI applies on merge to main. Last week a laptop apply with stale state tried to destroy the Redis cluster.",
+     "at": "2026-07-01",
+     "people": [
+      "priya"
+     ]
+    }
+   ],
+   "supersedes": [],
+   "patterns": [],
+   "research": [],
+   "insights": [],
+   "features": []
+  },
+  "D8": {
+   "sources": [
+    {
+     "ref": "thread:spaces/infra/threads/84cc0678d46",
+     "kind": "Thread",
+     "title": "Priya Iyer: Rotated the RupeeRail API key on staging per the quarterly checklist. Charges work but no webhooks are being processed?",
+     "at": "2026-08-26",
+     "people": [
+      "arjun",
+      "priya"
+     ]
+    },
+    {
+     "ref": "pr:127",
+     "kind": "PR",
+     "title": "scripts: rotate gateway key and webhook secret together",
+     "at": "2026-08-27",
+     "people": [
+      "arjun",
+      "priya"
+     ]
+    }
+   ],
+   "supersedes": [],
+   "patterns": [],
+   "research": [],
+   "insights": [],
+   "features": []
+  },
+  "D9": {
+   "sources": [
+    {
+     "ref": "pr:119",
+     "kind": "PR",
+     "title": "backup: 3 AM IST dumps, failure alert, quarterly restore test",
+     "at": "2026-06-22",
+     "people": [
+      "priya"
+     ]
+    },
+    {
+     "ref": "doc:docs/runbooks/backup-restore.md",
+     "kind": "Doc",
+     "title": "Runbook: backups and restores",
+     "at": "2026-06-23",
+     "people": [
+      "priya"
+     ]
+    }
+   ],
+   "supersedes": [
+    {
+     "id": "D17",
+     "what": "Nightly pg_dump with no restore test",
+     "incidents": [
+      {
+       "id": "INC-2",
+       "title": "Database backups silently empty for 17 days",
+       "at": "2026-06-16",
+       "severity": "sev2"
+      }
+     ]
+    }
+   ],
+   "patterns": [],
+   "research": [
+    {
+     "id": "R2",
+     "title": "Backups we can trust",
+     "doc": "docs/research/backup-restore.md",
+     "cites": [
+      {
+       "title": "Postmortem of database outage of January 31",
+       "publisher": "GitLab",
+       "url": "https://about.gitlab.com/blog/2017/02/10/postmortem-of-database-outage-of-january-31/",
+       "date": "2017-02-10"
+      }
+     ]
+    }
+   ],
+   "insights": [],
+   "features": []
+  },
+  "D10": {
+   "sources": [
+    {
+     "ref": "ticket:REC-9",
+     "kind": "Ticket",
+     "title": "Recommendations push expensive meals",
+     "at": "2026-06-24",
+     "people": [
+      "rohan"
+     ]
+    },
+    {
+     "ref": "session:4873c75b-8409-317a-89f6-de4c496bf293",
+     "kind": "AgentSession",
+     "title": "Remove price from recommendation ranking",
+     "at": "2026-06-26",
+     "people": [
+      "rohan"
+     ]
+    },
+    {
+     "ref": "pr:120",
+     "kind": "PR",
+     "title": "recommend: remove price features",
+     "at": "2026-06-27",
+     "people": [
+      "rohan"
+     ]
+    }
+   ],
+   "supersedes": [],
+   "patterns": [],
+   "research": [],
+   "insights": [],
+   "features": []
+  },
+  "D11": {
+   "sources": [
+    {
+     "ref": "pr:123",
+     "kind": "PR",
+     "title": "eta: static fallback on model timeout",
+     "at": "2026-07-24",
+     "people": [
+      "arjun",
+      "rohan"
+     ]
+    }
+   ],
+   "supersedes": [],
+   "patterns": [
+    "Fallback / circuit breaker"
+   ],
+   "research": [],
+   "insights": [],
+   "features": []
+  },
+  "D12": {
+   "sources": [
+    {
+     "ref": "pr:113",
+     "kind": "PR",
+     "title": "checkout: disable Pay after first click",
+     "at": "2026-05-05",
+     "people": [
+      "arjun",
+      "kavya"
+     ]
+    }
+   ],
+   "supersedes": [],
+   "patterns": [],
+   "research": [],
+   "insights": [],
+   "features": []
+  },
+  "D14": {
+   "sources": [
+    {
+     "ref": "session:5c863f11-a336-4c11-c120-e162d8bef797",
+     "kind": "AgentSession",
+     "title": "Fix flaky CI cache",
+     "at": "2026-08-19",
+     "people": [
+      "priya"
+     ]
+    },
+    {
+     "ref": "pr:126",
+     "kind": "PR",
+     "title": "ci: cache key includes lockfile hash",
+     "at": "2026-08-20",
+     "people": [
+      "priya"
+     ]
+    }
+   ],
+   "supersedes": [],
+   "patterns": [],
+   "research": [],
+   "insights": [],
+   "features": []
+  },
+  "D15": {
+   "sources": [
+    {
+     "ref": "thread:spaces/product/threads/724c744b879",
+     "kind": "Thread",
+     "title": "Neha Kapoor: Proposal from the research: pauses are capped at 14 days. Interviews, survey and competitors all point the same way. Longer than that, cancel and resubscribe.",
+     "at": "2026-07-14",
+     "people": [
+      "arjun",
+      "kavya",
+      "neha"
+     ]
+    },
+    {
+     "ref": "doc:docs/prd/subscriptions.md",
+     "kind": "Doc",
+     "title": "PRD: Weekly tiffin subscriptions",
+     "at": "2026-07-20",
+     "people": [
+      "neha"
+     ]
+    },
+    {
+     "ref": "pr:122",
+     "kind": "PR",
+     "title": "subscriptions: pause up to 14 days",
+     "at": "2026-07-22",
+     "people": [
+      "arjun",
+      "kavya"
+     ]
+    }
+   ],
+   "supersedes": [],
+   "patterns": [],
+   "research": [],
+   "insights": [
+    {
+     "id": "I1",
+     "text": "11 of 15 interviewees pause during travel; most trips are under 2 weeks",
+     "research": "Why subscribers pause"
+    },
+    {
+     "id": "I2",
+     "text": "62% of surveyed subscribers would rather pause than cancel",
+     "research": "Pause survey"
+    },
+    {
+     "id": "I3",
+     "text": "2 of 3 competitors cap pauses at 2-4 weeks",
+     "research": "Competitor pause policies"
+    }
+   ],
+   "features": [
+    "Subscription pause"
+   ]
+  }
+ },
+ "handover": {
+  "learner": "meera",
+  "before": 12,
+  "covered": {
+   "infra/scripts/rotate_secrets.sh": {
+    "via": "KT session with Arjun",
+    "at": "2026-09-24"
+   },
+   "D1": {
+    "via": "KT session with Arjun",
+    "at": "2026-09-24"
+   },
+   "D8": {
+    "via": "KT session with Arjun",
+    "at": "2026-09-24"
+   },
+   "api/payments/retry.py": {
+    "via": "her own PR",
+    "at": "2026-09-25"
+   },
+   "api/payments/webhooks.py": {
+    "via": "her own PR",
+    "at": "2026-09-28"
+   },
+   "infra/k8s/api-deploy.yaml": {
+    "via": "her own PR",
+    "at": "2026-09-25"
+   }
+  },
+  "remaining": [
+   ".github/workflows/deploy.yml",
+   "D6",
+   "D7",
+   "D9",
+   "infra/backup/db_backup.yaml",
+   "infra/terraform/main.tf"
+  ],
+  "mentor": {
+   "person": "kavya",
+   "reason": "weak backup on D14 (CI cache) and ci.yml; otherwise hire DevOps"
+  }
+ },
+ "chunks": [
+  {
+   "ref": "doc:docs/adr/0003-webhook-idempotency.md",
+   "kind": "Doc",
+   "title": "ADR 0003: Webhook idempotency",
+   "seq": 0,
+   "text": "# ADR 0003: Webhook idempotency\n\n**Status:** accepted (written by Neha after a walkthrough with Arjun)\n**Context:** RupeeRail retries webhooks when our endpoint is slow, so the same event can arrive more than once (PAY-61).\n**Decision:** dedupe on event_id. Every event id is stored; a repeat is acknowledged and ignored.\n**Consequences:** the processed_events table grows; we keep 90 days.",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/design/orders-api.md",
+   "kind": "Doc",
+   "title": "Design: orders API v2",
+   "seq": 0,
+   "text": "# Design: orders API v2\n\n## Context\n\nThe orders API grew one endpoint at a time during the April build. The kitchen dashboard, the customer app and the\nops export all read orders through api/orders/service.py, and each caller added its own query parameters. By late\nMay we had three ways to filter by status, no pagination, and a list endpoint that returned every order for an area\nin one response. On a busy lunch day in Bengaluru that response is 4 MB and takes 2.1 s at p95.\n\nThis note proposes a v2 shape for the read side. Writes (create, cancel) stay as they are.\n\n## Goals\n\n- One list endpoint with cursor pagination, stable under concurrent inserts.\n- One way to filter: status, area, delivery date, subscription id.\n- p95 under 300 ms for the kitchen dashboard query (one area, one delivery slot).\n- No breaking change for the mobile app until it ships the new client.\n\n## Non-goals\n\n- Changing how orders are created from subscriptions (billing owns that).\n- Real-time updates. The kitchen dashboard polls every 20 s and that is fine for now.\n\n## Proposal\n\nGET /v2/orders takes status, area, date, subscription_id, limit (default 50, max 200) and cursor. The cursor is an\nopaque base64 of (delivery_slot, id), which is the sort key. Offset pagination was rejected: new orders arrive during\nthe lunch rush and offset pages would skip or repeat rows.\n\nThe response carries next_cursor, or null on the last page. Each order embeds only what the list views need: id,\nstatus, area, slot, item count, total. The full order with line items stays at GET /v2/orders/{id}.\n\nWe add a composite index on (area, delivery_slot, id). The current index on (area) alone forces a sort on every\ndashboard call.\n\n## Status filter\n",
+   "files": [
+    "api/orders/service.py"
+   ]
+  },
+  {
+   "ref": "doc:docs/design/orders-api.md",
+   "kind": "Doc",
+   "title": "Design: orders API v2",
+   "seq": 1,
+   "text": "Today the kitchen sends status=pending,preparing, the app sends active=true, and the export sends no filter and\ndrops cancelled rows client-side. v2 accepts status as a comma list only. The v1 endpoint maps active=true to the\nsame list so old clients keep working.\n\n## Cancel window\n\nOps asked whether the 10 minute cancel window should be visible in the list. It should: each order gets\ncancel_until (a timestamp), so the app can hide the cancel button without asking the server.\n\n## Rollout\n\n1. Ship /v2/orders behind no flag; nothing calls it yet.\n2. Move the kitchen dashboard first (we own both sides).\n3. Move the ops export, then the mobile app in its next release.\n4. Keep v1 for 60 days, log every call, and remove it when the log is quiet for two weeks.\n\n## Open questions\n\n- Should the export get a streaming CSV endpoint instead of paging through JSON? Probably yes, later.\n- Do we need area-level rate limits? Only if a partner integration shows up.",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/design/web-performance-audit.md",
+   "kind": "Doc",
+   "title": "Design: web performance audit (June)",
+   "seq": 0,
+   "text": "# Design: web performance audit (June)\n\n## Why now\n\nNPS comments in May mentioned \"slow menu\" eleven times. Real-user monitoring agrees: on mid-range Android phones in\nPune the menu page has a largest contentful paint (LCP) of 4.8 s at p75. Google's \"good\" line is 2.5 s. Checkout is\nbetter at 2.9 s but still above the line. This audit lists what is slow and what we fix first.\n\n## Method\n\n- Real-user metrics from the last 14 days, split by page and device class.\n- Lighthouse runs on a throttled profile (Moto G class, slow 4G), five runs per page, median reported.\n- A bundle analysis of the production build.\n\n## Findings: menu page\n\n1. Every dish image loads eagerly. A typical menu shows 36 dishes, so the page downloads about 2.6 MB of JPEGs\n   before it settles, most of them below the fold.\n2. Images are served at 1200 px wide even on 360 px screens. No srcset.\n3. web/menu/MenuGrid.tsx re-renders the whole grid when the veg filter changes, because the filter state lives in the\n   parent and every card gets a new props object.\n4. The grid has no fixed card height, so cards jump as images arrive. Cumulative layout shift is 0.31 (good is under 0.1).\n\n## Findings: checkout\n\n1. web/checkout/CheckoutPage.tsx imports the full date library for one formatter. That is 71 KB gzipped.\n2. The address autocomplete script loads on page load, not when the field gets focus.\n3. web/lib/api.ts retries a failed request three times with no backoff, so on a flaky network a spinner can hang for\n   20 s before the user sees an error.\n\n## Plan, in order\n\n| Fix | Page | Expected effect |\n|---|---|---|",
+   "files": [
+    "web/checkout/CheckoutPage.tsx",
+    "web/menu/MenuGrid.tsx",
+    "web/lib/api.ts"
+   ]
+  },
+  {
+   "ref": "doc:docs/design/web-performance-audit.md",
+   "kind": "Doc",
+   "title": "Design: web performance audit (June)",
+   "seq": 1,
+   "text": "| Lazy-load dish images, add width/height | menu | LCP -1.5 s, CLS under 0.1 |\n| srcset at 360/720/1200 px from the CDN | menu | -60% image bytes on phones |\n| Memoize cards, keep filter state local | menu | smoother filter toggle |\n| Replace the date library with Intl.DateTimeFormat | checkout | -71 KB JS |\n| Load autocomplete on focus | checkout | -180 ms main-thread time |\n| Timeout + one retry with backoff in the API client | all | errors show in under 8 s |\n\n## Results so far\n\nLazy loading and fixed card heights shipped on June 8. Menu LCP p75 dropped from 4.8 s to 3.1 s and CLS from 0.31 to\n0.04. Skeleton loaders followed. srcset is blocked on the CDN image-resize setting, which Priya is checking.\n\n## What we are not doing\n\nA move to server-side rendering came up. It would help first paint, but it is a large change to the build and deploy\npipeline for a gain we can mostly get from images alone. We revisit it if LCP stays above 2.5 s after the image work.",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/onboarding/meera-payments-notes.md",
+   "kind": "Doc",
+   "title": "Notes: payments, from my first week",
+   "seq": 0,
+   "text": "# Notes: payments, from my first week\n\n## What I learned in week one\n\nThese are my notes from the KT session with Arjun on Sep 24, my first two PRs and reading the history. Written for\nthe next person who joins backend.\n\n## Retries\n\napi/payments/retry.py retries a failed charge 7 times with exponential backoff. It looks like too many, but the\ngateway pauses webhooks for a few minutes during its own deploys, and fewer retries lost real orders in August.\nThe count is now read from PAYMENT_RETRIES, default 7. Do not lower it without reading PAY-88.\n\n## Webhooks\n\napi/payments/webhooks.py dedupes on event_id, so a webhook delivered twice is safe. It verifies every webhook with\nWEBHOOK_SECRET. Signature failures now log at error level with a metric; before my PR they were debug-only, which is\nwhy a broken key rotation on staging went unnoticed for a day.\n\n## Rotating keys\n\nRotating the gateway API key also rotates the webhook signing secret on the gateway's side. Always use\ninfra/scripts/rotate_secrets.sh, which updates both and sends a test webhook. Never rotate by hand in the console.\n\n## What I still do not know\n\n- How canary deploys decide to roll back (Priya's area; she has left).\n- How the database restore test works and who runs it now.\n- The Terraform state lock setup.\n\nThose are on the remaining KT list. Kavya knows the CI side and is the closest backup.",
+   "files": [
+    "api/payments/retry.py",
+    "api/payments/webhooks.py",
+    "infra/scripts/rotate_secrets.sh"
+   ]
+  },
+  {
+   "ref": "doc:docs/postmortems/2026-05-12-checkout-outage.md",
+   "kind": "Doc",
+   "title": "Postmortem: checkout outage (May 12)",
+   "seq": 0,
+   "text": "# Postmortem: checkout outage (May 12)\n\n**Impact:** checkout returned 502 for 38 minutes at lunch peak. About 140 orders lost.\n**Cause:** v1.8 shipped a config that needed a new env var. The pipeline rolls out to all pods at once,\nso every api pod crashlooped at the same time.\n**Action items:** research progressive delivery (Priya), add an env-var check to CI (Priya).",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/prd/subscriptions.md",
+   "kind": "Doc",
+   "title": "PRD: Weekly tiffin subscriptions",
+   "seq": 0,
+   "text": "# PRD: Weekly tiffin subscriptions\n\n## Problem\nOffice workers in Pune want a home-style lunch without ordering every day.\n\n## Billing\n- We charge on day 1 of each cycle; paused days are prorated as credit on the next cycle.\n- Failed charges are retried automatically before a subscription is marked unpaid.\n\n## Pausing (added 2026-07-20)\n- Customers can pause from the app. Based on interviews, the survey and the competitor scan\n  (docs/research/), pauses are capped at 14 days. Longer breaks should cancel and resubscribe.\n\n## Out of scope for v1\nFamily plans, corporate billing.",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/research/backup-restore.md",
+   "kind": "Doc",
+   "title": "Research: backups we can trust",
+   "seq": 0,
+   "text": "# Research: backups we can trust\n\nGitLab's 31 Jan 2017 database incident: five backup methods were set up and none worked when needed,\nbecause nobody had tested a restore. Our INC-2 is the same failure in miniature.\n\nTakeaways: alert on failed or tiny dumps; a backup only counts once it has been restored.\nPlan: dump at 3 AM IST (lowest traffic), alert if the job fails or the dump is under 1 MB,\nand a restore test every quarter into a scratch database with row-count checks.",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/research/canary-deploys.md",
+   "kind": "Doc",
+   "title": "Research: progressive delivery after INC-1",
+   "seq": 0,
+   "text": "# Research: progressive delivery after INC-1\n\nCloudflare's 2 July 2019 outage: one WAF rule was pushed to every machine at once and CPU hit 100% worldwide.\nTheir fix was staged rollouts that watch error rates before going wider.\nSame shape as our INC-1: one change, every pod, no stop button.\n\nOptions considered: blue/green (needs 2x capacity, too expensive now), canary (cheap on k8s).\nRecommendation: canary 10% of pods for 30 minutes and roll back automatically if 5xx goes above 2%.",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/research/competitor-scan.md",
+   "kind": "Doc",
+   "title": "Research: competitor pause policies",
+   "seq": 0,
+   "text": "# Research: competitor pause policies\n\nThree meal-subscription competitors checked. Two cap pauses at 2-4 weeks; one allows unlimited pauses\nbut charges a holding fee.",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/research/corporate-plans-discovery.md",
+   "kind": "Doc",
+   "title": "Research: corporate plans discovery",
+   "seq": 0,
+   "text": "# Research: corporate plans discovery\n\n## Why we looked\n\nSales got nine inbound requests in Q2 from companies wanting lunch for their teams. Today a company can only buy\nindividual subscriptions with a shared card. We wanted to know whether a corporate plan is a real segment or a few\nloud requests.\n\n## What we did\n\n- 8 interviews: 5 HR or admin leads, 3 finance leads, at companies of 40 to 600 people in Bengaluru and Pune.\n- A look at our own data: 214 subscribers pay with a card that is also used by at least two other subscribers.\n- A scan of three B2B meal providers' public pricing pages.\n\n## What we heard\n\n**Budget is per employee, not per meal.** Six of eight buyers set a monthly allowance per person. They want\nemployees to choose meals inside it, and they want overspend to be the employee's problem, not an invoice dispute.\n\n**Invoices matter more than price.** Finance leads asked for one GST invoice per month with a cost-centre split.\nTwo said they stopped using a competitor because invoices arrived per order.\n\n**Hybrid work breaks fixed plans.** Most teams are in the office two or three days a week, and the days change.\nA weekly subscription that delivers Monday to Friday wastes meals. This echoes the pause research: people want\ncontrol over which days they eat, not just whether they subscribe.\n\n**Delivery to one address is a must.** Buyers want one drop at reception per slot, not 40 riders.\n\n## Numbers\n\n- The 214 shared-card subscribers spend 23% more per month than the average subscriber and churn at half the rate.\n- Buyers named an allowance of 3,000 to 4,500 rupees per employee per month.",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/research/corporate-plans-discovery.md",
+   "kind": "Doc",
+   "title": "Research: corporate plans discovery",
+   "seq": 1,
+   "text": "- At our current margin, a 100-seat company is worth about as much as 130 individual subscribers, with one sales\n  conversation instead of 130 sign-ups.\n\n## What it would take\n\n- Company accounts with seats and allowances (new model in billing, new admin screens).\n- Monthly consolidated invoicing with cost centres.\n- A \"pick your office days\" schedule instead of Monday to Friday.\n- Batched delivery to one address, which ops can already do with the kitchen prep list per area.\n\n## Recommendation\n\nThe segment is real but the build is large, and three of the four pieces touch billing, which is also where the\npause work lands this quarter. Park corporate plans until Q4. In the meantime, the \"pick your days\" schedule is worth\nbuilding for everyone, since individual subscribers asked for \"skip a day\" as the top request this month.\n\n## Open questions for Q4\n\n- Do employees pay overspend by card, or does the company cap it hard?\n- Is one invoice per company enough, or do larger customers need one per office?",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/research/eta-model-eval.md",
+   "kind": "Doc",
+   "title": "Research: ETA model evaluation",
+   "seq": 0,
+   "text": "# Research: ETA model evaluation\n\n## Question\n\nCustomers see a delivery ETA when they place a same-day order and again when the rider picks up. Support tickets\nabout late tiffins rose after we added two new kitchens. Is our ETA model getting worse, and which features would\nfix it?\n\n## Current model\n\nml/eta/predict.py serves a gradient-boosted tree model trained weekly on the last 60 days of deliveries. Features:\nkitchen id, area, slot, distance by road, rider's last three trip times, and order count in the slot. The target is\nminutes from pickup to doorstep.\n\n## Data\n\n- 41,200 deliveries from Apr 15 to Jun 20 across Bengaluru, Pune and Mumbai.\n- Holdout: the last 10 days, so the evaluation sees the new kitchens.\n- Labels come from the rider app's \"delivered\" tap. About 3% of taps happen more than 5 minutes after the actual\n  handover (riders tap at the next stop), so we drop trips where the GPS shows the rider already moving away.\n\n## Results on the holdout\n\n| Model | MAE (min) | p90 abs error (min) | Late by over 10 min |\n|---|---|---|---|\n| Distance-only baseline | 7.9 | 17.4 | 14.1% |\n| Current model | 5.2 | 11.8 | 8.6% |\n| Current + rain | 4.6 | 10.1 | 6.9% |\n| Current + rain + kitchen prep backlog | 4.3 | 9.4 | 6.2% |\n\nThe current model is not getting worse overall. The error is concentrated in two places: rainy afternoons in\nMumbai and Pune (MAE 9.8 min) and the two new kitchens, where the model has under two weeks of history.\n\n## Rain\n\nWe pull hourly rainfall per area from a public weather API. A simple \"raining at pickup\" flag cuts MAE on rainy",
+   "files": [
+    "ml/eta/predict.py"
+   ]
+  },
+  {
+   "ref": "doc:docs/research/eta-model-eval.md",
+   "kind": "Doc",
+   "title": "Research: ETA model evaluation",
+   "seq": 1,
+   "text": "trips from 9.8 to 6.1 minutes. Intensity buckets add a little more but need a paid tier, so not now.\n\n## New kitchens\n\nFor a kitchen with little history we fall back to the area average for prep time. Adding the kitchen's current\nbacklog (orders accepted but not picked up) helps every kitchen, not only new ones. It needs a small read from the\norders service, which is already exposed for the kitchen dashboard.\n\n## Recommendation\n\n1. Ship the rain flag now. It is one feature, one lookup, and the biggest gain.\n2. Add prep backlog after the orders API v2 list endpoint is live, to avoid a new query on the hot path.\n3. Show ETA as a 10 minute window instead of a single minute value. The survey last quarter said customers trust a\n   window more, and it matches our real p90 error better.\n\n## Risks\n\n- The weather API has had two outages this year. If it is down, the feature defaults to \"not raining\", which is the\n  current behaviour, so the model only loses the gain.\n- Weekly retraining can drift if rider labelling changes. The ETA error dashboard (REC ticket) should alert when the\n  weekly MAE moves by more than 1 minute.",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/research/onboarding-funnel.md",
+   "kind": "Doc",
+   "title": "Research: onboarding funnel analysis",
+   "seq": 0,
+   "text": "# Research: onboarding funnel analysis\n\n## Summary\n\nOf every 100 people who open the app for the first time, 9 end up with an active subscription a week later. The\nbiggest single drop is the address step, not payment as we assumed. Fixing address entry is worth more than any\npricing experiment on the table.\n\n## Funnel (first opens Jun 1 to Jul 31, all cities)\n\n| Step | Users | Of previous step |\n|---|---|---|\n| First open | 18,400 | |\n| Browsed the menu | 14,900 | 81% |\n| Picked a plan | 6,300 | 42% |\n| Entered an address | 3,200 | 51% |\n| Paid | 2,050 | 64% |\n| Active after 7 days | 1,660 | 81% |\n\n## Address step\n\nHalf of the people who pick a plan never finish an address. Session recordings (we watched 60) show three causes:\n\n1. Area not served. 38% of failed attempts are outside our delivery areas, and we only say so after the full form\n   is filled in. We should ask for the pincode first.\n2. Autocomplete misses apartment complexes. Big gated societies in Pune and Bengaluru are not in the autocomplete\n   source, so people type the full address by hand on a phone.\n3. Back button wipes the form. Going back to change the plan clears the address. There is already a WEB ticket for it.\n\n## Payment step\n\n64% completion is in line with other Indian subscription apps we compared. UPI failures are most of the drop, and\nalmost all of those retry successfully within 5 minutes, so the real loss is small.\n\n## Menu to plan\n\nOnly 42% of browsers pick a plan. Interviews from the pause research suggest people are unsure about committing for",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/research/onboarding-funnel.md",
+   "kind": "Doc",
+   "title": "Research: onboarding funnel analysis",
+   "seq": 1,
+   "text": "a week. A \"try one day\" plan came up again. It needs billing work, so it goes on the Q4 list with corporate plans.\n\n## Recommendations\n\n1. Ask for the pincode first and stop early with a \"notify me\" option if we do not serve the area.\n2. Keep the address in local state across the plan step (Kavya has the ticket).\n3. Add the top 300 gated societies per city to autocomplete; ops already has the list from rider notes.\n4. Measure again four weeks after the changes ship.\n\n## Expected impact\n\nIf the address step goes from 51% to 65%, active subscribers from the same traffic rise by about 27%, roughly 450\nmore per two months at current traffic.",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/research/pause-interviews.md",
+   "kind": "Doc",
+   "title": "Research: why subscribers pause",
+   "seq": 0,
+   "text": "# Research: why subscribers pause\n\n15 interviews (9 office workers, 4 students, 2 families), 20 minutes each.\n- 11 of 15 pause during travel (work trips, going home for festivals).\n- Most trips are under 2 weeks; only 2 people paused for a month or more.\n- People who could not pause easily cancelled instead.",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/research/pause-survey.md",
+   "kind": "Doc",
+   "title": "Research: pause survey",
+   "seq": 0,
+   "text": "# Research: pause survey\n\nIn-app survey, 412 responses. 62% would rather pause than cancel when they travel.\nMedian expected pause: 8 days.",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/research/recs-cold-start.md",
+   "kind": "Doc",
+   "title": "Research: cold-start recommendations",
+   "seq": 0,
+   "text": "# Research: cold-start recommendations\n\n## Problem\n\nThe home screen shows \"Recommended for you\": six dishes ranked by ml/recommend/model.py. For a subscriber with two or\nmore weeks of orders this works well: click-through on the row is 7.2%. For a new user with no history, the model\nfalls back to the six most-ordered dishes in their city, and click-through is 2.1%. New users are a third of daily\nhome-screen views, so this is where the row is weakest.\n\n## What a new user gives us\n\n- City and area, from the address step.\n- Plan type (veg, non-veg, mixed), from the plan step.\n- Every menu page they scroll and every dish they open before ordering, from the first session.\n- Optional: a three-question taste quiz we could add to onboarding (spice level, cuisines, \"light or filling\").\n\n## Options compared\n\n| Option | Offline hit rate @6 | Notes |\n|---|---|---|\n| City top sellers (today) | 0.11 | No personalisation |\n| Area top sellers filtered by plan type | 0.17 | Trivial to build |\n| Session-based: embed dishes opened in session one | 0.24 | Needs the cuisine embeddings already in ml/recommend/features.py |\n| Taste quiz to cuisine embedding | 0.22 | Adds an onboarding step, which the funnel research says to avoid |\n| Session-based + area top sellers blend | 0.27 | Best offline |\n\nOffline hit rate means: of the next week's orders for users in the holdout, how often was an ordered dish in the six\nwe would have shown. The holdout is 2,300 users who signed up between Jul 10 and Jul 31.\n\n## Choice\n\nThe blend: start with area top sellers filtered by plan type, then, as soon as the user opens two or more dishes,",
+   "files": [
+    "ml/recommend/model.py",
+    "ml/recommend/features.py"
+   ]
+  },
+  {
+   "ref": "doc:docs/research/recs-cold-start.md",
+   "kind": "Doc",
+   "title": "Research: cold-start recommendations",
+   "seq": 1,
+   "text": "mix in nearest neighbours of those dishes from the cuisine embeddings. After the first order the normal model takes\nover.\n\nWe drop the taste quiz. The onboarding funnel research shows every extra step costs users, and the session signal\ngives most of the gain for free.\n\n## Serving\n\napi/recommend/endpoint.py already caches responses per user for 10 minutes. For cold-start users the cache key\nbecomes (area, plan type, opened dish ids), so most new users share cache entries. No new infrastructure.\n\n## How we will know\n\nAn A/B test on new users for two weeks. Primary metric: home-row click-through in the first 7 days. Guardrail: 7-day\nactivation must not drop. We expect click-through to go from 2.1% to about 4%.\n\n## Later\n\nIf the weekly retrain job moves to daily, cold-start users would graduate to the full model faster. Not needed for\nthis change.",
+   "files": [
+    "api/recommend/endpoint.py"
+   ]
+  },
+  {
+   "ref": "doc:docs/research/redis-rightsizing.md",
+   "kind": "Doc",
+   "title": "Research: Redis right-sizing",
+   "seq": 0,
+   "text": "# Research: Redis right-sizing\n\n## Trigger\n\nThe AWS bill rose 8% in July and almost all of the increase is Redis. We run one ElastiCache cluster (3 nodes,\ncache.r6g.xlarge) defined in infra/terraform/main.tf. Memory use has crept from 9 GB to 19 GB since April.\n\n## What is in Redis\n\nA one-hour key scan by prefix (MEMORY USAGE on a sample of 50,000 keys, scaled up):\n\n| Prefix | Share of memory | TTL | Owner |\n|---|---|---|---|\n| rec:user:* | 46% | none | recommendations cache |\n| sess:* | 21% | 30 days | auth sessions |\n| menu:* | 12% | 1 hour | menu cache |\n| ratelimit:* | 3% | 1 minute | login rate limit |\n| rq:* | 9% | until done | background jobs |\n| other | 9% | mixed | |\n\n## Findings\n\n1. The recommendations cache sets no TTL. The endpoint is meant to cache for 10 minutes, but the TTL is passed to\n   the wrong argument, so entries never expire. This one bug is almost half our Redis memory.\n2. Auth sessions keep 30 days even for users who logged out. Logout deletes the token on the client only.\n3. Finished background jobs keep their results forever. Nobody reads them after one day.\n4. CPU averages 6% on all three nodes. We are paying for memory, not compute.\n\n## Options\n\n- Fix the TTLs and stay on the same size: memory should drop to about 8 GB, but the bill stays the same.\n- Fix the TTLs and move to cache.r6g.large (13 GB each): about 48% cheaper, with headroom.\n- Move sessions out of Redis into Postgres: not worth it; sessions are small once logout deletes them.\n\n## Recommendation\n",
+   "files": [
+    "infra/terraform/main.tf"
+   ]
+  },
+  {
+   "ref": "doc:docs/research/redis-rightsizing.md",
+   "kind": "Doc",
+   "title": "Research: Redis right-sizing",
+   "seq": 1,
+   "text": "1. Rohan fixes the recommendations cache TTL (one line in the endpoint).\n2. Arjun makes logout delete the session key on the server.\n3. Set result_ttl to one day on background jobs.\n4. Watch memory for a week, then change the node type in Terraform, one node at a time, during the 3 to 5 PM lull\n   between lunch and dinner.\n\n## Rollback\n\nThe node type change is a Terraform apply. If latency rises, apply the old type back; ElastiCache resizes online.\nKeep the old size in a comment in main.tf until the next bill confirms the saving.\n\n## Expected saving\n\nAbout 48% of the Redis line, which is around 5% of the total AWS bill.",
+   "files": [
+    "infra/terraform/main.tf"
+   ]
+  },
+  {
+   "ref": "doc:docs/runbooks/backup-restore.md",
+   "kind": "Doc",
+   "title": "Runbook: backups and restores",
+   "seq": 0,
+   "text": "# Runbook: backups and restores\n\n- Dumps run daily at 3 AM IST to s3://tiffinbox-backups (30 days).\n- Alerts fire in #infra if a dump fails or is under 1 MB.\n- We do a restore test every quarter: restore into a scratch DB, compare row counts, record the date here.\n- Last restore test: 2026-06-24 (passed).",
+   "files": []
+  },
+  {
+   "ref": "doc:docs/runbooks/deploy.md",
+   "kind": "Doc",
+   "title": "Runbook: deploying the api",
+   "seq": 0,
+   "text": "# Runbook: deploying the api\n\n1. Merge to main. The pipeline deploys a canary: 10% of pods for 30 minutes.\n2. Watch the error-rate gate in the Actions log. If 5xx > 2% it rolls back by itself.\n3. Manual rollback: re-run the previous successful deploy job.\nNever edit pods by hand.",
+   "files": []
+  },
+  {
+   "ref": "session:1005a014-d2a1-0231-fd42-5aabb26ae1b0",
+   "kind": "AgentSession",
+   "title": "Canary deploys in GitHub Actions",
+   "seq": 0,
+   "text": "user: After our checkout outage I want canary deploys: 10% of pods for 30 minutes, then the rest, and auto rollback if 5xx goes over 2%. We use plain k8s Deployments and GitHub Actions. Edit deploy.yml.\nassistant: I'll add a canary Deployment with 1 of 10 replicas, a 30 minute watch step that queries the 5xx rate, and a rollback step. Promotion only happens if the error rate stays under 2%.\nuser: Make the watch window configurable but default it to 30 min.\nassistant: Added CANARY_MINUTES with default 30 and documented why in a comment pointing at INC-1.",
+   "files": [
+    ".github/workflows/deploy.yml"
+   ]
+  },
+  {
+   "ref": "session:216b526d-87a8-4679-65be-f7f656665123",
+   "kind": "AgentSession",
+   "title": "Weekly retrain schedule",
+   "seq": 0,
+   "text": "user: Weekly retrain schedule. Keep the change small.\nassistant: Done: a small change in model.py.",
+   "files": [
+    "ml/recommend/model.py"
+   ]
+  },
+  {
+   "ref": "session:420b1fe8-d6b7-2a42-327a-a0190301394f",
+   "kind": "AgentSession",
+   "title": "Tag all terraform resources",
+   "seq": 0,
+   "text": "user: Tag all terraform resources. Keep the change small.\nassistant: Done: a small change in main.tf.",
+   "files": [
+    "infra/terraform/main.tf"
+   ]
+  },
+  {
+   "ref": "session:45a91570-10ec-0026-4496-168984f1c4a6",
+   "kind": "AgentSession",
+   "title": "30 day backup retention",
+   "seq": 0,
+   "text": "user: 30 day backup retention. Keep the change small.\nassistant: Done: a small change in db_backup.yaml.",
+   "files": [
+    "infra/backup/db_backup.yaml"
+   ]
+  },
+  {
+   "ref": "session:4873c75b-8409-317a-89f6-de4c496bf293",
+   "kind": "AgentSession",
+   "title": "Remove price from recommendation ranking",
+   "seq": 0,
+   "text": "user: Users complain the recommender pushes expensive meals. Price is our top feature. Remove it from ranking without hurting relevance too much.\nassistant: I'll drop price and price_bucket from the ranking features and keep cuisine affinity and recency. Offline NDCG drops from 0.41 to 0.39, which is a small cost for removing the bias.",
+   "files": []
+  },
+  {
+   "ref": "session:4d66bd79-e04d-ba65-c776-a18577d65d59",
+   "kind": "AgentSession",
+   "title": "Rain feature for ETA",
+   "seq": 0,
+   "text": "user: Rain feature for ETA. Keep the change small.\nassistant: Done: a small change in predict.py.",
+   "files": [
+    "ml/eta/predict.py"
+   ]
+  },
+  {
+   "ref": "session:4e9e3c51-c108-08b0-edcb-8225baf66d43",
+   "kind": "AgentSession",
+   "title": "Deploy status to chat",
+   "seq": 0,
+   "text": "user: Deploy status to chat. Keep the change small.\nassistant: Done: a small change in deploy.yml.",
+   "files": [
+    ".github/workflows/deploy.yml"
+   ]
+  },
+  {
+   "ref": "session:54a4d6ea-6043-fe65-7643-897c7268f7e5",
+   "kind": "AgentSession",
+   "title": "Typed API client errors",
+   "seq": 0,
+   "text": "user: Typed API client errors. Keep the change small.\nassistant: Done: a small change in api.ts.",
+   "files": [
+    "web/lib/api.ts"
+   ]
+  },
+  {
+   "ref": "session:5c863f11-a336-4c11-c120-e162d8bef797",
+   "kind": "AgentSession",
+   "title": "Fix flaky CI cache",
+   "seq": 0,
+   "text": "user: CI restores node_modules from cache and sometimes it is from an old lockfile, so builds fail. Fix ci.yml.\nassistant: The cache key is just the OS. I'll make the cache key include the hash of package-lock.json so a lockfile change always misses the cache.",
+   "files": [
+    ".github/workflows/ci.yml"
+   ]
+  },
+  {
+   "ref": "session:62cfb77b-c76e-ce8f-285e-d3168edbfb0c",
+   "kind": "AgentSession",
+   "title": "Orders status filter",
+   "seq": 0,
+   "text": "user: Orders status filter. Keep the change small.\nassistant: Done: a small change in service.py.",
+   "files": [
+    "api/orders/service.py"
+   ]
+  },
+  {
+   "ref": "session:7f1ec6f2-79af-5f7a-a4d8-1dd3a3a0e56c",
+   "kind": "AgentSession",
+   "title": "Lazy-load images in MenuGrid",
+   "seq": 0,
+   "text": "user: Lazy-load images in MenuGrid. Keep the change small.\nassistant: Done: a small change in MenuGrid.tsx.",
+   "files": [
+    "web/menu/MenuGrid.tsx"
+   ]
+  },
+  {
+   "ref": "session:92580be9-5e8f-2eb9-95a8-d508c7dbd079",
+   "kind": "AgentSession",
+   "title": "Login rate limiting",
+   "seq": 0,
+   "text": "user: Login rate limiting. Keep the change small.\nassistant: Done: a small change in tokens.py.",
+   "files": [
+    "api/auth/tokens.py"
+   ]
+  },
+  {
+   "ref": "session:9f476f08-04b6-003e-c748-b5b7b100c5e2",
+   "kind": "AgentSession",
+   "title": "Address autocomplete",
+   "seq": 0,
+   "text": "user: Address autocomplete. Keep the change small.\nassistant: Done: a small change in CheckoutPage.tsx.",
+   "files": [
+    "web/checkout/CheckoutPage.tsx"
+   ]
+  },
+  {
+   "ref": "session:b1e335cb-349e-7056-b533-5ecd867d4b34",
+   "kind": "AgentSession",
+   "title": "Invoice email template",
+   "seq": 0,
+   "text": "user: Invoice email template. Keep the change small.\nassistant: Done: a small change in billing.py.",
+   "files": [
+    "api/subscriptions/billing.py"
+   ]
+  },
+  {
+   "ref": "session:c7e4e6f7-3d13-e12e-440f-a7da7fb8a38d",
+   "kind": "AgentSession",
+   "title": "Cuisine embeddings",
+   "seq": 0,
+   "text": "user: Cuisine embeddings. Keep the change small.\nassistant: Done: a small change in features.py.",
+   "files": [
+    "ml/recommend/features.py"
+   ]
+  },
+  {
+   "ref": "session:d3cbce7c-7c94-5d99-9c94-39d06287c412",
+   "kind": "AgentSession",
+   "title": "Retry policy for gateway deploy gaps",
+   "seq": 0,
+   "text": "user: Our payment retry gives up after 3 tries (30/60/120s). RupeeRail webhooks pause up to 5 minutes during their deploys, so paid orders get marked failed. Change retry.py to 7 attempts with exponential backoff, cap each wait at 3 minutes, add jitter.\nassistant: With a 15 s base doubling and a 180 s cap the waits are 15, 30, 60, 120, 180, 180, 180 seconds, about 12.75 minutes in total. That covers a 5 minute gateway pause even if a deploy overruns. I'll set RETRIES = 7.\nuser: Add a test that a 5 minute gap still succeeds.\nassistant: Added test_survives_5_minute_gateway_pause using a fake clock.",
+   "files": [
+    "api/payments/retry.py"
+   ]
+  },
+  {
+   "ref": "session:ee6c7f25-aee7-0b27-3c9b-ab9d66955e68",
+   "kind": "AgentSession",
+   "title": "Understand payments retry and webhooks",
+   "seq": 0,
+   "text": "user: Explain how retry.py and webhooks.py work together and anything I must not change.\nassistant: retry.py retries failed charges 7 times with backoff because the gateway pauses webhooks during deploys; webhooks.py dedupes on event_id and verifies signatures with WEBHOOK_SECRET. Do not lower RETRIES, and rotate the API key only with rotate_secrets.sh.",
+   "files": [
+    "api/payments/retry.py",
+    "api/payments/webhooks.py",
+    "infra/scripts/rotate_secrets.sh"
+   ]
+  },
+  {
+   "ref": "thread:spaces/eng/threads/41fd3600317",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Kavya Nair: Do we have a staging login for testing?\nArjun Mehta: Use test@tiffinbox.example, OTP 000000 on staging.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/eng/threads/8e9cdaee195",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Neha Kapoor: Support says some customers got two identical orders today at 12:58. ORD-31.\nRohan Das: I see two ETA calls 40 ms apart for the same cart in the logs. Looks like a race.\nArjun Mehta: Yep, two requests both read the cart before either wrote. Fixing in orders/service.py.",
+   "files": [
+    "api/orders/service.py"
+   ]
+  },
+  {
+   "ref": "thread:spaces/eng/threads/8fe32196541",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Kavya Nair: Moving the web app to React 19 this sprint.\nNeha Kapoor: Any user-visible change?\nKavya Nair: No.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/eng/threads/b20d1c2d9b2",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Kavya Nair: Builds failed 4 times today with missing modules, then passed on retry. Is CI flaky?\nRohan Das: Same on my ml PR this morning.\nPriya Iyer: Probably the node_modules cache being restored from an older lockfile. Looking.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/eng/threads/ca06a924c2d",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Kavya Nair: Storybook is live on staging now.\nRohan Das: Nice",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/eng/threads/d4856165af4",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Rohan Das: Can someone review my ETA PR today?\nArjun Mehta: After lunch.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/eng/threads/d6d68311a73",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Priya Iyer: Staging will be down 15 min at 6 PM for a node pool upgrade.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/eng/threads/df8c754bc9f",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Rohan Das: Model training box is free tonight if anyone needs a GPU.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/eng/threads/fa6383d723d",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Neha Kapoor: Sprint demo Friday 4 PM. Bring one screen each.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/eng/threads/ffeb0138df0",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Arjun Mehta: Postgres upgrade to 16 next week on staging first.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/general/threads/267b13b2473",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Neha Kapoor: Reminder: town hall at 5 today.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/general/threads/4eee38ecc66",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Neha Kapoor: Diwali week: we pause standups Tue-Thu.\nKavya Nair: 👍",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/general/threads/52ab8db8e8a",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Neha Kapoor: Team: Arjun and Priya have resigned; their last day is Sep 30. Meera joins backend on Sep 22.\nKavya Nair: Going to miss you both!\nArjun Mehta: Happy to do KT with Meera in her first week.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/general/threads/9ef8cbe0d50",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Neha Kapoor: Welcome Meera! She takes over payments, orders and auth from Arjun.\nMeera Joshi: Thanks all, excited to be here.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/general/threads/b4752b281a3",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Priya Iyer: Who left the chai on the stove again\nArjun Mehta: Not me 👀",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/general/threads/d88f418c0eb",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Neha Kapoor: Lunch is on the house Friday, we crossed 2,000 subscribers!\nKavya Nair: 🎉\nRohan Das: Biryani please",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/general/threads/e0a685f9bfe",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Rohan Das: Anyone up for cricket Saturday?\nArjun Mehta: In.\nKavya Nair: In!",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/general/threads/f76c8e34c0b",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Kavya Nair: Is the office AC fixed?\nPriya Iyer: Facilities say Monday.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/incidents/threads/1c43d7a6206",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Kavya Nair: Menu images slow in Pune for 10 min, CDN issue on their side, resolved.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/incidents/threads/3adca12f683",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Kavya Nair: Checkout is throwing 502s for everyone. Anyone deploying?\nPriya Iyer: Yes, v1.8 went out 5 min ago. All api pods are crashlooping, missing env var. Rolling back.\nNeha Kapoor: Customers are posting on Instagram that they can't pay for lunch. I'll put up a banner.\nArjun Mehta: Payments queue is backing up; nothing lost, it will drain once api is back.\nPriya Iyer: Rolled back, all green. Root cause: the deploy updates every pod at once, so one bad config took down 100% of api. Writing the postmortem.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/incidents/threads/499b86e2c4e",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Priya Iyer: Tried restoring last night's backup to staging to debug a data issue. The dump is 0 bytes. So is every dump since May 30.\nArjun Mehta: May 30 is when we rotated the DB password. Did the backup job get the new one?\nPriya Iyer: No. pg_dump failed auth and the job still exited 0. We have had no backups for 17 days.\nNeha Kapoor: Do we need to tell customers?\nPriya Iyer: No data lost, prod is fine. Taking a manual dump now. Fixing the job properly this week.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/infra/threads/2ea76b9ec3e",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Priya Iyer: Upgraded the k8s cluster to 1.33 on staging.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/infra/threads/37595a147be",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Priya Iyer: PSA: Terraform state now lives in S3 with a DynamoDB lock. Please never run terraform apply from a laptop again; CI applies on merge to main. Last week a laptop apply with stale state tried to destroy the Redis cluster.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/infra/threads/58900f7e411",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Priya Iyer: Rotating the DB password tonight, expect 1 minute of reconnects.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/infra/threads/84cc0678d46",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Priya Iyer: Rotated the RupeeRail API key on staging per the quarterly checklist. Charges work but no webhooks are being processed?\nArjun Mehta: Signature check fails on every webhook. It's buried in their docs: rotating the API key also rotates the webhook signing secret. We still have the old WEBHOOK_SECRET in the k8s secret, so webhooks.py rejects everything and only logs at debug. On prod every payment confirmation would silently fail.\nPriya Iyer: Yikes. I'll make rotate_secrets.sh update both in one step and refuse to finish until a test webhook verifies.\nArjun Mehta: And let's never rotate one without the other.",
+   "files": [
+    "api/payments/webhooks.py",
+    "infra/scripts/rotate_secrets.sh"
+   ]
+  },
+  {
+   "ref": "thread:spaces/infra/threads/af8ee471be5",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Priya Iyer: AWS bill is 8% up, mostly Redis. Will right-size next week.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/payments/threads/0c460c22fb3",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Neha Kapoor: Finance wants the refund report weekly instead of monthly.\nArjun Mehta: Sure, I'll schedule it.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/payments/threads/4eedb3029f9",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "RupeeRail Status: Daily settlement report is ready.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/payments/threads/6664c07ebeb",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "RupeeRail Status: Webhook delivery retried for 3 events due to timeouts on your endpoint.\nNeha Kapoor: A customer got two refunds for one order. Is that related?\nArjun Mehta: Yes. RupeeRail re-sent the payment webhook and we processed it twice. Fix tomorrow. PAY-61.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/payments/threads/a9df2b5dcdd",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "RupeeRail Status: Daily settlement report is ready.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/payments/threads/d0c2be525a4",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "RupeeRail Status: Scheduled maintenance: RupeeRail API deploy 14:00-14:10 IST. Webhook delivery may be delayed.\nArjun Mehta: 12 orders flipped to payment_failed between 14:02 and 14:06 even though the customers were charged.\nArjun Mehta: Found it. Our retry policy is 3 attempts at 30s, 60s and 120s, so we give up after 3.5 minutes. RupeeRail confirmed their webhooks pause ~5 min during deploys. Moving to 7 retries with exponential backoff, which covers about 13 minutes. Tracking in PAY-88.\nArjun Mehta: Re-synced the 12 orders by hand from the RupeeRail dashboard.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/product/threads/25f4d91bd2e",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Neha Kapoor: NPS this month: 41 (up from 36).\nKavya Nair: The checkout fixes helped?",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/product/threads/58754d98c16",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Rohan Das: Recs CTR is 7.2% this week.\nNeha Kapoor: Great, keep an eye on it after the price change.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/product/threads/6528bf41b14",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Neha Kapoor: Getting a pattern in reviews: 'the app only recommends the expensive thalis'. REC-9.\nRohan Das: Price is the strongest feature in the ranker right now. I'll look at removing it.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/product/threads/69325eaa09e",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Neha Kapoor: Adding a 'skip a day' button is the top request this week.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/product/threads/6d1f341d912",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Neha Kapoor: Ops asked for a printable kitchen prep list per area.\nArjun Mehta: Can export from orders, I'll scope it.",
+   "files": []
+  },
+  {
+   "ref": "thread:spaces/product/threads/724c744b879",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Neha Kapoor: Proposal from the research: pauses are capped at 14 days. Interviews, survey and competitors all point the same way. Longer than that, cancel and resubscribe.\nKavya Nair: UI-wise: a date picker limited to 14 days from today?\nArjun Mehta: Billing already prorates paused days, so the cap is a validation in billing.py. Easy.",
+   "files": [
+    "api/subscriptions/billing.py"
+   ]
+  },
+  {
+   "ref": "thread:spaces/product/threads/a8dcbdb9274",
+   "kind": "Thread",
+   "title": "",
+   "seq": 0,
+   "text": "Neha Kapoor: Corporate plans are parked until Q4.",
+   "files": []
+  }
+ ]
+}
