@@ -13,11 +13,11 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
-from graph import EDGE_COUNTS, INDEXES, LINK_SESSIONS, NODE_COUNTS, db, graph, load
+from graph import EDGE_COUNTS, INDEXES, LINKS, NODE_COUNTS, RADAR, chunk_rows, db, derive, graph, load
 
 DATA = Path(__file__).resolve().parents[2] / "data" / "tiffinbox"
 ORDER = ["person", "service", "depends_on", "file", "commit", "pr", "review", "ticket", "thread", "posted_in",
-         "session", "doc", "decision", "about", "supersedes", "records_decision", "pattern", "implements",
+         "session", "doc", "chunk", "decision", "about", "supersedes", "records_decision", "pattern", "implements",
          "incident", "records_incident", "research", "cites", "found", "informed_by", "justifies", "feature",
          "decision_feature", "learned"]
 
@@ -88,8 +88,8 @@ def build_rows(until):
             threads[m["thread"]["name"]].append(m)
     for tid, msgs in threads.items():
         rows["thread"].append({"id": tid, "props": event(
-            msgs[0]["createTime"], space=spaces[msgs[0]["space"]["name"]]["displayName"],
-            text="\n".join(f"{m['sender']['displayName']}: {m['text']}" for m in msgs))})
+            msgs[0]["createTime"], space=spaces[msgs[0]["space"]["name"]]["displayName"])})
+        rows["chunk"] += chunk_rows(f"thread:{tid}", "\n".join(f"{m['sender']['displayName']}: {m['text']}" for m in msgs))
         posters = defaultdict(list)
         for m in msgs:
             if m["sender"]["type"] == "HUMAN" and m["sender"]["name"] in by_chat:
@@ -119,15 +119,17 @@ def build_rows(until):
             "id": turns[0]["sessionId"], "files": sorted(files),
             "person": re.search(r"/home/([^/]+)/", cwd).group(1),  # fixture convention; uploads use the uploader
             "props": event(start, tool="claude-code", branch=turns[0]["gitBranch"], ended_at=turns[-1]["timestamp"],
-                           title=next((l["aiTitle"] for l in lines if l["type"] == "ai-title"), ""),
-                           text="\n".join(text))})
+                           title=next((l["aiTitle"] for l in lines if l["type"] == "ai-title"), ""))})
+        rows["chunk"] += chunk_rows(f"session:{turns[0]['sessionId']}", "\n".join(text))
 
     for path in sorted((DATA / "docs").rglob("*.md")):
         _, front, body = path.read_text(encoding="utf-8").split("---\n", 2)
         meta = dict(line.split(": ", 1) for line in front.strip().splitlines())
         if ok(meta["date"]):
-            rows["doc"].append({"id": path.relative_to(DATA).as_posix(), "author": by_email[meta["author"]],
-                                "props": event(meta["date"], title=meta["title"], kind=meta["kind"], text=body.strip())})
+            did = path.relative_to(DATA).as_posix()
+            rows["doc"].append({"id": did, "author": by_email[meta["author"]],
+                                "props": event(meta["date"], title=meta["title"], kind=meta["kind"])})
+            rows["chunk"] += chunk_rows(f"doc:{did}", body.strip())
 
     # cached extraction
     x = read("extractions.json")
@@ -168,25 +170,35 @@ def build_rows(until):
     return rows
 
 
+def build(name, until):
+    """Rebuild graph `name` from the fixtures up to `until` (YYYY-MM-DD), then derive KNOWS."""
+    if name in db.list_graphs():
+        graph(name).delete()
+    g = graph(name)
+    for q in INDEXES:
+        g.query(q)
+    rows = build_rows(until + "T23:59:59Z")
+    for n in ORDER:
+        load(g, n, rows[n])
+    for q in LINKS:
+        g.query(q)
+    derive(g)
+    return g
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--graph", default="tiffinbox_template")
     ap.add_argument("--until", default="2026-09-30", help="YYYY-MM-DD; skip events after this day")
     args = ap.parse_args()
 
-    if args.graph in db.list_graphs():
-        graph(args.graph).delete()
-    g = graph(args.graph)
-    for q in INDEXES:
-        g.query(q)
-    rows = build_rows(args.until + "T23:59:59Z")
-    for name in ORDER:
-        load(g, name, rows[name])
-    g.query(LINK_SESSIONS)
-
+    g = build(args.graph, args.until)
     print(f"graph {args.graph} (until {args.until})")
     print("nodes:", ", ".join(f"{label} {n}" for label, n in g.ro_query(NODE_COUNTS).result_set))
     print("edges:", ", ".join(f"{t} {n}" for t, n in g.ro_query(EDGE_COUNTS).result_set))
+    print("radar (only one active person knows):")
+    for item, kind, who, score in g.ro_query(RADAR).result_set:
+        print(f"  {who:6} {kind:8} {item}  (score {score:.2f})")
 
 
 if __name__ == "__main__":

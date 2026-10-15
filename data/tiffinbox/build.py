@@ -633,6 +633,415 @@ session("meera", "2026-09-29 10:00", "explore-payments", "Understand payments re
      "the API key only with rotate_secrets.sh.", []),
 ])
 
+# ── Long-form docs: research and design notes that record no answer-key decision ─
+# Several hundred words each, so they span several Chunk nodes. They show that document text lives in FalkorDB
+# (Chunks with a full-text index), not in a second store.
+LONG_DOCS = [
+    ("docs/design/orders-api.md", "arjun", "2026-05-26 12:00", "Design: orders API v2", "design", """
+## Context
+
+The orders API grew one endpoint at a time during the April build. The kitchen dashboard, the customer app and the
+ops export all read orders through api/orders/service.py, and each caller added its own query parameters. By late
+May we had three ways to filter by status, no pagination, and a list endpoint that returned every order for an area
+in one response. On a busy lunch day in Bengaluru that response is 4 MB and takes 2.1 s at p95.
+
+This note proposes a v2 shape for the read side. Writes (create, cancel) stay as they are.
+
+## Goals
+
+- One list endpoint with cursor pagination, stable under concurrent inserts.
+- One way to filter: status, area, delivery date, subscription id.
+- p95 under 300 ms for the kitchen dashboard query (one area, one delivery slot).
+- No breaking change for the mobile app until it ships the new client.
+
+## Non-goals
+
+- Changing how orders are created from subscriptions (billing owns that).
+- Real-time updates. The kitchen dashboard polls every 20 s and that is fine for now.
+
+## Proposal
+
+GET /v2/orders takes status, area, date, subscription_id, limit (default 50, max 200) and cursor. The cursor is an
+opaque base64 of (delivery_slot, id), which is the sort key. Offset pagination was rejected: new orders arrive during
+the lunch rush and offset pages would skip or repeat rows.
+
+The response carries next_cursor, or null on the last page. Each order embeds only what the list views need: id,
+status, area, slot, item count, total. The full order with line items stays at GET /v2/orders/{id}.
+
+We add a composite index on (area, delivery_slot, id). The current index on (area) alone forces a sort on every
+dashboard call.
+
+## Status filter
+
+Today the kitchen sends status=pending,preparing, the app sends active=true, and the export sends no filter and
+drops cancelled rows client-side. v2 accepts status as a comma list only. The v1 endpoint maps active=true to the
+same list so old clients keep working.
+
+## Cancel window
+
+Ops asked whether the 10 minute cancel window should be visible in the list. It should: each order gets
+cancel_until (a timestamp), so the app can hide the cancel button without asking the server.
+
+## Rollout
+
+1. Ship /v2/orders behind no flag; nothing calls it yet.
+2. Move the kitchen dashboard first (we own both sides).
+3. Move the ops export, then the mobile app in its next release.
+4. Keep v1 for 60 days, log every call, and remove it when the log is quiet for two weeks.
+
+## Open questions
+
+- Should the export get a streaming CSV endpoint instead of paging through JSON? Probably yes, later.
+- Do we need area-level rate limits? Only if a partner integration shows up.
+"""),
+    ("docs/design/web-performance-audit.md", "kavya", "2026-06-10 16:00", "Design: web performance audit (June)", "design", """
+## Why now
+
+NPS comments in May mentioned "slow menu" eleven times. Real-user monitoring agrees: on mid-range Android phones in
+Pune the menu page has a largest contentful paint (LCP) of 4.8 s at p75. Google's "good" line is 2.5 s. Checkout is
+better at 2.9 s but still above the line. This audit lists what is slow and what we fix first.
+
+## Method
+
+- Real-user metrics from the last 14 days, split by page and device class.
+- Lighthouse runs on a throttled profile (Moto G class, slow 4G), five runs per page, median reported.
+- A bundle analysis of the production build.
+
+## Findings: menu page
+
+1. Every dish image loads eagerly. A typical menu shows 36 dishes, so the page downloads about 2.6 MB of JPEGs
+   before it settles, most of them below the fold.
+2. Images are served at 1200 px wide even on 360 px screens. No srcset.
+3. web/menu/MenuGrid.tsx re-renders the whole grid when the veg filter changes, because the filter state lives in the
+   parent and every card gets a new props object.
+4. The grid has no fixed card height, so cards jump as images arrive. Cumulative layout shift is 0.31 (good is under 0.1).
+
+## Findings: checkout
+
+1. web/checkout/CheckoutPage.tsx imports the full date library for one formatter. That is 71 KB gzipped.
+2. The address autocomplete script loads on page load, not when the field gets focus.
+3. web/lib/api.ts retries a failed request three times with no backoff, so on a flaky network a spinner can hang for
+   20 s before the user sees an error.
+
+## Plan, in order
+
+| Fix | Page | Expected effect |
+|---|---|---|
+| Lazy-load dish images, add width/height | menu | LCP -1.5 s, CLS under 0.1 |
+| srcset at 360/720/1200 px from the CDN | menu | -60% image bytes on phones |
+| Memoize cards, keep filter state local | menu | smoother filter toggle |
+| Replace the date library with Intl.DateTimeFormat | checkout | -71 KB JS |
+| Load autocomplete on focus | checkout | -180 ms main-thread time |
+| Timeout + one retry with backoff in the API client | all | errors show in under 8 s |
+
+## Results so far
+
+Lazy loading and fixed card heights shipped on June 8. Menu LCP p75 dropped from 4.8 s to 3.1 s and CLS from 0.31 to
+0.04. Skeleton loaders followed. srcset is blocked on the CDN image-resize setting, which Priya is checking.
+
+## What we are not doing
+
+A move to server-side rendering came up. It would help first paint, but it is a large change to the build and deploy
+pipeline for a gain we can mostly get from images alone. We revisit it if LCP stays above 2.5 s after the image work.
+"""),
+    ("docs/research/eta-model-eval.md", "rohan", "2026-06-26 17:00", "Research: ETA model evaluation", "research", """
+## Question
+
+Customers see a delivery ETA when they place a same-day order and again when the rider picks up. Support tickets
+about late tiffins rose after we added two new kitchens. Is our ETA model getting worse, and which features would
+fix it?
+
+## Current model
+
+ml/eta/predict.py serves a gradient-boosted tree model trained weekly on the last 60 days of deliveries. Features:
+kitchen id, area, slot, distance by road, rider's last three trip times, and order count in the slot. The target is
+minutes from pickup to doorstep.
+
+## Data
+
+- 41,200 deliveries from Apr 15 to Jun 20 across Bengaluru, Pune and Mumbai.
+- Holdout: the last 10 days, so the evaluation sees the new kitchens.
+- Labels come from the rider app's "delivered" tap. About 3% of taps happen more than 5 minutes after the actual
+  handover (riders tap at the next stop), so we drop trips where the GPS shows the rider already moving away.
+
+## Results on the holdout
+
+| Model | MAE (min) | p90 abs error (min) | Late by over 10 min |
+|---|---|---|---|
+| Distance-only baseline | 7.9 | 17.4 | 14.1% |
+| Current model | 5.2 | 11.8 | 8.6% |
+| Current + rain | 4.6 | 10.1 | 6.9% |
+| Current + rain + kitchen prep backlog | 4.3 | 9.4 | 6.2% |
+
+The current model is not getting worse overall. The error is concentrated in two places: rainy afternoons in
+Mumbai and Pune (MAE 9.8 min) and the two new kitchens, where the model has under two weeks of history.
+
+## Rain
+
+We pull hourly rainfall per area from a public weather API. A simple "raining at pickup" flag cuts MAE on rainy
+trips from 9.8 to 6.1 minutes. Intensity buckets add a little more but need a paid tier, so not now.
+
+## New kitchens
+
+For a kitchen with little history we fall back to the area average for prep time. Adding the kitchen's current
+backlog (orders accepted but not picked up) helps every kitchen, not only new ones. It needs a small read from the
+orders service, which is already exposed for the kitchen dashboard.
+
+## Recommendation
+
+1. Ship the rain flag now. It is one feature, one lookup, and the biggest gain.
+2. Add prep backlog after the orders API v2 list endpoint is live, to avoid a new query on the hot path.
+3. Show ETA as a 10 minute window instead of a single minute value. The survey last quarter said customers trust a
+   window more, and it matches our real p90 error better.
+
+## Risks
+
+- The weather API has had two outages this year. If it is down, the feature defaults to "not raining", which is the
+  current behaviour, so the model only loses the gain.
+- Weekly retraining can drift if rider labelling changes. The ETA error dashboard (REC ticket) should alert when the
+  weekly MAE moves by more than 1 minute.
+"""),
+    ("docs/research/corporate-plans-discovery.md", "neha", "2026-07-15 12:00", "Research: corporate plans discovery",
+     "research", """
+## Why we looked
+
+Sales got nine inbound requests in Q2 from companies wanting lunch for their teams. Today a company can only buy
+individual subscriptions with a shared card. We wanted to know whether a corporate plan is a real segment or a few
+loud requests.
+
+## What we did
+
+- 8 interviews: 5 HR or admin leads, 3 finance leads, at companies of 40 to 600 people in Bengaluru and Pune.
+- A look at our own data: 214 subscribers pay with a card that is also used by at least two other subscribers.
+- A scan of three B2B meal providers' public pricing pages.
+
+## What we heard
+
+**Budget is per employee, not per meal.** Six of eight buyers set a monthly allowance per person. They want
+employees to choose meals inside it, and they want overspend to be the employee's problem, not an invoice dispute.
+
+**Invoices matter more than price.** Finance leads asked for one GST invoice per month with a cost-centre split.
+Two said they stopped using a competitor because invoices arrived per order.
+
+**Hybrid work breaks fixed plans.** Most teams are in the office two or three days a week, and the days change.
+A weekly subscription that delivers Monday to Friday wastes meals. This echoes the pause research: people want
+control over which days they eat, not just whether they subscribe.
+
+**Delivery to one address is a must.** Buyers want one drop at reception per slot, not 40 riders.
+
+## Numbers
+
+- The 214 shared-card subscribers spend 23% more per month than the average subscriber and churn at half the rate.
+- Buyers named an allowance of 3,000 to 4,500 rupees per employee per month.
+- At our current margin, a 100-seat company is worth about as much as 130 individual subscribers, with one sales
+  conversation instead of 130 sign-ups.
+
+## What it would take
+
+- Company accounts with seats and allowances (new model in billing, new admin screens).
+- Monthly consolidated invoicing with cost centres.
+- A "pick your office days" schedule instead of Monday to Friday.
+- Batched delivery to one address, which ops can already do with the kitchen prep list per area.
+
+## Recommendation
+
+The segment is real but the build is large, and three of the four pieces touch billing, which is also where the
+pause work lands this quarter. Park corporate plans until Q4. In the meantime, the "pick your days" schedule is worth
+building for everyone, since individual subscribers asked for "skip a day" as the top request this month.
+
+## Open questions for Q4
+
+- Do employees pay overspend by card, or does the company cap it hard?
+- Is one invoice per company enough, or do larger customers need one per office?
+"""),
+    ("docs/research/onboarding-funnel.md", "neha", "2026-08-05 15:00", "Research: onboarding funnel analysis", "research", """
+## Summary
+
+Of every 100 people who open the app for the first time, 9 end up with an active subscription a week later. The
+biggest single drop is the address step, not payment as we assumed. Fixing address entry is worth more than any
+pricing experiment on the table.
+
+## Funnel (first opens Jun 1 to Jul 31, all cities)
+
+| Step | Users | Of previous step |
+|---|---|---|
+| First open | 18,400 | |
+| Browsed the menu | 14,900 | 81% |
+| Picked a plan | 6,300 | 42% |
+| Entered an address | 3,200 | 51% |
+| Paid | 2,050 | 64% |
+| Active after 7 days | 1,660 | 81% |
+
+## Address step
+
+Half of the people who pick a plan never finish an address. Session recordings (we watched 60) show three causes:
+
+1. Area not served. 38% of failed attempts are outside our delivery areas, and we only say so after the full form
+   is filled in. We should ask for the pincode first.
+2. Autocomplete misses apartment complexes. Big gated societies in Pune and Bengaluru are not in the autocomplete
+   source, so people type the full address by hand on a phone.
+3. Back button wipes the form. Going back to change the plan clears the address. There is already a WEB ticket for it.
+
+## Payment step
+
+64% completion is in line with other Indian subscription apps we compared. UPI failures are most of the drop, and
+almost all of those retry successfully within 5 minutes, so the real loss is small.
+
+## Menu to plan
+
+Only 42% of browsers pick a plan. Interviews from the pause research suggest people are unsure about committing for
+a week. A "try one day" plan came up again. It needs billing work, so it goes on the Q4 list with corporate plans.
+
+## Recommendations
+
+1. Ask for the pincode first and stop early with a "notify me" option if we do not serve the area.
+2. Keep the address in local state across the plan step (Kavya has the ticket).
+3. Add the top 300 gated societies per city to autocomplete; ops already has the list from rider notes.
+4. Measure again four weeks after the changes ship.
+
+## Expected impact
+
+If the address step goes from 51% to 65%, active subscribers from the same traffic rise by about 27%, roughly 450
+more per two months at current traffic.
+"""),
+    ("docs/research/recs-cold-start.md", "rohan", "2026-08-12 18:00", "Research: cold-start recommendations", "research", """
+## Problem
+
+The home screen shows "Recommended for you": six dishes ranked by ml/recommend/model.py. For a subscriber with two or
+more weeks of orders this works well: click-through on the row is 7.2%. For a new user with no history, the model
+falls back to the six most-ordered dishes in their city, and click-through is 2.1%. New users are a third of daily
+home-screen views, so this is where the row is weakest.
+
+## What a new user gives us
+
+- City and area, from the address step.
+- Plan type (veg, non-veg, mixed), from the plan step.
+- Every menu page they scroll and every dish they open before ordering, from the first session.
+- Optional: a three-question taste quiz we could add to onboarding (spice level, cuisines, "light or filling").
+
+## Options compared
+
+| Option | Offline hit rate @6 | Notes |
+|---|---|---|
+| City top sellers (today) | 0.11 | No personalisation |
+| Area top sellers filtered by plan type | 0.17 | Trivial to build |
+| Session-based: embed dishes opened in session one | 0.24 | Needs the cuisine embeddings already in ml/recommend/features.py |
+| Taste quiz to cuisine embedding | 0.22 | Adds an onboarding step, which the funnel research says to avoid |
+| Session-based + area top sellers blend | 0.27 | Best offline |
+
+Offline hit rate means: of the next week's orders for users in the holdout, how often was an ordered dish in the six
+we would have shown. The holdout is 2,300 users who signed up between Jul 10 and Jul 31.
+
+## Choice
+
+The blend: start with area top sellers filtered by plan type, then, as soon as the user opens two or more dishes,
+mix in nearest neighbours of those dishes from the cuisine embeddings. After the first order the normal model takes
+over.
+
+We drop the taste quiz. The onboarding funnel research shows every extra step costs users, and the session signal
+gives most of the gain for free.
+
+## Serving
+
+api/recommend/endpoint.py already caches responses per user for 10 minutes. For cold-start users the cache key
+becomes (area, plan type, opened dish ids), so most new users share cache entries. No new infrastructure.
+
+## How we will know
+
+An A/B test on new users for two weeks. Primary metric: home-row click-through in the first 7 days. Guardrail: 7-day
+activation must not drop. We expect click-through to go from 2.1% to about 4%.
+
+## Later
+
+If the weekly retrain job moves to daily, cold-start users would graduate to the full model faster. Not needed for
+this change.
+"""),
+    ("docs/research/redis-rightsizing.md", "priya", "2026-08-20 11:00", "Research: Redis right-sizing", "research", """
+## Trigger
+
+The AWS bill rose 8% in July and almost all of the increase is Redis. We run one ElastiCache cluster (3 nodes,
+cache.r6g.xlarge) defined in infra/terraform/main.tf. Memory use has crept from 9 GB to 19 GB since April.
+
+## What is in Redis
+
+A one-hour key scan by prefix (MEMORY USAGE on a sample of 50,000 keys, scaled up):
+
+| Prefix | Share of memory | TTL | Owner |
+|---|---|---|---|
+| rec:user:* | 46% | none | recommendations cache |
+| sess:* | 21% | 30 days | auth sessions |
+| menu:* | 12% | 1 hour | menu cache |
+| ratelimit:* | 3% | 1 minute | login rate limit |
+| rq:* | 9% | until done | background jobs |
+| other | 9% | mixed | |
+
+## Findings
+
+1. The recommendations cache sets no TTL. The endpoint is meant to cache for 10 minutes, but the TTL is passed to
+   the wrong argument, so entries never expire. This one bug is almost half our Redis memory.
+2. Auth sessions keep 30 days even for users who logged out. Logout deletes the token on the client only.
+3. Finished background jobs keep their results forever. Nobody reads them after one day.
+4. CPU averages 6% on all three nodes. We are paying for memory, not compute.
+
+## Options
+
+- Fix the TTLs and stay on the same size: memory should drop to about 8 GB, but the bill stays the same.
+- Fix the TTLs and move to cache.r6g.large (13 GB each): about 48% cheaper, with headroom.
+- Move sessions out of Redis into Postgres: not worth it; sessions are small once logout deletes them.
+
+## Recommendation
+
+1. Rohan fixes the recommendations cache TTL (one line in the endpoint).
+2. Arjun makes logout delete the session key on the server.
+3. Set result_ttl to one day on background jobs.
+4. Watch memory for a week, then change the node type in Terraform, one node at a time, during the 3 to 5 PM lull
+   between lunch and dinner.
+
+## Rollback
+
+The node type change is a Terraform apply. If latency rises, apply the old type back; ElastiCache resizes online.
+Keep the old size in a comment in main.tf until the next bill confirms the saving.
+
+## Expected saving
+
+About 48% of the Redis line, which is around 5% of the total AWS bill.
+"""),
+    ("docs/onboarding/meera-payments-notes.md", "meera", "2026-09-30 17:00", "Notes: payments, from my first week",
+     "notes", """
+## What I learned in week one
+
+These are my notes from the KT session with Arjun on Sep 24, my first two PRs and reading the history. Written for
+the next person who joins backend.
+
+## Retries
+
+api/payments/retry.py retries a failed charge 7 times with exponential backoff. It looks like too many, but the
+gateway pauses webhooks for a few minutes during its own deploys, and fewer retries lost real orders in August.
+The count is now read from PAYMENT_RETRIES, default 7. Do not lower it without reading PAY-88.
+
+## Webhooks
+
+api/payments/webhooks.py dedupes on event_id, so a webhook delivered twice is safe. It verifies every webhook with
+WEBHOOK_SECRET. Signature failures now log at error level with a metric; before my PR they were debug-only, which is
+why a broken key rotation on staging went unnoticed for a day.
+
+## Rotating keys
+
+Rotating the gateway API key also rotates the webhook signing secret on the gateway's side. Always use
+infra/scripts/rotate_secrets.sh, which updates both and sends a test webhook. Never rotate by hand in the console.
+
+## What I still do not know
+
+- How canary deploys decide to roll back (Priya's area; she has left).
+- How the database restore test works and who runs it now.
+- The Terraform state lock setup.
+
+Those are on the remaining KT list. Kavya knows the CI side and is the closest backup.
+"""),
+]
+for args in LONG_DOCS:
+    doc(*args)
+
 # ══ NOISE: normal work and trivia (~40% of events) ═══════════════════════════
 OWN = {  # person: (files they work on, who may review)  -- keeps the answer key intact
     "kavya": (["web/checkout/CheckoutPage.tsx", "web/menu/MenuGrid.tsx", "web/lib/api.ts"], ["arjun", "rohan"]),

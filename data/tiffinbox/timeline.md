@@ -22,6 +22,7 @@
 | 2026-05-18 10:00 | AI session | Canary deploys in GitHub Actions (priya) | D6 |
 | 2026-05-19 11:00 | PR | #114 deploy: canary 10% for 30 minutes with auto-rollback (priya) | D6 |
 | 2026-05-20 16:00 | Doc | docs/runbooks/deploy.md (priya) | D6 |
+| 2026-05-26 12:00 | Doc | docs/design/orders-api.md (arjun) |  |
 | 2026-05-26 13:20 | Chat | #eng: double orders at lunch |  |
 | 2026-05-26 13:25 | Ticket | ORD-31 Duplicate orders during lunch rush (assignee arjun) |  |
 | 2026-05-28 11:00 | PR | #115 orders: optimistic locking on cart checkout (arjun) | D3 |
@@ -30,6 +31,7 @@
 | 2026-06-04 15:00 | PR | #117 k8s: raise api memory limit to 512Mi (arjun) |  |
 | 2026-06-09 18:40 | Chat | #payments: webhook processed twice |  |
 | 2026-06-09 19:00 | Ticket | PAY-61 Webhook processed twice -> double refund (assignee arjun) |  |
+| 2026-06-10 16:00 | Doc | docs/design/web-performance-audit.md (kavya) |  |
 | 2026-06-11 11:00 | PR | #118 webhooks: dedupe on event_id (arjun) | D2 |
 | 2026-06-12 15:00 | Doc | docs/adr/0003-webhook-idempotency.md (neha) | D2 |
 | 2026-06-16 17:30 | Chat | #incidents: INC-2 backups silently empty |  |
@@ -39,6 +41,7 @@
 | 2026-06-24 12:00 | Chat | #product: recs push expensive meals |  |
 | 2026-06-24 12:20 | Ticket | REC-9 Recommendations push expensive meals (assignee rohan) | D10 |
 | 2026-06-26 11:00 | AI session | Remove price from recommendation ranking (rohan) | D10 |
+| 2026-06-26 17:00 | Doc | docs/research/eta-model-eval.md (rohan) |  |
 | 2026-06-27 10:00 | PR | #120 recommend: remove price features (rohan) | D10 |
 | 2026-07-01 11:00 | PR | #121 terraform: remote state with locking (priya) | D7 |
 | 2026-07-01 16:00 | Chat | #infra: PSA terraform state | D7 |
@@ -46,6 +49,7 @@
 | 2026-07-09 17:00 | Doc | docs/research/pause-survey.md (neha) |  |
 | 2026-07-10 16:00 | Doc | docs/research/competitor-scan.md (neha) |  |
 | 2026-07-14 11:00 | Chat | #product: pause cap proposal | D15 |
+| 2026-07-15 12:00 | Doc | docs/research/corporate-plans-discovery.md (neha) |  |
 | 2026-07-20 11:00 | Doc | docs/prd/subscriptions.md (neha) | D5, D15 |
 | 2026-07-22 11:00 | PR | #122 subscriptions: pause up to 14 days (arjun) | D15 |
 | 2026-07-24 15:00 | PR | #123 eta: static fallback on model timeout (rohan) | D11 |
@@ -54,9 +58,12 @@
 | 2026-08-04 14:45 | Ticket | PAY-88 Orders marked payment_failed during RupeeRail deploys (assignee arjun) | D1 |
 | 2026-08-05 10:30 | AI session | Retry policy for gateway deploy gaps (arjun) | D1 |
 | 2026-08-05 12:00 | PR | #124 payments: 7 retries with exponential backoff (arjun) | D1 |
+| 2026-08-05 15:00 | Doc | docs/research/onboarding-funnel.md (neha) |  |
 | 2026-08-12 11:00 | PR | #125 ci: frontend lint and type-check step (kavya) |  |
+| 2026-08-12 18:00 | Doc | docs/research/recs-cold-start.md (rohan) |  |
 | 2026-08-18 12:30 | Chat | #eng: flaky CI builds |  |
 | 2026-08-19 10:00 | AI session | Fix flaky CI cache (priya) | D14 |
+| 2026-08-20 11:00 | Doc | docs/research/redis-rightsizing.md (priya) |  |
 | 2026-08-20 11:00 | PR | #126 ci: cache key includes lockfile hash (priya) | D14 |
 | 2026-08-26 15:10 | Chat | #infra: key rotation broke webhooks on staging | D8 |
 | 2026-08-27 11:00 | PR | #127 scripts: rotate gateway key and webhook secret together (priya) | D8 |
@@ -65,3 +72,4 @@
 | 2026-09-25 11:00 | PR | #128 payments: retry count from env (default 7) (meera) |  |
 | 2026-09-28 11:00 | PR | #129 webhooks: log signature failures at error level (meera) |  |
 | 2026-09-29 10:00 | AI session | Understand payments retry and webhooks (meera) |  |
+| 2026-09-30 17:00 | Doc | docs/onboarding/meera-payments-notes.md (meera) |  |
