@@ -125,6 +125,26 @@ def test_github_login_does_not_overwrite_employee():
     assert g.ro_query("MATCH (p:Person {github: 'eve'}) RETURN p.id").result_set == [["eve-2"]]
 
 
+def test_daily_sync_runs_once_after_its_time():
+    cid, today = "_test_sync", datetime.now(timezone.utc).date().isoformat()
+    app.accounts.SYS.query("CREATE (:Company {id: $id, graph: $g, repo: 'o/r'})", {"id": cid, "g": NAME})
+    due = lambda now, day="2026-10-16": any(r[0] == cid for r in app.accounts.due_syncs(now, day))
+    boss = {**u(None, "admin"), "company": cid}
+    try:
+        assert not due("23:59"), "no time set: never due"
+        app.accounts.update_company(cid, sync_at="13:30")
+        assert not due("13:29") and due("13:30") and due("23:00"), "due from its time until midnight UTC"
+        app.accounts.update_company(cid, synced_on="2026-10-16")
+        assert not due("23:00") and due("13:30", "2026-10-17"), "once a day"
+        app.set_autosync(app.AutoSync(at="00:00"), boss)
+        assert not due("23:59", today), "a time already past today starts tomorrow"
+        app.set_autosync(app.AutoSync(at=""), boss)
+        assert not due("23:59", "2099-01-01"), "turned off"
+        raises(400, app.set_autosync, app.AutoSync(at="7pm"), boss)
+    finally:
+        app.accounts.SYS.query("MATCH (c:Company {id: $id}) DELETE c", {"id": cid})
+
+
 if __name__ == "__main__":
     failed = 0
     try:

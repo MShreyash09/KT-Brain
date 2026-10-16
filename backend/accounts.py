@@ -1,6 +1,6 @@
 """Companies, users and tokens, stored in the `kt_system` graph (FalkorDB is the only database).
 
-(:Company {id, name, graph, llm_base, llm_key, llm_model, github_token, repo, repo_status})
+(:Company {id, name, graph, llm_base, llm_key, llm_model, github_token, repo, repo_status, sync_at, synced_on})
 (:User {email, name, role: 'admin'|'member', person, salt, pw, disabled})-[:MEMBER_OF]->(:Company)
 (:Token {value: sha256 of the token, kind: 'web'|'cli', created})-[:FOR]->(:User)
 """
@@ -116,6 +116,13 @@ def users(cid: str) -> list:
 
 def update_company(cid: str, **props):
     SYS.query("MATCH (c:Company {id: $id}) SET c += $p", {"id": cid, "p": props})
+
+
+def due_syncs(now: str, today: str) -> list:
+    """Companies whose daily GitHub sync time (UTC "HH:MM") has passed today and that haven't synced yet today."""
+    return SYS.query("""MATCH (c:Company) WHERE c.repo <> '' AND c.sync_at <> '' AND c.sync_at <= $now
+        AND coalesce(c.synced_on, '') <> $today RETURN c.id, c.graph, c.repo, c.repo_status""",
+                     {"now": now, "today": today}).result_set
 
 
 def llm(cid: str) -> dict | None:

@@ -7,6 +7,10 @@ const BASE = "admin";
 const open = openWhy(BASE);
 const initials = (name) => name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 const repoBusy = (s) => s && !s.startsWith("done") && !s.startsWith("failed");
+// The server keeps the daily sync time in UTC; the admin picks it in their own time zone.
+// ponytail: converted with today's offset, so a DST change shifts it by an hour; store an IANA zone if that matters
+const toUtc = (hhmm) => { const d = new Date(); d.setHours(...hhmm.split(":").map(Number), 0, 0); return d.toISOString().slice(11, 16); };
+const toLocal = (hhmm) => { const d = new Date(); d.setUTCHours(...hhmm.split(":").map(Number), 0, 0); return d.toTimeString().slice(0, 5); };
 
 function Stat({ value, children, tone }) {
   return (
@@ -246,6 +250,7 @@ function Handovers() {
 function SourcesPage({ reload }) {
   const data = useData();
   const [url, setUrl] = useState(data.repo.url);
+  const [syncAt, setSyncAt] = useState(data.repo.sync_at ? toLocal(data.repo.sync_at) : "19:00");
   const [error, setError] = useState("");
   const proposed = Object.values(data.decisions).filter((d) => d.status === "proposed");
   const run = async (fn) => {
@@ -261,6 +266,7 @@ function SourcesPage({ reload }) {
     e.preventDefault();
     run(() => api("admin/github", { url }));
   };
+  const autoSync = (at) => run(() => api("admin/autosync", { at: at && toUtc(at) }, "PUT"));
   const review = (id, action) => run(() => api(`admin/decisions/${encodeURIComponent(id)}`, { action }));
   const remove = (s) => confirm(`Remove “${s.title || s.ref}” and the decisions only it recorded?`)
     && run(() => api(`admin/sources/${s.ref.split("/").map(encodeURIComponent).join("/")}`, undefined, "DELETE"));
@@ -280,6 +286,20 @@ function SourcesPage({ reload }) {
         </form>
         {data.repo.status && (
           <p className={data.repo.status.startsWith("failed") ? "form-error" : "muted small"}>{data.repo.status}</p>
+        )}
+        {data.repo.url && (
+          <form className="inline-form" onSubmit={(e) => { e.preventDefault(); autoSync(syncAt); }}>
+            <label className="field"><span>Sync every day at (your time)</span>
+              <input type="time" required value={syncAt} onChange={(e) => setSyncAt(e.target.value)} />
+            </label>
+            <button className="btn">{data.repo.sync_at ? "Change time" : "Turn on daily sync"}</button>
+            {data.repo.sync_at && <button type="button" className="btn" onClick={() => autoSync("")}>Turn off</button>}
+          </form>
+        )}
+        {data.repo.url && (
+          <p className="muted small">{data.repo.sync_at ? `Daily sync is on at ${toLocal(data.repo.sync_at)}.` : "Daily sync is off."} The
+            default is after work hours, so it doesn't use the GitHub limit during the day. It only sets when KT Brain reads
+            the repo: every commit keeps its own time and counts the same whatever hour it was made.</p>
         )}
         {error && <p className="form-error">{error}</p>}
         <p className="muted small">Commit authors are matched to employees by GitHub login. Anyone unmatched shows up as a

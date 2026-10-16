@@ -5,6 +5,7 @@ Admin:   /api/admin/*   every employee's graph, offboarding with a successor, so
 Member:  /api/brain/*   your own graph, uploads, CLI token, and the brain of anyone you succeeded.
 CLI:     /api/cli/*     `ktbrain sync` pushes AI sessions with a per-user token.
 """
+import asyncio
 import base64
 import functools
 import re
@@ -52,7 +53,9 @@ async def lifespan(_):
             build(name, until)
     accounts.init()
     seed_demo()
+    task = asyncio.create_task(auto_sync())
     yield
+    task.cancel()
 
 
 app = FastAPI(title="KT Brain", lifespan=lifespan)
@@ -352,7 +355,7 @@ def admin_overview(u: dict = Depends(admin)):
             "settings": {"provider": c.get("llm_provider") or "", "base": c.get("llm_base") or "",
                          "model": c.get("llm_model") or "", "key": masked(c.get("llm_key")),
                          "github_token": masked(c.get("github_token"))},
-            "repo": {"url": c.get("repo") or "", "status": c.get("repo_status") or ""},
+            "repo": {"url": c.get("repo") or "", "status": c.get("repo_status") or "", "sync_at": c.get("sync_at") or ""},
             "presets": extract.PRESETS}
 
 
@@ -459,6 +462,43 @@ def connect_github(body: Repo, tasks: BackgroundTasks, u: dict = Depends(admin))
     accounts.update_company(u["company"], repo=body.url.strip(), repo_status="queued")
     tasks.add_task(ingest_repo, u["company"], u["graph"], body.url)
     return {"ok": True}
+
+
+class AutoSync(BaseModel):
+    at: str = ""  # UTC "HH:MM"; empty turns the daily sync off
+
+
+@app.put("/api/admin/autosync")
+def set_autosync(body: AutoSync, u: dict = Depends(admin)):
+    if body.at and not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", body.at):
+        raise HTTPException(400, "Use a time like 19:00")
+    now = datetime.now(timezone.utc)
+    props = {"sync_at": body.at}
+    if body.at and body.at <= now.strftime("%H:%M"):
+        props["synced_on"] = now.date().isoformat()  # today's time has passed: start tomorrow, not right now
+    accounts.update_company(u["company"], **props)
+    return {"ok": True}
+
+
+def repo_busy(status: str | None) -> bool:
+    return bool(status) and not status.startswith(("done", "failed"))
+
+
+async def auto_sync():
+    """Once a day, at each company's chosen time (after work hours by default), re-read its GitHub repo. That pulls
+    new commits and PRs and re-runs `derive`, so KNOWS scores keep decaying even when nothing new was committed.
+    Only the sync time is a setting: every event keeps its own timestamp, whatever hour it happened."""
+    while True:
+        try:
+            now = datetime.now(timezone.utc)
+            for cid, graph_name, repo, status in accounts.due_syncs(now.strftime("%H:%M"), now.date().isoformat()):
+                if repo_busy(status):
+                    continue  # a manual sync is running; try again next minute
+                accounts.update_company(cid, synced_on=now.date().isoformat(), repo_status="queued (daily sync)")
+                await asyncio.to_thread(ingest_repo, cid, graph_name, repo)
+        except Exception as e:  # FalkorDB down for a moment: keep the loop alive
+            print(f"auto-sync: {e}")
+        await asyncio.sleep(60)
 
 
 # ── Member ───────────────────────────────────────────────────────────────────

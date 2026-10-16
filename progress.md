@@ -52,6 +52,8 @@ Run: `cd backend && uv run uvicorn app:app` (builds `tiffinbox_sep21` and `tiffi
 
 **FalkorDB 6.0.2 bug found:** an `OPTIONAL MATCH` that follows `WITH ... count()` returns no rows, so `count(o)` is always 0 and every item looks orphaned. `AGENDA` uses one `MATCH` over all knowers instead (`ponytail:` note in `graph.py`). Worth reporting upstream with the 4-line repro.
 
+**Second FalkorDB 6.0.2 bug (Oct 16):** `OPTIONAL MATCH ... RETURN <7+ grouping keys, one always null>, count(d)` panics the server (`reply.rs:655`, `Option::unwrap()` on `None`) and drops every connection, so admin login returned 500. `SOURCES` now counts with `size([(s)-[:RECORDS]->(d) | d])`, which needs no grouping. Also worth reporting upstream.
+
 **Weak backup rule:** the only remaining knower has one KNOWS link and took no part in a source that RECORDS the item (Kavya: one commit to `ci.yml`). This keeps Neha's ADR on D2 as real coverage. For Priya alone it also flags Arjun on `rotate_secrets.sh` and `api-deploy.yaml`, which is the combination risk showing early.
 
 - [ ] Embeddings + vector index on Chunk; extraction scored against the answer key.
@@ -69,6 +71,7 @@ Run: `cd backend && uv run uvicorn app:app` (builds `tiffinbox_sep21` and `tiffi
 | Uploads (`ingest/uploads.py`) | ✅ | .md .txt .pdf → Doc; Claude Code .jsonl → AgentSession. Secrets redacted before storing. New KNOWS rule: running an AI session that edited a file (weight 0.8). Answer key unchanged (62 KNOWS) |
 | GitHub (`ingest/github.py`) | ✅ | Public repo → commits with files, PRs, reviews. 25 commits / 10 PRs without a token (fits the 60/h limit), 100 / 40 with one. Unmatched authors become "GitHub contributor" people |
 | AI provider (`extract.py`) | ✅ | Any OpenAI-compatible `/chat/completions` (OpenRouter, Groq, Google AI Studio, Ollama, custom). Decisions whose evidence quote isn't in the text are dropped. Runs in the background; status shows per source. `test_extract.py` checks it with a canned reply |
+| Daily GitHub sync | ✅ | Sources page: "Sync every day at" (default 19:00, after a 9–6 day), stored as UTC on the Company. A loop in `lifespan` re-reads the repo once a day and re-runs `derive`, so scores keep decaying. Only *when to sync* is a setting; KT Brain never filters work by the hour it happened |
 | CLI (`cli/ktbrain.py`) | ✅ | `python cli/ktbrain.py sync --server … --token … --repo .` Stdlib only; slims + redacts on the laptop. Dry run finds this repo's 12 real sessions |
 
 **Not tested live:** a real AI provider call (no key yet) and a real GitHub repo sync (network). Both paths are covered by the code's error handling: failures show on the source or the repo status line.

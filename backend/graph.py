@@ -375,12 +375,13 @@ MATCH (p:Person)-[:AUTHORED|REVIEWED|POSTED_IN|ASSIGNED|RAN]->(:Source)-[:RECORD
 WHERE p.id IN $people RETURN DISTINCT d.id"""
 
 # Uploaded or synced docs and AI sessions, with who added them and the decision-extraction status.
+# ponytail: decisions counted with a pattern comprehension, not OPTIONAL MATCH + count(d): FalkorDB 6.0.2 panics
+# (reply.rs:655, the whole server goes down) when count() groups by this many keys; switch back once fixed upstream
 SOURCES = """
 MATCH (p:Person)-[:AUTHORED|RAN]->(s:Source) WHERE (s:Doc OR s:AgentSession) AND ($people IS NULL OR p.id IN $people)
-OPTIONAL MATCH (s)-[:RECORDS]->(d:Decision)
 RETURN s.ref AS ref, [l IN labels(s) WHERE l <> 'Source'][0] AS kind, s.title AS title, substring(s.at, 0, 10) AS at,
        p.id AS person, p.name AS author, s.extract AS extract, s:Doc AND coalesce(s.shared, true) AS shared,
-       count(d) AS decisions ORDER BY at DESC"""
+       size([(s)-[:RECORDS]->(d:Decision) | d]) AS decisions ORDER BY at DESC"""
 
 SUCCESSORS = "MATCH (a:Person)-[:SUCCEEDED_BY]->(b:Person) RETURN a.id AS leaver, b.id AS successor"
 
