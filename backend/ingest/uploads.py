@@ -7,6 +7,7 @@ provider set (extract.py), and every new decision points back to the source that
 import io
 import json
 import re
+import time
 from datetime import datetime, timezone
 
 import extract
@@ -31,7 +32,8 @@ def now_iso() -> str:
 
 
 def ts(iso: str) -> int:
-    return int(datetime.fromisoformat(iso.replace("Z", "+00:00")).timestamp())
+    """Epoch seconds, never in the future (an uploaded log can claim any date)."""
+    return min(int(datetime.fromisoformat(iso.replace("Z", "+00:00")).timestamp()), int(time.time()))
 
 
 def parse_claude_session(lines: list) -> dict | None:
@@ -88,11 +90,12 @@ def add_doc(g, person: str, name: str, text: str) -> str:
 def add_sessions(g, person: str, sessions: list) -> list:
     refs = []
     for s in sessions:
+        sid = f"{person}:{s['id']}"  # per uploader, so nobody can overwrite another person's session by reusing its id
         g.query("UNWIND $paths AS p MERGE (:File {path: p})", {"paths": s["files"]})
-        load(g, "session", [{"id": s["id"], "person": person, "files": s["files"], "props": {
+        load(g, "session", [{"id": sid, "person": person, "files": s["files"], "props": {
             "tool": "claude-code", "branch": s.get("branch"), "title": s.get("title") or "AI coding session",
             "at": s["started"], "ts": ts(s["started"]), "ended_at": s.get("ended"), "extract": "pending"}}])
-        ref = f"session:{s['id']}"
+        ref = f"session:{sid}"
         _reset_chunks(g, ref)
         load(g, "chunk", chunk_rows(ref, redact(s["text"])))
         refs.append(ref)
@@ -119,8 +122,16 @@ def parse_upload(name: str, raw: bytes) -> tuple[str, object]:
     raise ValueError("Upload .md, .txt, .pdf or a Claude Code .jsonl session log")
 
 
-def extract_into(g, llm: dict | None, ref: str):
-    """Background step: ask the company's AI provider for decisions in one source and link them."""
+# A proposed decision becomes active once sources from two different people record it.
+CORROBORATE = """
+MATCH (p:Person)-[:AUTHORED|RAN]->(:Source)-[:RECORDS]->(d:Decision {status: 'proposed'})
+WITH d, count(DISTINCT p) AS people WHERE people > 1
+SET d.status = 'active'"""
+
+
+def extract_into(g, llm: dict | None, ref: str, trusted: bool = False):
+    """Background step: ask the company's AI provider for decisions in one source and link them.
+    New decisions are 'proposed' (kept out of the radar and handovers) unless the uploader is `trusted` (an admin)."""
     if not llm:
         g.query("MATCH (s:Source {ref: $ref}) SET s.extract = 'off'", {"ref": ref})
         return
@@ -140,9 +151,10 @@ def extract_into(g, llm: dict | None, ref: str):
         if not did:
             n += 1
             did = existing[d["what"]] = f"D{n}"
-            load(g, "decision", [{"id": did, "props": {"what": d["what"], "why": d.get("why", ""),
-                                                       "evidence": d["evidence"], "at": at, "ts": ts(at)}}])
+            load(g, "decision", [{"id": did, "status": "active" if trusted else "proposed", "props": {
+                "what": d["what"], "why": d.get("why", ""), "evidence": d["evidence"], "at": at, "ts": ts(at)}}])
         load(g, "records_decision", [{"ref": ref, "target": did}])
         load(g, "about", [{"decision": did, "path": p} for p in d.get("about") or [] if p in files])
+    g.query(CORROBORATE)
     g.query("MATCH (s:Source {ref: $ref}) SET s.extract = $m", {"ref": ref, "m": f"done: {len(found)} decisions"})
     derive(g)

@@ -40,11 +40,19 @@ def ingest(g, url: str, token: str | None, status) -> str:
     repo = repo_name(url)
     n_commits, n_prs = (100, 40) if token else (25, 10)
     known = dict(g.ro_query("MATCH (p:Person) WHERE p.github IS NOT NULL RETURN p.github, p.id").result_set)
+    taken = {r[0] for r in g.ro_query("MATCH (p:Person) RETURN p.id").result_set}
     people = {}
 
     def person(login: str, at: str) -> str:
         if login not in known:
-            known[login] = re.sub(r"[^a-z0-9]+", "-", login.lower()).strip("-")
+            # a new id, so an unmatched login never merges into (and reactivates) an existing employee
+            pid = base = re.sub(r"[^a-z0-9]+", "-", login.lower()).strip("-") or "contributor"
+            n = 1
+            while pid in taken:
+                n += 1
+                pid = f"{base}-{n}"
+            taken.add(pid)
+            known[login] = pid
             people[login] = {"id": known[login], "props": {"name": login, "role": "GitHub contributor",
                                                            "github": login, "active": True, "joined_at": at[:10]}}
         elif login in people and at[:10] < people[login]["props"]["joined_at"]:

@@ -247,16 +247,23 @@ function SourcesPage({ reload }) {
   const data = useData();
   const [url, setUrl] = useState(data.repo.url);
   const [error, setError] = useState("");
-  const connect = async (e) => {
-    e.preventDefault();
+  const proposed = Object.values(data.decisions).filter((d) => d.status === "proposed");
+  const run = async (fn) => {
     setError("");
     try {
-      await api("admin/github", { url });
+      await fn();
       reload();
     } catch (err) {
       setError(err.message);
     }
   };
+  const connect = (e) => {
+    e.preventDefault();
+    run(() => api("admin/github", { url }));
+  };
+  const review = (id, action) => run(() => api(`admin/decisions/${encodeURIComponent(id)}`, { action }));
+  const remove = (s) => confirm(`Remove “${s.title || s.ref}” and the decisions only it recorded?`)
+    && run(() => api(`admin/sources/${s.ref.split("/").map(encodeURIComponent).join("/")}`, undefined, "DELETE"));
   return (
     <>
       <header className="step-head">
@@ -278,9 +285,23 @@ function SourcesPage({ reload }) {
         <p className="muted small">Commit authors are matched to employees by GitHub login. Anyone unmatched shows up as a
           contributor you can add later. Without a GitHub token (Settings) the first sync reads the last 25 commits and 10 PRs.</p>
       </section>
+      {proposed.length > 0 && (
+        <section className="card">
+          <h2>Proposed decisions <span className="count">{proposed.length}</span></h2>
+          <p className="muted small">Pulled from an employee's upload. They stay out of the radar and handovers until you
+            confirm them, or until a second person's source records the same decision.</p>
+          {proposed.map((d) => (
+            <div key={d.id} className="agenda-row">
+              <Item item={d.id} open={open} />
+              <button className="btn" onClick={() => review(d.id, "confirm")}>Confirm</button>
+              <button className="btn danger" onClick={() => review(d.id, "reject")}>Reject</button>
+            </div>
+          ))}
+        </section>
+      )}
       <section className="card">
         <h2>Docs and AI sessions <span className="count">{data.sources.length}</span></h2>
-        <Sources sources={data.sources} who={data.first} />
+        <Sources sources={data.sources} who={data.first} onRemove={remove} />
       </section>
     </>
   );

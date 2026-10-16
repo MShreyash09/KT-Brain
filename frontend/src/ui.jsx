@@ -74,6 +74,7 @@ export function Item({ item, open, children }) {
       )}
       <span className="item-extra">
         {decisions[item]?.status === "superseded" && <Pill>superseded</Pill>}
+        {decisions[item]?.status === "proposed" && <Pill tone="warn">proposed</Pill>}
         {children}
       </span>
     </>

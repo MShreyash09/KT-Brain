@@ -1,5 +1,6 @@
 """Every FalkorDB call in KT Brain goes through this file."""
 import os
+import time
 from uuid import uuid4
 
 from falkordb import FalkorDB
@@ -71,7 +72,8 @@ LOAD = {
     "chunk": """UNWIND $rows AS r MATCH (s:Source {ref: r.ref})
         MERGE (c:Chunk {id: r.ref + '#' + toString(r.seq)}) SET c.seq = r.seq, c.text = r.text
         MERGE (c)-[:PART_OF]->(s)""",
-    "decision": "UNWIND $rows AS r MERGE (d:Decision {id: r.id}) SET d += r.props, d.status = 'active'",
+    # uploaded decisions arrive as 'proposed' until an admin confirms them (or a second person records them)
+    "decision": "UNWIND $rows AS r MERGE (d:Decision {id: r.id}) SET d += r.props, d.status = coalesce(r.status, 'active')",
     "about": """UNWIND $rows AS r MATCH (d:Decision {id: r.decision}), (f:File {path: r.path})
         MERGE (d)-[:ABOUT]->(f)""",
     # an old decision only counts as superseded once its replacement exists (matters for --until)
@@ -181,9 +183,10 @@ _KNOWS_LINKS = [
     # file: committed to it
     """MATCH (p:Person)-[:AUTHORED]->(c:Commit)-[:CHANGED]->(k:File)
     WITH p, k, CASE WHEN c.message =~ $trivial THEN 0.05 ELSE 1.0 END AS w, c.ts AS ts""",
-    # file: ran an AI coding session that edited it
+    # file: ran an AI coding session that edited it. Session file lists are self-reported, so they only count in full
+    # when the session PRODUCED a real commit; alone they stay under the threshold (0.25).
     """MATCH (p:Person)-[:RAN]->(s:AgentSession)-[:TOUCHED]->(k:File)
-    WITH p, k, 0.8 AS w, s.ts AS ts""",
+    WITH p, k, CASE WHEN size([(s)-[:PRODUCED]->(c:Commit) | c]) > 0 THEN 0.8 ELSE 0.25 END AS w, s.ts AS ts""",
     # file: reviewed a PR that touched it
     """MATCH (p:Person)-[v:REVIEWED]->(:PR)-[:CONTAINS]->(:Commit)-[:CHANGED]->(k:File)
     WITH DISTINCT p, k, v
@@ -207,7 +210,8 @@ SET e.score = e.score + score, e.links = e.links + links,
 
 def derive(g):
     """Recompute every KNOWS edge from the raw edges. Safe to rerun after any ingest."""
-    now = g.ro_query("MATCH (n) WHERE n.ts IS NOT NULL RETURN max(n.ts)").result_set[0][0]
+    newest = g.ro_query("MATCH (n) WHERE n.ts IS NOT NULL RETURN max(n.ts)").result_set[0][0]
+    now = min(newest, int(time.time()))  # a future-dated source must not age everyone else's knowledge
     g.query("MATCH ()-[e:KNOWS]->() DELETE e")
     for links in _KNOWS_LINKS:
         g.query(links + _KNOWS_ADD, {"now": now, "half_life": HALF_LIFE_DAYS, "trivial": TRIVIAL})
@@ -377,6 +381,17 @@ RETURN s.ref AS ref, [l IN labels(s) WHERE l <> 'Source'][0] AS kind, s.title AS
        p.id AS person, s.extract AS extract, count(d) AS decisions ORDER BY at DESC"""
 
 SUCCESSORS = "MATCH (a:Person)-[:SUCCEEDED_BY]->(b:Person) RETURN a.id AS leaver, b.id AS successor"
+
+# Everyone whose brain passed to $me, directly or down a chain (A -> B -> me).
+PREDECESSORS = "MATCH (a:Person)-[:SUCCEEDED_BY*1..]->(:Person {id: $me}) RETURN DISTINCT a.id"
+
+# Remove an uploaded doc or AI session, its chunks, and the decisions only it recorded.
+SOURCE_DECISIONS = "MATCH (:Source {ref: $ref})-[:RECORDS]->(d:Decision) RETURN d.id"
+DELETE_SOURCE = [
+    "MATCH (c:Chunk)-[:PART_OF]->(:Source {ref: $ref}) DETACH DELETE c",
+    "MATCH (s:Source {ref: $ref}) DETACH DELETE s",
+    "MATCH (d:Decision) WHERE d.id IN $ids AND NOT ()-[:RECORDS]->(d) DETACH DELETE d",
+]
 
 SEARCH_MINE = """
 CALL db.idx.fulltext.queryNodes('Chunk', $q) YIELD node, score

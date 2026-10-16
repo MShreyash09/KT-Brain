@@ -15,9 +15,9 @@ from pydantic import BaseModel
 
 import accounts
 import extract
-from graph import (COVERED, DECISIONS, EDGE_COUNTS, INHERITED, KNOWS, MARK_LEARNED, MENTOR, NODE_COUNTS, OFFBOARD,
-                   ORPHANED, PEOPLE, RADAR, RECORDED_BY, SEARCH, SEARCH_MINE, SOURCES, SUCCESSORS, db, dry_run, graph,
-                   rows, trace)
+from graph import (COVERED, DECISIONS, DELETE_SOURCE, EDGE_COUNTS, INHERITED, KNOWS, MARK_LEARNED, MENTOR, NODE_COUNTS,
+                   OFFBOARD, ORPHANED, PEOPLE, PREDECESSORS, RADAR, RECORDED_BY, SEARCH, SEARCH_MINE, SOURCE_DECISIONS,
+                   SOURCES, SUCCESSORS, db, derive, dry_run, graph, rows, trace)
 from ingest import github, uploads
 from ingest.fixtures import build
 
@@ -239,8 +239,8 @@ def inherited(g, leaver: str, successor: str) -> list:
 
 
 def own_ids(u: dict) -> list:
-    """The user's own person and everyone they succeeded."""
-    preds = [r[0] for r in graph(u["graph"]).ro_query(SUCCESSORS).result_set if r[1] == u["person"]]
+    """The user's own person and everyone they succeeded, directly or down a chain."""
+    preds = [r[0] for r in graph(u["graph"]).ro_query(PREDECESSORS, {"me": u["person"]}).result_set]
     return [u["person"], *preds]
 
 
@@ -341,6 +341,10 @@ def admin_dryrun(leavers: str, u: dict = Depends(admin)):
 def offboard(body: Offboard, u: dict = Depends(admin)):
     if body.person == body.successor:
         raise HTTPException(400, "Pick someone else as the successor")
+    active = dict(graph(u["graph"]).ro_query("MATCH (p:Person) WHERE p.id IN $ids RETURN p.id, p.active",
+                                             {"ids": [body.person, body.successor]}).result_set)
+    if not active.get(body.person) or not active.get(body.successor):
+        raise HTTPException(400, "Both people must exist and still be active")
     graph(u["graph"]).query(OFFBOARD, {"person": body.person, "successor": body.successor,
                                        "day": date.today().isoformat()})
     accounts.disable_person(u["company"], body.person)
@@ -367,6 +371,36 @@ def test_settings(u: dict = Depends(admin)):
         return {"reply": extract.chat(llm["base"], llm["key"], llm["model"], "Reply with the single word: ready")[:200]}
     except Exception as e:
         raise HTTPException(502, str(e))
+
+
+class Review(BaseModel):
+    action: str  # "confirm" | "reject"
+
+
+@app.post("/api/admin/decisions/{decision}")
+def review_decision(decision: str, body: Review, u: dict = Depends(admin)):
+    """Confirm a proposed decision (it starts counting in the radar and handovers) or reject it (deleted)."""
+    if body.action not in ("confirm", "reject"):
+        raise HTTPException(400, "Use confirm or reject")
+    g = graph(u["graph"])
+    if not g.ro_query("MATCH (d:Decision {id: $id, status: 'proposed'}) RETURN d.id", {"id": decision}).result_set:
+        raise HTTPException(404, "No proposed decision with that id")
+    g.query("MATCH (d:Decision {id: $id}) " + ("SET d.status = 'active'" if body.action == "confirm" else "DETACH DELETE d"),
+            {"id": decision})
+    return {"ok": True}
+
+
+@app.delete("/api/admin/sources/{ref:path}")
+def remove_source(ref: str, u: dict = Depends(admin)):
+    """Remove an uploaded doc or AI session, its chunks and any decision only it recorded, then rescore."""
+    g = graph(u["graph"])
+    if not g.ro_query("MATCH (s:Source {ref: $ref}) WHERE s:Doc OR s:AgentSession RETURN s.ref", {"ref": ref}).result_set:
+        raise HTTPException(404, "No uploaded doc or AI session with that ref")
+    ids = [r[0] for r in g.ro_query(SOURCE_DECISIONS, {"ref": ref}).result_set]
+    for q in DELETE_SOURCE:
+        g.query(q, {"ref": ref, "ids": ids})
+    derive(g)
+    return {"ok": True}
 
 
 def ingest_repo(cid: str, graph_name: str, url: str):
@@ -418,7 +452,7 @@ def brain(u: dict = Depends(member)):
 def queue_extraction(tasks: BackgroundTasks, u: dict, refs: list):
     llm = accounts.llm(u["company"])
     for ref in refs:
-        tasks.add_task(uploads.extract_into, graph(u["graph"]), llm, ref)
+        tasks.add_task(uploads.extract_into, graph(u["graph"]), llm, ref, u["role"] == "admin")
 
 
 @app.post("/api/brain/upload")
@@ -439,8 +473,11 @@ def upload(body: Upload, tasks: BackgroundTasks, u: dict = Depends(member)):
 
 @app.post("/api/brain/learned")
 def learned(body: Learned, u: dict = Depends(member)):
+    g = graph(u["graph"])
+    if not any(i["item"] == body.item for p in own_ids(u)[1:] for i in inherited(g, p, u["person"])):
+        raise HTTPException(403, "You can only mark items from a brain you inherited")
     now = uploads.now_iso()
-    graph(u["graph"]).query(MARK_LEARNED, {"person": u["person"], "item": body.item, "at": now, "ts": uploads.ts(now)})
+    g.query(MARK_LEARNED, {"person": u["person"], "item": body.item, "at": now, "ts": uploads.ts(now)})
     return {"ok": True}
 
 

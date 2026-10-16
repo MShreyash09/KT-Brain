@@ -89,7 +89,8 @@ export function Find({ hint }) {
 const extractTone = (x) => (!x || x === "off" ? "muted" : x.startsWith("failed") ? "risk" : x === "pending" ? "warn" : "ok");
 const extractText = (x) => (!x ? "fixture" : x === "off" ? "no AI provider" : x === "pending" ? "extracting…" : x);
 
-export function Sources({ sources, who }) {
+// `onRemove` (admin only) adds a Remove button to uploaded sources
+export function Sources({ sources, who, onRemove }) {
   if (!sources.length) return <p className="muted">No sources yet.</p>;
   return sources.map((s) => (
     <div key={s.ref} className="row">
@@ -97,7 +98,10 @@ export function Sources({ sources, who }) {
       <span className="item-label">{s.title || s.ref}<br />
         <span className="meta">{who ? `${who(s.person)} · ` : ""}{fmt(s.at)}{s.decisions ? ` · ${s.decisions} decisions` : ""}</span>
       </span>
-      <span className="item-extra"><Pill tone={extractTone(s.extract)}>{extractText(s.extract)}</Pill></span>
+      <span className="item-extra">
+        <Pill tone={extractTone(s.extract)}>{extractText(s.extract)}</Pill>
+        {onRemove && s.extract && <button className="btn" onClick={() => onRemove(s)}>Remove</button>}
+      </span>
     </div>
   ));
 }
