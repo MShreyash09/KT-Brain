@@ -170,8 +170,9 @@ ORDER BY score DESC LIMIT 6"""
 
 # ── Derive: who KNOWS what ───────────────────────────────────────────────────
 # score = sum over evidence links of weight * 0.5 ^ (age / 1 year), age measured from the graph's newest event.
-# Weights: authored the commit, PR or doc 1.0; ran the AI session or was the ticket assignee 0.8; committed to a
-# file the decision is ABOUT 0.7; reviewed 0.6; posted in the chat thread 0.5; trivial commit 0.05.
+# Weights: authored the commit, PR or doc 1.0; ran the AI session or was the ticket assignee 0.8 (an AI session's
+# file edits only 0.25 unless it PRODUCED a commit); committed to a file the decision is ABOUT 0.7; reviewed 0.6;
+# posted in the chat thread 0.5; trivial commit 0.05.
 # A KNOWS edge exists only when score > KNOWS_THRESHOLD. Any single non-trivial link from the last 6 months counts
 # (the weakest, a chat post, scores 0.5 * 0.71 = 0.36), a trivial commit never does (at most 0.05), and an old
 # single chat post fades out after about 9 months.
@@ -378,7 +379,8 @@ SOURCES = """
 MATCH (p:Person)-[:AUTHORED|RAN]->(s:Source) WHERE (s:Doc OR s:AgentSession) AND ($people IS NULL OR p.id IN $people)
 OPTIONAL MATCH (s)-[:RECORDS]->(d:Decision)
 RETURN s.ref AS ref, [l IN labels(s) WHERE l <> 'Source'][0] AS kind, s.title AS title, substring(s.at, 0, 10) AS at,
-       p.id AS person, s.extract AS extract, count(d) AS decisions ORDER BY at DESC"""
+       p.id AS person, p.name AS author, s.extract AS extract, s:Doc AND coalesce(s.shared, true) AS shared,
+       count(d) AS decisions ORDER BY at DESC"""
 
 SUCCESSORS = "MATCH (a:Person)-[:SUCCEEDED_BY]->(b:Person) RETURN a.id AS leaver, b.id AS successor"
 
@@ -393,9 +395,19 @@ DELETE_SOURCE = [
     "MATCH (d:Decision) WHERE d.id IN $ids AND NOT ()-[:RECORDS]->(d) DETACH DELETE d",
 ]
 
+# What a member may read: docs shared with the company (docs are, unless the author made them private), plus every
+# source that they or someone they succeeded took part in. AI sessions and chat are never shared company-wide.
+VISIBLE = """((s:Doc AND coalesce(s.shared, true))
+    OR any(x IN [(s)<-[:AUTHORED|REVIEWED|POSTED_IN|ASSIGNED|RAN]-(p:Person) | p.id] WHERE x IN $people))"""
+
+READABLE = "MATCH (s:Source {ref: $ref}) WHERE $people IS NULL OR " + VISIBLE + " RETURN s.title"
+
+SHARE = """MATCH (s:Doc {ref: $ref}) WHERE $admin OR $me IN [(p:Person)-[:AUTHORED]->(s) | p.id]
+SET s.shared = $shared RETURN s.ref"""
+
 SEARCH_MINE = """
 CALL db.idx.fulltext.queryNodes('Chunk', $q) YIELD node, score
-MATCH (node)-[:PART_OF]->(s:Source)<-[:AUTHORED|REVIEWED|POSTED_IN|ASSIGNED|RAN]-(p:Person) WHERE p.id IN $people
+MATCH (node)-[:PART_OF]->(s:Source) WHERE """ + VISIBLE + """
 WITH DISTINCT node, score, s
 OPTIONAL MATCH (node)-[:MENTIONS]->(f:File)
 RETURN s.ref AS ref, node.seq AS seq, score, collect(f.path) AS files,

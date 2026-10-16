@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DataProvider, Item, Pill, Score, api, fmt, useData } from "../ui.jsx";
 import KnowsGraph from "../screens/KnowsGraph.jsx";
-import { Dash, Find, Sources, WhyPage, openWhy, pending, useLoad } from "./common.jsx";
+import { Dash, DocPage, Find, Sources, WhyPage, openWhy, pending, share, useLoad } from "./common.jsx";
 
 const BASE = "me";
 const open = openWhy(BASE);
@@ -118,6 +118,22 @@ function Inherited({ id, reload }) {
   );
 }
 
+function CompanyDocs() {
+  const data = useData();
+  return (
+    <>
+      <header className="step-head">
+        <h1>Company docs</h1>
+        <p>Design docs, ADRs, runbooks and research their authors shared with everyone. AI sessions and chat stay with
+          the person who wrote them and their successors.</p>
+      </header>
+      <section className="card">
+        <Sources sources={data.company_docs} base={BASE} who={(s) => s.author} extract={false} />
+      </section>
+    </>
+  );
+}
+
 const toBase64 = (file) => new Promise((ok, fail) => {
   const r = new FileReader();
   r.onload = () => ok(String(r.result).split(",")[1]);
@@ -151,7 +167,8 @@ function AddSources({ reload }) {
       <header className="step-head">
         <h1>Add sources</h1>
         <p>Everything you add builds your graph. Text is split into chunks inside FalkorDB, and decisions are pulled out
-          when your admin has set up an AI provider.</p>
+          when your admin has set up an AI provider. Docs are shared with the whole company unless you make them
+          private; AI sessions stay with you, your successors and your admin.</p>
       </header>
 
       <label className={`card dropzone ${drag ? "over" : ""}`}
@@ -186,7 +203,7 @@ function AddSources({ reload }) {
 
       <section className="card">
         <h2>Your sources <span className="count">{data.sources.length}</span></h2>
-        <Sources sources={data.sources} />
+        <Sources sources={data.sources} base={BASE} onShare={(s) => share(s).then(reload)} />
       </section>
     </>
   );
@@ -199,16 +216,18 @@ export default function Member({ path }) {
     ["brain", "My brain", data?.knows.filter((k) => k.person === data.me).length],
     ...(data?.inherited ?? []).map((x) => [`from/${x.person}`, `From ${data.people.find((p) => p.id === x.person)?.name.split(" ")[0]}`,
       x.items.filter((i) => !i.others.length && !i.learned).length]),
+    ["docs", "Company docs", data?.company_docs.length],
     ["sources", "Add sources", data?.sources.length],
     ["ask", "Ask"],
   ];
   const current = section === "from" ? `from/${id}` : section;
   const page = {
     brain: <Brain />, from: <Inherited id={id} reload={reload} />, sources: <AddSources reload={reload} />,
+    docs: <CompanyDocs />, doc: <DocPage id={id} />,
     ask: (
       <>
         <header className="step-head"><h1>Ask</h1><p>Full-text search over the chunks you can see.</p></header>
-        <Find hint="Searches your own docs, AI sessions and chat, plus those of anyone you succeeded." />
+        <Find hint="Searches docs shared with the company, plus your own AI sessions and chat and those of anyone you succeeded." />
       </>
     ),
     why: <WhyPage base={BASE} id={id} />,

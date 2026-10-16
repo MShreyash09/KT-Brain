@@ -2,7 +2,7 @@
 
 (:Company {id, name, graph, llm_base, llm_key, llm_model, github_token, repo, repo_status})
 (:User {email, name, role: 'admin'|'member', person, salt, pw, disabled})-[:MEMBER_OF]->(:Company)
-(:Token {value, kind: 'web'|'cli', created})-[:FOR]->(:User)
+(:Token {value: sha256 of the token, kind: 'web'|'cli', created})-[:FOR]->(:User)
 """
 import hashlib
 import hmac
@@ -14,6 +14,12 @@ import time
 from graph import INDEXES, graph
 
 SYS = graph("kt_system")
+WEB_TOKEN_DAYS = 30  # same as the cookie; CLI tokens don't expire
+
+
+def _digest(token: str) -> str:
+    """Only the hash is stored, so reading the database doesn't let anyone sign in as its users."""
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
 def _hash(pw: str, salt: bytes) -> str:
@@ -68,7 +74,7 @@ def add_user(cid: str, name: str, email: str, pw: str, role: str, person: str | 
 def new_token(email: str, kind: str = "web") -> str:
     token = secrets.token_urlsafe(24)
     SYS.query("MATCH (u:User {email: $e}) CREATE (:Token {value: $t, kind: $k, created: $now})-[:FOR]->(u)",
-              {"e": email, "t": token, "k": kind, "now": int(time.time())})
+              {"e": email, "t": _digest(token), "k": kind, "now": int(time.time())})
     return token
 
 
@@ -82,14 +88,16 @@ def login(email: str, pw: str) -> str:
 
 
 def logout(token: str):
-    SYS.query("MATCH (t:Token {value: $t, kind: 'web'}) DELETE t", {"t": token})
+    SYS.query("MATCH (t:Token {value: $t, kind: 'web'}) DELETE t", {"t": _digest(token)})
 
 
 def user(token: str | None, kind: str = "web") -> dict | None:
     if not token:
         return None
-    row = _one("""MATCH (:Token {value: $t, kind: $k})-[:FOR]->(u:User)-[:MEMBER_OF]->(c:Company)
-        WHERE NOT u.disabled RETURN u.email, u.name, u.role, u.person, c.id, c.name, c.graph""", {"t": token, "k": kind})
+    row = _one("""MATCH (t:Token {value: $t, kind: $k})-[:FOR]->(u:User)-[:MEMBER_OF]->(c:Company)
+        WHERE NOT u.disabled AND (t.kind = 'cli' OR t.created > $since)
+        RETURN u.email, u.name, u.role, u.person, c.id, c.name, c.graph""",
+               {"t": _digest(token), "k": kind, "since": int(time.time()) - WEB_TOKEN_DAYS * 86400})
     if not row:
         return None
     return dict(zip(["email", "name", "role", "person", "company", "company_name", "graph"], row))

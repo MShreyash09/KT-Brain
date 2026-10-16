@@ -3,6 +3,7 @@
 Run from backend/:  uv run python test_extract.py   (needs FalkorDB; builds, then deletes, graph _test_extract)
 """
 import json
+import os
 
 import extract
 from graph import graph
@@ -14,6 +15,14 @@ REPLY = "Sure! " + json.dumps({"decisions": [
      "evidence": "cache menu responses in Redis for 5 minutes", "about": ["api/menu.py", "not/a/real/file.py"]},
     {"what": "Use Postgres for sessions", "why": "made up", "evidence": "we picked Postgres for sessions", "about": []},
 ]})
+os.environ.pop("ALLOW_LOCAL_LLM", None)
+extract.check_base("https://1.1.1.1/v1")
+for bad in ["http://1.1.1.1/v1", "https://127.0.0.1:11434", "https://10.0.0.5", "https://169.254.169.254", "file:///etc"]:
+    try:
+        extract.check_base(bad)
+        raise SystemExit(f"FAIL  check_base let {bad} through")
+    except ValueError:
+        pass
 extract.chat = lambda *a: REPLY
 
 g = graph("_test_extract")

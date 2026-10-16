@@ -89,21 +89,47 @@ export function Find({ hint }) {
 const extractTone = (x) => (!x || x === "off" ? "muted" : x.startsWith("failed") ? "risk" : x === "pending" ? "warn" : "ok");
 const extractText = (x) => (!x ? "fixture" : x === "off" ? "no AI provider" : x === "pending" ? "extracting…" : x);
 
-// `onRemove` (admin only) adds a Remove button to uploaded sources
-export function Sources({ sources, who, onRemove }) {
+const docLink = (base, ref) => `#/${base}/doc/${encodeURIComponent(ref)}`;
+
+// Titles open the full text. `onRemove` (admin only) adds a Remove button to uploaded sources; `onShare` a
+// share/make-private button to docs. `extract: false` hides the extraction status (the company docs list).
+export function Sources({ sources, base, who, onRemove, onShare, extract = true }) {
   if (!sources.length) return <p className="muted">No sources yet.</p>;
   return sources.map((s) => (
     <div key={s.ref} className="row">
       <Kind kind={s.kind} />
-      <span className="item-label">{s.title || s.ref}<br />
-        <span className="meta">{who ? `${who(s.person)} · ` : ""}{fmt(s.at)}{s.decisions ? ` · ${s.decisions} decisions` : ""}</span>
+      <span className="item-label"><a href={docLink(base, s.ref)}>{s.title || s.ref}</a><br />
+        <span className="meta">{who ? `${who(s)} · ` : ""}{fmt(s.at)}{s.decisions ? ` · ${s.decisions} decisions` : ""}</span>
       </span>
       <span className="item-extra">
-        <Pill tone={extractTone(s.extract)}>{extractText(s.extract)}</Pill>
+        {extract && <Pill tone={extractTone(s.extract)}>{extractText(s.extract)}</Pill>}
+        {onShare && s.kind === "Doc" && (
+          <button className="btn" onClick={() => onShare(s)} title={s.shared ? "Everyone in the company can read it now" : "Only you, your successors and admins can read it now"}>
+            {s.shared ? "Make private" : "Share with company"}
+          </button>
+        )}
         {onRemove && s.extract && <button className="btn" onClick={() => onRemove(s)}>Remove</button>}
       </span>
     </div>
   ));
+}
+
+export const share = (s) => api("source/share", { ref: s.ref, shared: !s.shared });
+
+export function DocPage({ id }) {
+  const [res, , error] = useLoad(`source?ref=${encodeURIComponent(id)}`);
+  return (
+    <>
+      <p><a href="#" onClick={(e) => { e.preventDefault(); history.back(); }}>← Back</a></p>
+      {error && <p className="form-error">{error}</p>}
+      {res && (
+        <>
+          <header className="step-head"><h1>{res.title || res.ref}</h1></header>
+          <section className="card"><pre className="doc-text">{res.text}</pre></section>
+        </>
+      )}
+    </>
+  );
 }
 
 export const pending = (sources) => sources?.some((s) => s.extract === "pending");

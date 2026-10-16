@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DataProvider, Item, Pill, Score, api, go, useData } from "../ui.jsx";
 import KnowsGraph from "../screens/KnowsGraph.jsx";
-import { Dash, Sources, WhyPage, openWhy, pending, useLoad } from "./common.jsx";
+import { Dash, DocPage, Sources, WhyPage, openWhy, pending, share, useLoad } from "./common.jsx";
 
 const BASE = "admin";
 const open = openWhy(BASE);
@@ -301,7 +301,8 @@ function SourcesPage({ reload }) {
       )}
       <section className="card">
         <h2>Docs and AI sessions <span className="count">{data.sources.length}</span></h2>
-        <Sources sources={data.sources} who={data.first} onRemove={remove} />
+        <Sources sources={data.sources} base={BASE} who={(s) => data.first(s.person)} onRemove={remove}
+          onShare={(s) => run(() => share(s))} />
       </section>
     </>
   );
@@ -391,7 +392,7 @@ export default function Admin({ path }) {
   const page = {
     overview: <Overview />, employees: <Employees reload={reload} />, graph: <Graph />, handovers: <Handovers />,
     sources: <SourcesPage reload={reload} />, settings: <SettingsPage reload={reload} />,
-    person: <Person id={id} />, why: <WhyPage base={BASE} id={id} />,
+    person: <Person id={id} />, why: <WhyPage base={BASE} id={id} />, doc: <DocPage id={id} />,
   }[section] ?? <p className="muted">Nothing here.</p>;
   return <Dash base={BASE} nav={nav} current={section} data={data} error={error}>{page}</Dash>;
 }

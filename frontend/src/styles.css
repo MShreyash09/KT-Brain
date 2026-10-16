@@ -297,6 +297,7 @@ details.card summary { cursor: pointer; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .command { font-family: var(--mono); font-size: 12.5px; background: var(--surface-2); border: 1px solid var(--border);
   border-radius: 8px; padding: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+.doc-text { font: inherit; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
 .empty { text-align: left; }
 
 /* phone: sidebar becomes a scrolling tab row */

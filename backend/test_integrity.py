@@ -99,6 +99,21 @@ def test_remove_source():
     assert not g.ro_query("MATCH (d:Decision {what: 'Made up'}) RETURN d").result_set
 
 
+def test_shared_docs_and_private_sessions():
+    doc = add_doc(g, "ann", "adr.md", "# ADR\n\nUse idempotency keys. token=hunter2secret sk_live_abcdefghijklmnop1234\n")
+    assert "hunter2" not in chunks(doc)[0] and "sk_live" not in chunks(doc)[0], chunks(doc)
+    add_sessions(g, "ann", [session("priv", [], "ann: private notes", iso(now))])
+    sess = "session:ann:priv"
+    assert app.read_source(doc, u("eve"))["title"] == "ADR"  # docs reach the whole company
+    raises(404, app.read_source, sess, u("eve"))  # sessions don't
+    assert app.read_source(sess, u("cy"))["text"]  # cy succeeded (bob, who succeeded) ann
+    raises(404, app.share_source, app.Share(ref=doc, shared=False), u("eve"))  # not the author
+    raises(404, app.share_source, app.Share(ref=sess, shared=True), u("ann"))  # sessions can't be shared
+    app.share_source(app.Share(ref=doc, shared=False), u("ann"))
+    raises(404, app.read_source, doc, u("eve"))
+    assert app.read_source(doc, u("x", "admin"))
+
+
 def test_github_login_does_not_overwrite_employee():
     fake = {"/repos/o/r/commits?per_page=25": [{"sha": "gh1", "url": "c/gh1", "author": {"login": "eve"},
                                                 "commit": {"message": "x", "author": {"name": "eve", "date": iso(now)}}}],

@@ -6,6 +6,7 @@ Member:  /api/brain/*   your own graph, uploads, CLI token, and the brain of any
 CLI:     /api/cli/*     `ktbrain sync` pushes AI sessions with a per-user token.
 """
 import base64
+import functools
 import re
 from contextlib import asynccontextmanager
 from datetime import date, datetime, timezone
@@ -16,8 +17,8 @@ from pydantic import BaseModel
 import accounts
 import extract
 from graph import (COVERED, DECISIONS, DELETE_SOURCE, EDGE_COUNTS, INHERITED, KNOWS, MARK_LEARNED, MENTOR, NODE_COUNTS,
-                   OFFBOARD, ORPHANED, PEOPLE, PREDECESSORS, RADAR, RECORDED_BY, SEARCH, SEARCH_MINE, SOURCE_DECISIONS,
-                   SOURCES, SUCCESSORS, db, derive, dry_run, graph, rows, trace)
+                   OFFBOARD, ORPHANED, PEOPLE, PREDECESSORS, RADAR, READABLE, RECORDED_BY, SEARCH, SEARCH_MINE, SHARE,
+                   SOURCE_DECISIONS, SOURCES, SUCCESSORS, db, derive, dry_run, graph, rows, text, trace)
 from ingest import github, uploads
 from ingest.fixtures import build
 
@@ -83,17 +84,20 @@ def handover(agenda: list) -> dict:
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "graphs": db.list_graphs()}
+    return {"ok": True}  # not the graph list: it names every company
 
 
+# ponytail: the story graphs never change while the server runs, so the public story is computed once (each dry run
+# is a GRAPH.COPY, too costly to repeat for anyone who calls a public URL); restart after rebuilding the fixtures
 @app.get("/api/workspace")
+@functools.cache
 def workspace():
     """Everything the six story screens show, read live from the graphs."""
     g, end = graph(DAY_GRAPH), graph(END_GRAPH)
     people = [{k: v for k, v in p.items() if k != "active"} for p in rows(end, PEOPLE)]  # the story is set on Sep 21
     leavers = [p["id"] for p in people if p["last_day"]]
     cases = [[p] for p in leavers] + ([leavers] if len(leavers) > 1 else [])
-    runs = {"+".join(c): dry_run(DAY_GRAPH, c) for c in cases}
+    runs = {"+".join(c): story_dry_run(tuple(sorted(c))) for c in cases}
     decisions = {d["id"]: d for d in rows(g, DECISIONS)}
     counts = dict(end.ro_query(NODE_COUNTS).result_set)
     counts["edges"] = sum(n for _, n in end.ro_query(EDGE_COUNTS).result_set)
@@ -114,7 +118,13 @@ def workspace():
 @app.get("/api/dryrun")
 def dryrun(leavers: str):
     """Simulate any set of TiffinBox people leaving, e.g. ?leavers=arjun,priya"""
-    return dry_run(DAY_GRAPH, leavers.split(","))
+    people = {p["id"] for p in rows(graph(DAY_GRAPH), PEOPLE)}
+    return story_dry_run(tuple(sorted(set(leavers.split(",")) & people)))  # unknown ids would only bust the cache
+
+
+@functools.cache
+def story_dry_run(leavers: tuple) -> dict:
+    return dry_run(DAY_GRAPH, list(leavers))
 
 
 def search_words(q: str) -> str:
@@ -271,6 +281,30 @@ def find(q: str, u: dict = Depends(signed_in)):
     return rows(g, SEARCH, {"q": words}) if ids is None else rows(g, SEARCH_MINE, {"q": words, "people": ids})
 
 
+@app.get("/api/source")
+def read_source(ref: str, u: dict = Depends(signed_in)):
+    """The full text of a doc, AI session or chat thread this user may see (see graph.VISIBLE)."""
+    g = graph(u["graph"])
+    found = g.ro_query(READABLE, {"ref": ref, "people": visible_ids(u)}).result_set
+    if not found:
+        raise HTTPException(404, "Not in your graph")
+    return {"ref": ref, "title": found[0][0], "text": text(g, ref)}
+
+
+class Share(BaseModel):
+    ref: str
+    shared: bool
+
+
+@app.post("/api/source/share")
+def share_source(body: Share, u: dict = Depends(signed_in)):
+    """Share a doc with the whole company, or make it private again. Its author or an admin may."""
+    if not graph(u["graph"]).query(SHARE, {"ref": body.ref, "shared": body.shared, "admin": u["role"] == "admin",
+                                           "me": u["person"]}).result_set:
+        raise HTTPException(404, "Only the author or an admin can share this doc")
+    return {"ok": True}
+
+
 # ── Admin ────────────────────────────────────────────────────────────────────
 class Employee(BaseModel):
     name: str
@@ -354,6 +388,11 @@ def offboard(body: Offboard, u: dict = Depends(admin)):
 @app.put("/api/admin/settings")
 def save_settings(body: Settings, u: dict = Depends(admin)):
     props = {"llm_provider": body.provider, "llm_base": body.base.strip(), "llm_model": body.model.strip()}
+    if props["llm_base"]:
+        try:
+            extract.check_base(props["llm_base"])
+        except ValueError as e:
+            raise HTTPException(400, str(e))
     if body.key.strip():
         props["llm_key"] = body.key.strip()
     if body.github_token.strip():
@@ -446,6 +485,7 @@ def brain(u: dict = Depends(member)):
     view["me"] = u["person"]
     view["inherited"] = [{"person": p, "items": inherited(g, p, u["person"])} for p in ids[1:]]
     view["sources"] = rows(g, SOURCES, {"people": [u["person"]]})
+    view["company_docs"] = [s for s in rows(g, SOURCES, {"people": None}) if s["shared"]]
     return view
 
 
