@@ -1,5 +1,6 @@
 """Every FalkorDB call in KT Brain goes through this file."""
 import os
+import threading
 import time
 from uuid import uuid4
 
@@ -169,7 +170,7 @@ ORDER BY score DESC LIMIT 6"""
 
 
 # ── Derive: who KNOWS what ───────────────────────────────────────────────────
-# score = sum over evidence links of weight * 0.5 ^ (age / 1 year), age measured from the graph's newest event.
+# score = sum over evidence links of weight * 0.5 ^ (age / 1 year).
 # Weights: authored the commit, PR or doc 1.0; ran the AI session or was the ticket assignee 0.8 (an AI session's
 # file edits only 0.25 unless it PRODUCED a commit); committed to a file the decision is ABOUT 0.7; reviewed 0.6;
 # posted in the chat thread 0.5; trivial commit 0.05.
@@ -209,28 +210,58 @@ SET e.score = e.score + score, e.links = e.links + links,
     e.last_touched = CASE WHEN last > e.last_touched THEN last ELSE e.last_touched END"""
 
 
-def derive(g):
-    """Recompute every KNOWS edge from the raw edges. Safe to rerun after any ingest."""
-    newest = g.ro_query("MATCH (n) WHERE n.ts IS NOT NULL RETURN max(n.ts)").result_set[0][0]
-    now = min(newest, int(time.time()))  # a future-dated source must not age everyone else's knowledge
-    g.query("MATCH ()-[e:KNOWS]->() DELETE e")
-    for links in _KNOWS_LINKS:
-        g.query(links + _KNOWS_ADD, {"now": now, "half_life": HALF_LIFE_DAYS, "trivial": TRIVIAL})
-    g.query("MATCH ()-[e:KNOWS]->() WHERE e.score <= $t DELETE e", {"t": KNOWS_THRESHOLD})
+# derive deletes every KNOWS edge before rebuilding them, so anything that reads KNOWS to make a decision (the agent's
+# radar watch) holds this lock to never see the graph halfway through.
+# ponytail: one lock for every graph in one process; per-graph locks if derive gets slow, Redis locks for >1 worker
+LOCK = threading.Lock()
+
+
+def derive(g, story=False):
+    """Recompute every KNOWS edge from the raw edges. Safe to rerun after any ingest.
+    Age is measured from now, so a company's knowledge fades even on days nobody commits. The story graphs (`story`)
+    measure it from their newest event instead, so they score the same whenever they are built."""
+    now = int(time.time())
+    if story:
+        now = min(g.ro_query("MATCH (n) WHERE n.ts IS NOT NULL RETURN max(n.ts)").result_set[0][0], now)
+    with LOCK:
+        g.query("MATCH ()-[e:KNOWS]->() DELETE e")
+        for links in _KNOWS_LINKS:
+            g.query(links + _KNOWS_ADD, {"now": now, "half_life": HALF_LIFE_DAYS, "trivial": TRIVIAL})
+        g.query("MATCH ()-[e:KNOWS]->() WHERE e.score <= $t DELETE e", {"t": KNOWS_THRESHOLD})
 
 
 WHO_KNOWS = """
 MATCH (p:Person)-[:KNOWS]->(k)
 RETURN coalesce(k.id, k.path) AS item, collect(p.id) AS people"""
 
-# Bus-factor radar: active decisions and files that exactly one active person knows.
+# Bus-factor radar: active decisions and files that exactly one active person knows, with the services they belong to.
 RADAR = """
 MATCH (p:Person {active: true})-[e:KNOWS]->(k)
 WHERE k:File OR (k:Decision AND k.status = 'active')
 WITH k, collect(p.id) AS knowers, max(e.score) AS score
 WHERE size(knowers) = 1
-RETURN coalesce(k.id, k.path) AS item, labels(k)[0] AS kind, knowers[0] AS only_knower, score
+RETURN coalesce(k.id, k.path) AS item, labels(k)[0] AS kind, knowers[0] AS only_knower, score,
+       [(k)-[:ABOUT|PART_OF*1..2]->(s:Service) | s.id] AS services
 ORDER BY only_knower, kind, item"""
+
+# Blast radius of a service: PageRank over DEPENDS_ON, so the services everything else depends on rank highest
+# (TiffinBox: infra > api > web, ml). Betweenness was the other candidate, but it scores infra 0: nothing passes
+# *through* the service at the bottom of the stack, everything ends there.
+BLAST = "CALL algo.pageRank('Service', 'DEPENDS_ON') YIELD node, score RETURN node.id, score"
+
+
+def radar(g) -> list:
+    """RADAR rows, each with `blast`: the PageRank of the item's service relative to the top service (0 to 1; 0 for a
+    decision about no file). Within each person the items with the biggest blast radius come first."""
+    try:
+        rank = dict(g.ro_query(BLAST).result_set)
+    except Exception:  # FalkorDB's PageRank fails on a graph with no DEPENDS_ON edges (a new company): no blast radius
+        rank = {}
+    top = max(rank.values(), default=0) or 1
+    out = rows(g, RADAR)
+    for r in out:
+        r["blast"] = round(max((rank.get(s, 0) for s in r.pop("services")), default=0) / top, 2)
+    return sorted(out, key=lambda r: (r["only_knower"], -r["blast"], -r["score"]))
 
 
 # ── Departure dry run (on a GRAPH.COPY, the workspace graph is never touched) ─
@@ -434,3 +465,60 @@ OFFBOARD = """
 MATCH (p:Person {id: $person}), (s:Person {id: $successor})
 SET p.active = false, p.last_day = $day
 MERGE (p)-[:SUCCEEDED_BY]->(s)"""
+
+
+# ── Agent (agent.py) ─────────────────────────────────────────────────────────
+# Ask: from the search hits, walk to the decisions their sources RECORD or that are ABOUT the files they mention, and
+# to who still knows them. Proposed decisions are left out until someone confirms them.
+# ponytail: the lists are built in a WITH first, because in FalkorDB 6.0.2 a pattern comprehension inside WHERE any(...)
+# makes every later pattern comprehension in the query come back empty (knowers was always []); report upstream
+ASK_DECISIONS = """
+MATCH (d:Decision) WHERE d.status <> 'proposed'
+WITH d, [(s:Source)-[:RECORDS]->(d) | s.ref] AS recorded_in, [(d)-[:ABOUT]->(f:File) | f.path] AS about
+WHERE any(r IN recorded_in WHERE r IN $refs) OR any(f IN about WHERE f IN $files)
+RETURN d.id AS id, d.what AS what, d.why AS why, d.status AS status,
+       [(p:Person {active: true})-[:KNOWS]->(d) | p.name] AS knowers,
+       [(n:Decision)-[:SUPERSEDES]->(d) | n.id] AS superseded_by
+ORDER BY d.ts DESC LIMIT 8"""
+
+ASK_FILES = """
+MATCH (f:File) WHERE f.path IN $files
+RETURN f.path AS path, [(p:Person {active: true})-[:KNOWS]->(f) | p.name] AS knowers"""
+
+# Watch: one Alert per item while only one person knows it.
+# (:Alert {id, item, kind, person, blast, status: 'open'|'resolved'|'lost', created, closed, brief, refs})
+#   -[:FLAGS]->(File|Decision), -[:FOR]->(Person)
+# done = has a brief, or the model was asked in the last day (it failed, or no line of its reply cited the evidence)
+OPEN_ALERTS = "MATCH (a:Alert {status: 'open'}) RETURN a.id, a.item, a.brief IS NOT NULL OR coalesce(a.tried, 0) > $since"
+
+# refs is always set, so an alert without a brief still shows the evidence; brief stays null without an AI provider
+SET_BRIEF = "MATCH (a:Alert {id: $id}) SET a.brief = $brief, a.refs = $refs, a.tried = $tried"
+
+ALERTS = "MATCH (a:Alert) RETURN properties(a) AS a ORDER BY a.created DESC LIMIT 100"
+
+# Is the item still a live agenda item, and how many active people know it now?
+ITEM_STATE = """
+MATCH (k) WHERE (k:Decision AND k.id = $item) OR (k:File AND k.path = $item)
+RETURN k:File OR k.status = 'active', size([(p:Person {active: true})-[:KNOWS]->(k) | p])"""
+
+CLOSE_ALERT = "MATCH (a:Alert {id: $id}) SET a.status = $status, a.closed = $now"
+
+CREATE_ALERT = """
+MATCH (k), (p:Person {id: $a.person}) WHERE (k:Decision AND k.id = $a.item) OR (k:File AND k.path = $a.item)
+CREATE (a:Alert)-[:FLAGS]->(k), (a)-[:FOR]->(p) SET a = $a"""
+
+# The only knower's own evidence for an item: sources they took part in that record it, mention it or changed it,
+# and their commits to it. Only their own, so the brief shows them nothing they could not already read.
+BRIEF_SOURCES = """
+MATCH (p:Person {id: $person})-[:AUTHORED|REVIEWED|POSTED_IN|ASSIGNED|RAN]->(s:Source)
+WHERE (s)-[:RECORDS]->(:Decision {id: $item})
+   OR (s)<-[:PART_OF]-(:Chunk)-[:MENTIONS]->(:File {path: $item})
+   OR (s)-[:CONTAINS]->(:Commit)-[:CHANGED]->(:File {path: $item})
+   OR (s)-[:TOUCHED]->(:File {path: $item})
+RETURN DISTINCT s.ref AS ref, [l IN labels(s) WHERE l <> 'Source'][0] AS kind, s.title AS title, s.ts AS ts
+ORDER BY ts DESC LIMIT 4"""
+
+BRIEF_COMMITS = """
+MATCH (:Person {id: $person})-[:AUTHORED]->(c:Commit)-[:CHANGED]->(f:File)
+WHERE f.path = $item OR (:Decision {id: $item})-[:ABOUT]->(f)
+RETURN DISTINCT c.sha AS sha, c.message AS message, substring(c.at, 0, 10) AS at, c.ts AS ts ORDER BY ts DESC LIMIT 8"""

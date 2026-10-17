@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { DataProvider, Item, Pill, Score, api, go, useData } from "../ui.jsx";
 import KnowsGraph from "../screens/KnowsGraph.jsx";
-import { Dash, DocPage, Sources, WhyPage, openWhy, pending, share, useLoad } from "./common.jsx";
+import { Alerts, Dash, DocPage, Find, Sources, WhyPage, openWhy, pending, share, useLoad } from "./common.jsx";
+import { Blast } from "../screens/Radar.jsx";
 
 const BASE = "admin";
 const open = openWhy(BASE);
@@ -46,10 +47,29 @@ function Overview() {
         return (
           <section key={p.id} className="card">
             <h2>{first(p.id)} <span className="count">{rows.length}</span> <Pill tone={s.tone}>{s.text}</Pill></h2>
-            {rows.map((r) => <Item key={r.item} item={r.item} open={open}><Score value={r.score} max={max} /></Item>)}
+            {rows.map((r) => <Item key={r.item} item={r.item} open={open}><Blast value={r.blast} /><Score value={r.score} max={max} /></Item>)}
           </section>
         );
       })}
+      <AgentActivity />
+    </>
+  );
+}
+
+function AgentActivity() {
+  const data = useData();
+  const live = data.alerts.filter((a) => a.status === "open");
+  const closed = data.alerts.filter((a) => a.status !== "open").slice(0, 20);
+  return (
+    <>
+      <h2 className="section-title">Agent activity <span className="count">{live.length} open</span></h2>
+      <p className="muted small">Nobody asks for these. Every minute the agent checks the radar. When something becomes known
+        by only one person (after a sync, an upload or someone leaving), it opens an alert and writes a KT brief from that
+        person's own work: what it is, and what to ask them before they go. It closes the alert when a second person
+        knows the item, or marks it lost if they left first.</p>
+      {!data.alerts.length && <p className="muted">No alerts yet. The agent's first check runs within a minute of the server starting.</p>}
+      {live.length > 0 && <section className="card at-risk"><Alerts alerts={live} base={BASE} who={data.first} /></section>}
+      {closed.length > 0 && <section className="card"><h2>Closed</h2><Alerts alerts={closed} base={BASE} who={data.first} /></section>}
     </>
   );
 }
@@ -402,7 +422,8 @@ export default function Admin({ path }) {
   const [section = "overview", id] = path;
   const [data, reload, error] = useLoad("admin", (d) => repoBusy(d.repo.status) || pending(d.sources));
   const nav = [
-    ["overview", "Overview"],
+    ["overview", "Overview", data?.alerts.filter((a) => a.status === "open").length],
+    ["ask", "Ask"],
     ["employees", "Employees", data?.people.length],
     ["graph", "Knowledge graph"],
     ["handovers", "Handovers", data?.successors.length],
@@ -410,7 +431,14 @@ export default function Admin({ path }) {
     ["settings", "Settings"],
   ];
   const page = {
-    overview: <Overview />, employees: <Employees reload={reload} />, graph: <Graph />, handovers: <Handovers />,
+    overview: <Overview />,
+    ask: (
+      <>
+        <header className="step-head"><h1>Ask</h1><p>The agent answers from the whole company graph and cites every claim.</p></header>
+        <Find base={BASE} hint="Searches every doc, AI session and chat thread in the company." />
+      </>
+    ),
+    employees: <Employees reload={reload} />, graph: <Graph />, handovers: <Handovers />,
     sources: <SourcesPage reload={reload} />, settings: <SettingsPage reload={reload} />,
     person: <Person id={id} />, why: <WhyPage base={BASE} id={id} />, doc: <DocPage id={id} />,
   }[section] ?? <p className="muted">Nothing here.</p>;

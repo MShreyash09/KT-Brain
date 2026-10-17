@@ -1,14 +1,16 @@
 """KT Brain API. Run from backend/:  uv run uvicorn app:app --reload
 
-Public:  the TiffinBox story (/api/workspace, /api/dryrun, /api/search) and sign-in.
+Public:  the TiffinBox story (/api/workspace, /api/dryrun, /api/search, /api/ask) and sign-in.
 Admin:   /api/admin/*   every employee's graph, offboarding with a successor, sources, AI provider settings.
 Member:  /api/brain/*   your own graph, uploads, CLI token, and the brain of anyone you succeeded.
 CLI:     /api/cli/*     `ktbrain sync` pushes AI sessions with a per-user token.
 """
 import asyncio
 import base64
+import collections
 import functools
 import re
+import time
 from contextlib import asynccontextmanager
 from datetime import date, datetime, timezone
 
@@ -16,10 +18,12 @@ from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, R
 from pydantic import BaseModel
 
 import accounts
+import agent
 import extract
+from agent import search_words
 from graph import (COVERED, DECISIONS, DELETE_SOURCE, EDGE_COUNTS, INHERITED, KNOWS, MARK_LEARNED, MENTOR, NODE_COUNTS,
-                   OFFBOARD, ORPHANED, PEOPLE, PREDECESSORS, RADAR, READABLE, RECORDED_BY, SEARCH, SEARCH_MINE, SHARE,
-                   SOURCE_DECISIONS, SOURCES, SUCCESSORS, db, derive, dry_run, graph, rows, text, trace)
+                   OFFBOARD, ORPHANED, PEOPLE, PREDECESSORS, READABLE, RECORDED_BY, SEARCH, SEARCH_MINE, SHARE,
+                   SOURCE_DECISIONS, SOURCES, SUCCESSORS, db, derive, dry_run, graph, radar, rows, text, trace)
 from ingest import github, uploads
 from ingest.fixtures import build
 
@@ -69,6 +73,16 @@ def slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-") or "person"
 
 
+def radar_view(g) -> list:
+    return [{"item": r["item"], "kind": r["kind"], "person": r["only_knower"], "score": round(r["score"], 2),
+             "blast": r["blast"]} for r in radar(g)]
+
+
+def company_llm(cid: str) -> dict | None:
+    """The company's own AI provider; the demo company falls back to the server's (LLM_KEY in the environment)."""
+    return accounts.llm(cid) or (extract.env_llm() if cid == DEMO["company"] else None)
+
+
 # ── Public: the TiffinBox story ──────────────────────────────────────────────
 def handover(agenda: list) -> dict:
     """How much of the all-leavers agenda is covered, and what is still orphaned, at the end of the story."""
@@ -110,8 +124,7 @@ def workspace():
         "people": people,
         "decisions": decisions,
         "knows": [{**k, "score": round(k["score"], 2), "last": day(k["last"])} for k in rows(g, KNOWS)],
-        "radar": [{"item": r["item"], "kind": r["kind"], "person": r["only_knower"], "score": round(r["score"], 2)}
-                  for r in rows(g, RADAR)],
+        "radar": radar_view(g),
         "dry_runs": runs,
         "traces": {d: trace(g, d) for d, v in decisions.items() if v["status"] == "active"},
         "handover": handover(runs["+".join(leavers)]["agenda"]),
@@ -130,15 +143,36 @@ def story_dry_run(leavers: tuple) -> dict:
     return dry_run(DAY_GRAPH, list(leavers))
 
 
-def search_words(q: str) -> str:
-    """Any query word may match (RediSearch OR syntax)."""
-    return "|".join(w for w in re.findall(r"[a-z0-9_]+", q.lower()) if len(w) > 2)
-
-
 @app.get("/api/search")
 def search(q: str):
     words = search_words(q)
     return rows(graph(DAY_GRAPH), SEARCH, {"q": words}) if words else []
+
+
+# Public answers run on the server's own AI key, so they are cached (the story graph never changes) and capped.
+# ponytail: one in-process cap shared by every visitor; a per-IP limit if one visitor can use it all up
+PUBLIC_ASKS_PER_MINUTE = 10
+_answers, _asked = {}, collections.deque()
+
+
+@app.get("/api/ask")
+def public_ask(q: str):
+    """The agent on the TiffinBox story: an answer that cites the graph, or the evidence alone without an AI key."""
+    key = " ".join(q.lower().split())[:300]
+    if key in _answers:
+        return _answers[key]
+    now = time.time()
+    while _asked and _asked[0] < now - 60:
+        _asked.popleft()
+    llm = extract.env_llm()
+    if llm and len(_asked) >= PUBLIC_ASKS_PER_MINUTE:
+        llm = None  # busy: the evidence alone, not cached
+    elif llm:
+        _asked.append(now)
+    out = agent.ask(graph(DAY_GRAPH), q, llm)
+    if out["answer"]:
+        _answers[key] = out
+    return out
 
 
 # ── Accounts ─────────────────────────────────────────────────────────────────
@@ -284,6 +318,14 @@ def find(q: str, u: dict = Depends(signed_in)):
     return rows(g, SEARCH, {"q": words}) if ids is None else rows(g, SEARCH_MINE, {"q": words, "people": ids})
 
 
+@app.get("/api/agent")
+def agent_ask(q: str, u: dict = Depends(signed_in)):
+    """The agent on the company graph, limited to what this user may read."""
+    ids = visible_ids(u)
+    allowed = None if ids is None else set(company_view(u, ids)["decisions"])
+    return agent.ask(graph(u["graph"]), q, company_llm(u["company"]), ids, allowed)
+
+
 @app.get("/api/source")
 def read_source(ref: str, u: dict = Depends(signed_in)):
     """The full text of a doc, AI session or chat thread this user may see (see graph.VISIBLE)."""
@@ -348,8 +390,7 @@ def admin_overview(u: dict = Depends(admin)):
         agenda = [i for i in items if not i["others"]]
         s.update(agenda=len(agenda), learned=sum(i["learned"] for i in agenda))
     return {**view,
-            "radar": [{"item": r["item"], "kind": r["kind"], "person": r["only_knower"], "score": round(r["score"], 2)}
-                      for r in rows(g, RADAR)],
+            "radar": radar_view(g), "alerts": agent.alerts(g),
             "successors": successors, "sources": rows(g, SOURCES, {"people": None}),
             "users": accounts.users(u["company"]),
             "settings": {"provider": c.get("llm_provider") or "", "base": c.get("llm_base") or "",
@@ -485,9 +526,12 @@ def repo_busy(status: str | None) -> bool:
 
 
 async def auto_sync():
-    """Once a day, at each company's chosen time (after work hours by default), re-read its GitHub repo. That pulls
-    new commits and PRs and re-runs `derive`, so KNOWS scores keep decaying even when nothing new was committed.
-    Only the sync time is a setting: every event keeps its own timestamp, whatever hour it happened."""
+    """Every minute, with nobody clicking anything:
+    1. Once a day, at each company's chosen time (after work hours by default), re-read its GitHub repo. That pulls
+       new commits and PRs and re-runs `derive` at today's date, so KNOWS scores keep decaying even when nothing new
+       was committed. Only the sync time is a setting: every event keeps its own timestamp, whatever hour it happened.
+    2. The agent watches every company's radar (agent.watch): a new item only one person knows gets an alert and a KT
+       brief, so a new risk from a sync, an upload or a CLI push is flagged within a minute."""
     while True:
         try:
             now = datetime.now(timezone.utc)
@@ -496,6 +540,9 @@ async def auto_sync():
                     continue  # a manual sync is running; try again next minute
                 accounts.update_company(cid, synced_on=now.date().isoformat(), repo_status="queued (daily sync)")
                 await asyncio.to_thread(ingest_repo, cid, graph_name, repo)
+            # ponytail: every company every minute (two reads when nothing changed); trigger from derive if this grows
+            for cid, graph_name in accounts.companies():
+                await asyncio.to_thread(agent.watch, graph(graph_name), company_llm(cid))
         except Exception as e:  # FalkorDB down for a moment: keep the loop alive
             print(f"auto-sync: {e}")
         await asyncio.sleep(60)
@@ -526,11 +573,12 @@ def brain(u: dict = Depends(member)):
     view["inherited"] = [{"person": p, "items": inherited(g, p, u["person"])} for p in ids[1:]]
     view["sources"] = rows(g, SOURCES, {"people": [u["person"]]})
     view["company_docs"] = [s for s in rows(g, SOURCES, {"people": None}) if s["shared"]]
+    view["alerts"] = agent.alerts(g, u["person"])  # briefs are built from the knower's own sources only
     return view
 
 
 def queue_extraction(tasks: BackgroundTasks, u: dict, refs: list):
-    llm = accounts.llm(u["company"])
+    llm = company_llm(u["company"])
     for ref in refs:
         tasks.add_task(uploads.extract_into, graph(u["graph"]), llm, ref, u["role"] == "admin")
 

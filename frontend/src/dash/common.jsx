@@ -1,7 +1,7 @@
 // Pieces both dashboards use: the sidebar layout, data loading, why-trace page, search and the sources table.
 import { useCallback, useEffect, useState } from "react";
-import { DataProvider, Kind, Pill, api, fmt, go } from "../ui.jsx";
-import { Snippet, terms } from "../screens/Ask.jsx";
+import { DataProvider, Kind, Pill, api, fmt, go, useData } from "../ui.jsx";
+import { AgentAnswer, Cited, Snippet, terms } from "../screens/Ask.jsx";
 import { Trace } from "../screens/Why.jsx";
 
 // GET once, plus a reload() for after a change; `poll` re-fetches every 3 s while it returns true
@@ -55,8 +55,17 @@ export function WhyPage({ base, id }) {
   );
 }
 
-export function Find({ hint }) {
+// A cited id opens its why-trace (a decision in this view) or its full text (a source such as pr:124 or doc:…)
+const SOURCE_REF = /^(pr|ticket|thread|session|doc):/;
+export function citeLink(base, decisions) {
+  return (id) => (id in decisions ? () => go(base, "why", id)
+    : SOURCE_REF.test(id) ? () => go(base, "doc", encodeURIComponent(id)) : null);
+}
+
+export function Find({ base, hint }) {
+  const { decisions } = useData();
   const [q, setQ] = useState("");
+  const [asked, setAsked] = useState("");
   const [hits, setHits] = useState(null);
   useEffect(() => {
     if (!terms(q).length) return setHits(null);
@@ -67,9 +76,13 @@ export function Find({ hint }) {
   }, [q]);
   return (
     <>
-      <input className="search" type="search" value={q} onChange={(e) => setQ(e.target.value)}
-        placeholder="Search docs, AI sessions and chat…" aria-label="Search" />
-      <p className="muted small">{hint}</p>
+      <form className="ask-form" onSubmit={(e) => { e.preventDefault(); setAsked(q.trim()); }}>
+        <input className="search" type="search" value={q} onChange={(e) => setQ(e.target.value)}
+          placeholder="Ask how something works, why it was decided, or who knows it…" aria-label="Question" />
+        <button className="btn primary" disabled={!q.trim()}>Ask the agent</button>
+      </form>
+      <p className="muted small">{hint} Matching chunks show as you type; press Ask for an answer that cites them.</p>
+      <AgentAnswer path={asked && `agent?q=${encodeURIComponent(asked)}`} link={citeLink(base, decisions)} />
       {hits && !hits.length && <p className="muted">Nothing you can see mentions that.</p>}
       {hits?.map((c) => (
         <section key={`${c.ref}#${c.seq}`} className="card hit">
@@ -130,6 +143,33 @@ export function DocPage({ id }) {
       )}
     </>
   );
+}
+
+const STATE = { open: ["risk", "only one person knows it"], resolved: ["ok", "resolved: someone else knows it now"],
+  lost: ["muted", "lost: they left first"] };
+
+// The agent's radar alerts, each with its KT brief. `who` names the only knower (left out on a member's own page).
+export function Alerts({ alerts, base, who }) {
+  const data = useData();
+  const link = citeLink(base, data.decisions);
+  return alerts.map((a) => (
+    <details key={a.id} className="alert" open={a.status === "open" && alerts.length < 4}>
+      <summary>
+        <Kind kind={a.kind} />
+        <span className="item-label">{a.kind === "Decision" ? <><b>{a.item}</b> {data.label(a.item)}</> : <code>{a.item}</code>}</span>
+        <span className="item-extra">
+          {who && <span className="meta">{who(a.person)}</span>}
+          <Pill tone={STATE[a.status][0]}>{STATE[a.status][1]}</Pill>
+          <span className="meta">{fmt(new Date(a.created * 1000).toISOString().slice(0, 10))}</span>
+        </span>
+      </summary>
+      <div className="brief">
+        {a.brief ? <Cited text={a.brief} link={link} /> : (
+          <p className="muted small">No AI provider, so no brief. Evidence: {a.refs.join(", ") || "none"}.</p>
+        )}
+      </div>
+    </details>
+  ));
 }
 
 export const pending = (sources) => sources?.some((s) => s.extract === "pending");

@@ -13,7 +13,7 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
-from graph import EDGE_COUNTS, INDEXES, LINKS, NODE_COUNTS, RADAR, chunk_rows, db, derive, graph, load
+from graph import EDGE_COUNTS, INDEXES, LINKS, NODE_COUNTS, chunk_rows, db, derive, graph, load, radar
 from ingest.uploads import parse_claude_session
 
 DATA = Path(__file__).resolve().parents[2] / "data" / "tiffinbox"
@@ -170,7 +170,7 @@ def build(name, until):
         load(g, n, rows[n])
     for q in LINKS:
         g.query(q)
-    derive(g)
+    derive(g, story=True)
     return g
 
 
@@ -185,8 +185,8 @@ def main():
     print("nodes:", ", ".join(f"{label} {n}" for label, n in g.ro_query(NODE_COUNTS).result_set))
     print("edges:", ", ".join(f"{t} {n}" for t, n in g.ro_query(EDGE_COUNTS).result_set))
     print("radar (only one active person knows):")
-    for item, kind, who, score in g.ro_query(RADAR).result_set:
-        print(f"  {who:6} {kind:8} {item}  (score {score:.2f})")
+    for r in radar(g):
+        print(f"  {r['only_knower']:6} {r['kind']:8} {r['item']}  (score {r['score']:.2f}, blast {r['blast']})")
 
 
 if __name__ == "__main__":

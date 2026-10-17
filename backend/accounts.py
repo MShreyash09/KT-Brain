@@ -125,6 +125,10 @@ def due_syncs(now: str, today: str) -> list:
                      {"now": now, "today": today}).result_set
 
 
+def companies() -> list:
+    return SYS.query("MATCH (c:Company) RETURN c.id, c.graph").result_set
+
+
 def llm(cid: str) -> dict | None:
     c = company(cid)
     return {"base": c["llm_base"], "key": c["llm_key"], "model": c["llm_model"]} if c and c.get("llm_key") else None

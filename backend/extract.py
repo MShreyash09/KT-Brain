@@ -19,6 +19,15 @@ PRESETS = {
     "ollama": {"base": "http://localhost:11434/v1", "model": "llama3.1"},
 }
 
+
+
+def env_llm() -> dict | None:
+    """The server's own provider (LLM_KEY, plus LLM_BASE and LLM_MODEL, default Groq), for the public demo only."""
+    key = os.getenv("LLM_KEY")
+    return {"base": os.getenv("LLM_BASE", PRESETS["groq"]["base"]), "key": key,
+            "model": os.getenv("LLM_MODEL", PRESETS["groq"]["model"])} if key else None
+
+
 PROMPT = """You read engineering documents and AI coding sessions and list the technical or product DECISIONS in them.
 A decision is a choice the team made (a value, a design, a process), not a task or a question.
 Return JSON only, no prose: {"decisions": [{"what": "...", "why": "...", "evidence": "...", "about": ["path/to/file"]}]}

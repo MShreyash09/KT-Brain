@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DataProvider, Item, Pill, Score, api, fmt, useData } from "../ui.jsx";
 import KnowsGraph from "../screens/KnowsGraph.jsx";
-import { Dash, DocPage, Find, Sources, WhyPage, openWhy, pending, share, useLoad } from "./common.jsx";
+import { Alerts, Dash, DocPage, Find, Sources, WhyPage, openWhy, pending, share, useLoad } from "./common.jsx";
 
 const BASE = "me";
 const open = openWhy(BASE);
@@ -18,6 +18,14 @@ function Brain() {
         <p>The files and decisions you know, scored from your commits, reviews, docs and AI sessions. Only you and your
           admin can see this.</p>
       </header>
+      {data.alerts.length > 0 && (
+        <section className="card at-risk">
+          <h2>Only you know these <span className="count">{data.alerts.length}</span></h2>
+          <p className="muted small">The agent noticed nobody else knows these. Its brief, written from your own work, lists
+            what a successor would need to ask you. Write it down in a doc, or pair with someone on it.</p>
+          <Alerts alerts={data.alerts} base={BASE} />
+        </section>
+      )}
       {knows.length ? (
         <DataProvider data={{ ...data, people: [me], knows }}>
           <KnowsGraph sel={data.me} onPerson={() => {}} open={open} />
@@ -226,8 +234,8 @@ export default function Member({ path }) {
     docs: <CompanyDocs />, doc: <DocPage id={id} />,
     ask: (
       <>
-        <header className="step-head"><h1>Ask</h1><p>Full-text search over the chunks you can see.</p></header>
-        <Find hint="Searches docs shared with the company, plus your own AI sessions and chat and those of anyone you succeeded." />
+        <header className="step-head"><h1>Ask</h1><p>The agent answers from what you can see in the graph and cites every claim.</p></header>
+        <Find base={BASE} hint="Searches docs shared with the company, plus your own AI sessions and chat and those of anyone you succeeded." />
       </>
     ),
     why: <WhyPage base={BASE} id={id} />,
