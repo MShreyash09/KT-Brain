@@ -170,6 +170,7 @@ function AddSources({ reload }) {
   };
 
   const command = `python cli/ktbrain.py sync --server ${location.origin} --token ${token} --repo .`;
+  const mcp = `claude mcp add ktbrain -- python cli/ktbrain.py mcp --server ${location.origin} --token ${token}`;
   return (
     <>
       <header className="step-head">
@@ -195,14 +196,19 @@ function AddSources({ reload }) {
       )}
 
       <section className="card">
-        <h2>Sync AI sessions from your laptop</h2>
+        <h2>Connect your laptop</h2>
         <p className="muted small">The <code>ktbrain</code> CLI reads your Claude Code sessions for one repo, strips them to
-          prompts, answers and edited file paths, redacts secrets on your machine, and sends only that.</p>
+          prompts, answers and edited file paths, redacts secrets on your machine, and sends only that. It also gives
+          Claude Code the agent's tools over MCP, so before it changes a file it can ask why the file is the way it is
+          and who knows it, from what you can see here.</p>
         {token ? (
           <>
-            <p className="small">Run this from the repo you work in. The token is shown once.</p>
+            <p className="small">Sync your sessions: run this from the repo you work in. The token is shown once.</p>
             <pre className="command">{command}</pre>
             <button className="btn" onClick={() => navigator.clipboard?.writeText(command)}>Copy command</button>
+            <p className="small">Let Claude Code ask KT Brain (the same token):</p>
+            <pre className="command">{mcp}</pre>
+            <button className="btn" onClick={() => navigator.clipboard?.writeText(mcp)}>Copy command</button>
           </>
         ) : (
           <button className="btn primary" onClick={async () => setToken((await api("brain/cli-token", {})).token)}>Create a CLI token</button>

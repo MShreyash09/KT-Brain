@@ -3,6 +3,8 @@ runs on a real graph built from the TiffinBox fixtures.
 
 Run from backend/:  uv run python test_agent.py   (needs FalkorDB; builds, then deletes, graph _test_agent)
 """
+import json
+
 import agent
 import extract
 from graph import radar
@@ -12,22 +14,63 @@ LLM = {"base": "", "key": "", "model": ""}
 reply = {"text": ""}
 extract.chat = lambda *a: reply["text"]
 
+
+def model(*turns):
+    """A fake provider for ask(): each turn is a list of (tool, args) calls, or the final reply text."""
+    script = list(turns)
+
+    def complete(llm, msgs, tools=None):
+        turn = script.pop(0)
+        if isinstance(turn, str):
+            return {"content": turn}
+        assert tools, "tools are offered while the model may still call them"
+        return {"content": None, "tool_calls": [{"id": f"c{i}", "function": {"name": n, "arguments": json.dumps(a)}}
+                                                for i, (n, a) in enumerate(turn)]}
+    extract.complete = complete
+
+
 # a line keeps only real ids, a line with none is dropped, "[a, b]" lists are split
 text, used = agent.cited("Retries are 7 [D1, D99].\nNo source for this.\nPR 124 set it [pr:124]", {"D1", "pr:124"})
 assert text == "Retries are 7 [D1].\nPR 124 set it [pr:124]", text
 assert used == ["D1", "pr:124"], used
+assert agent.cited("Seven retries【D1】. Paths stay .github/ci.yml【D1†L3】.", {"D1"})[0] == \
+    "Seven retries[D1]. Paths stay .github/ci.yml[D1]."
 
 NAME = "_test_agent"
 g = build(NAME, "2026-09-21")
 try:
-    # ask: the search hits lead to D1 through the graph, the made-up id is dropped
-    reply["text"] = "Payments retry 7 times [D1]. Arjun still knows it [D1] [made-up:1].\nIt was always 7."
+    # ask: search, then who_knows on a bare file name, which resolves to its full path; the made-up id is dropped
+    model([("search", {"query": "payment retries"})], [("who_knows", {"item": "retry.py"})],
+          "Payments retry 7 times [D1]. Arjun knows the code [api/payments/retry.py] [made-up:1].\nIt was always 7.")
     out = agent.ask(g, "why do payment retries happen 7 times", LLM)
-    assert out["answer"] == "Payments retry 7 times [D1]. Arjun still knows it [D1].", out["answer"]
-    assert [c["id"] for c in out["cited"]] == ["D1"], out["cited"]
-    assert agent.ask(g, "is it?", LLM)["note"] == "Nothing in the graph mentions that."  # no search words
+    assert out["answer"] == "Payments retry 7 times [D1]. Arjun knows the code [api/payments/retry.py].", out["answer"]
+    assert [s["tool"] for s in out["steps"]] == ["search", "who_knows"], out["steps"]
+    cite = {c["id"]: c for c in out["cited"]}
+    assert list(cite) == ["D1", "api/payments/retry.py"], cite
+    assert any("-[:RECORDS]->(D1)" in p for p in cite["D1"]["paths"]), cite["D1"]  # the hop it was found by
+    assert any(p.startswith("(Arjun") and "-[:KNOWS]->" in p for p in cite["api/payments/retry.py"]["paths"])
 
-    # no provider: no answer, but the evidence it would have used
+    # names are resolved against the graph first: a misspelt one runs no query and gets suggestions
+    run = agent.new_run(g, None, None)
+    assert "Did you mean api/payments/retry.py" in agent.tool(run, "who_knows", '{"item": "retyr.py"}')
+    assert agent.tool(run, "why", {"item": "D1"}).startswith("[D1] Decision (active)")
+    assert "(D1)-[:SUPERSEDES]->(D13)" in run["blocks"]["D13"]["paths"]
+    assert "Unknown person 'arjn'. Did you mean arjun" in agent.tool(run, "if_leaves", {"people": "Arjn"})
+    leaving = agent.tool(run, "if_leaves", {"people": "Arjun"})
+    assert leaving.startswith("[if_leaves:arjun]") and "D1 (" in leaving, leaving
+
+    # a member gets no company-wide tools, and nothing outside their view resolves
+    member = agent.new_run(g, ["kavya"], {"ci.yml"})
+    assert "if_leaves" not in {t["function"]["name"] for t in agent.specs(False)}
+    assert agent.tool(member, "radar", {}) == "There is no tool called radar."
+    assert agent.tool(member, "why", {"item": "D1"}).startswith("Unknown item")
+
+    # the model answers about a name the graph does not have: the note says so
+    model([("who_knows", {"item": "billing.go"})], "NOT IN GRAPH")
+    out = agent.ask(g, "who knows billing.go", LLM)
+    assert out["answer"] is None and out["note"].startswith("Unknown item 'billing.go'"), out
+
+    # no provider: no answer, but what a search finds
     out = agent.ask(g, "payment retries", None)
     assert out["answer"] is None and "D1" in [c["id"] for c in out["cited"]], out
 

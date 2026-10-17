@@ -69,19 +69,26 @@ def check_base(base: str):
         raise ValueError(f"{u.hostname} is a private address. Set ALLOW_LOCAL_LLM=1 on the server to use a local model")
 
 
-def chat(base: str, key: str, model: str, prompt: str) -> str:
-    check_base(base)
+def complete(llm: dict, messages: list, tools: list | None = None) -> dict:
+    """One chat completion: the reply message, with `tool_calls` when the model asked to run tools."""
+    check_base(llm["base"])
+    body = {"model": llm["model"], "temperature": 0, "messages": messages}
+    if tools:
+        body["tools"] = tools
     req = urllib.request.Request(
-        base.rstrip("/") + "/chat/completions",
-        data=json.dumps({"model": model, "temperature": 0,
-                         "messages": [{"role": "user", "content": prompt}]}).encode(),
+        llm["base"].rstrip("/") + "/chat/completions", data=json.dumps(body).encode(),
         # Cloudflare in front of Groq and OpenRouter rejects Python's default User-Agent (403, error code 1010)
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}", "User-Agent": "kt-brain/0.1"})
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {llm['key']}",
+                 "User-Agent": "kt-brain/0.1"})
     try:
         with _open(req, timeout=90) as r:
-            return json.load(r)["choices"][0]["message"]["content"]
+            return json.load(r)["choices"][0]["message"]
     except urllib.error.HTTPError as e:
-        raise RuntimeError(f"{e.code} from {base}: {e.read().decode(errors='replace')[:300]}") from None
+        raise RuntimeError(f"{e.code} from {llm['base']}: {e.read().decode(errors='replace')[:300]}") from None
+
+
+def chat(base: str, key: str, model: str, prompt: str) -> str:
+    return complete({"base": base, "key": key, "model": model}, [{"role": "user", "content": prompt}])["content"] or ""
 
 
 def decisions(llm: dict, text: str) -> list:

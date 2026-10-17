@@ -476,7 +476,7 @@ ASK_DECISIONS = """
 MATCH (d:Decision) WHERE d.status <> 'proposed'
 WITH d, [(s:Source)-[:RECORDS]->(d) | s.ref] AS recorded_in, [(d)-[:ABOUT]->(f:File) | f.path] AS about
 WHERE any(r IN recorded_in WHERE r IN $refs) OR any(f IN about WHERE f IN $files)
-RETURN d.id AS id, d.what AS what, d.why AS why, d.status AS status,
+RETURN d.id AS id, d.what AS what, d.why AS why, d.status AS status, recorded_in, about,
        [(p:Person {active: true})-[:KNOWS]->(d) | p.name] AS knowers,
        [(n:Decision)-[:SUPERSEDES]->(d) | n.id] AS superseded_by
 ORDER BY d.ts DESC LIMIT 8"""
@@ -484,6 +484,25 @@ ORDER BY d.ts DESC LIMIT 8"""
 ASK_FILES = """
 MATCH (f:File) WHERE f.path IN $files
 RETURN f.path AS path, [(p:Person {active: true})-[:KNOWS]->(f) | p.name] AS knowers"""
+
+# Tools (agent.TOOLS). Every name the model passes is first resolved against ITEMS or PEOPLE.
+ITEMS = "MATCH (k) WHERE k:File OR k:Decision RETURN coalesce(k.id, k.path)"
+
+# Everyone who KNOWS an item or LEARNED it in a KT session, strongest first; former members included, marked inactive.
+ITEM_KNOWERS = """
+MATCH (p:Person)-[e:KNOWS|LEARNED]->(k) WHERE (k:Decision AND k.id = $item) OR (k:File AND k.path = $item)
+RETURN p.name AS name, p.active AS active, type(e) AS how, coalesce(e.score, 0) AS score, e.links AS links,
+       coalesce(e.last_touched, e.ts) AS last, e.taught_by AS taught_by ORDER BY score DESC"""
+
+FILE_DECISIONS = """
+MATCH (d:Decision)-[:ABOUT]->(:File {path: $path}) WHERE d.status <> 'proposed'
+RETURN d.id AS id, d.what AS what, d.why AS why, d.status AS status,
+       [(n:Decision)-[:SUPERSEDES]->(d) | n.id] AS superseded_by ORDER BY d.ts DESC"""
+
+FILE_COMMITS = """
+MATCH (p:Person)-[:AUTHORED]->(c:Commit)-[:CHANGED]->(:File {path: $path})
+RETURN c.sha AS sha, c.message AS message, substring(c.at, 0, 10) AS at, p.name AS author,
+       [(pr:PR)-[:CONTAINS]->(c) | pr.ref][0] AS pr ORDER BY c.ts DESC LIMIT 5"""
 
 # Watch: one Alert per item while only one person knows it.
 # (:Alert {id, item, kind, person, blast, status: 'open'|'resolved'|'lost', created, closed, brief, refs})

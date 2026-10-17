@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Cypher, Header, Kind, api, useData } from "../ui.jsx";
 
-const SUGGEST = ["Why do payment retries happen 7 times?", "Who knows how the gateway key is rotated?",
-  "How does canary rollback work?", "Why is Redis memory capped?"];
+const SUGGEST = ["Why do payment retries happen 7 times?", "What do we lose if Arjun leaves?",
+  "Who should I ask about retry.py?", "Where are we most at risk of losing knowledge?", "How does canary rollback work?"];
 // the same words the API sends to the full-text index (backend/agent.py search_words), used here to highlight them
 export const terms = (q) => q.toLowerCase().match(/[a-z0-9_]+/g)?.filter((w) => w.length > 2) ?? [];
 
@@ -30,6 +30,24 @@ export function Cited({ text, link }) {
   ));
 }
 
+const argText = (args) => Object.values(args).map((v) => JSON.stringify(v)).join(", ");
+
+// The tools the agent ran, in order, and what each found (or why it found nothing)
+function Steps({ steps }) {
+  return (
+    <ol className="steps-run">
+      {steps.map((s, i) => (
+        <li key={i}>
+          <code>{s.tool}({argText(s.args)})</code>{" "}
+          <span className="muted small">
+            {s.error ? s.error : s.found.length ? `→ ${s.found.length} found` : "→ nothing"}
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 // The agent's answer to one question (`path` is the API path with the question in it, or null before asking)
 export function AgentAnswer({ path, link }) {
   const [res, setRes] = useState(null);
@@ -44,16 +62,24 @@ export function AgentAnswer({ path, link }) {
   return (
     <section className="card answer" aria-live="polite">
       <h2>Agent</h2>
-      {!res ? <p className="muted">Searching the graph and following it to the decisions and people behind the hits…</p> : (
+      {!res ? <p className="muted">The agent is picking tools and walking the graph…</p> : (
         <>
           {res.answer ? <Cited text={res.answer} link={link} /> : <p className="muted">{res.note}</p>}
+          {res.steps?.length > 0 && (
+            <details className="how" open={!res.answer}>
+              <summary className="muted small">How it got there: {res.steps.length} tool call{res.steps.length > 1 ? "s" : ""}</summary>
+              <Steps steps={res.steps} />
+            </details>
+          )}
           {res.cited.length > 0 && (
             <>
-              <p className="muted small">{res.answer ? "Evidence it cited (every line must cite the graph, or it is dropped)" : "Evidence"}</p>
+              <p className="muted small">{res.answer ? "Evidence it cited, and the graph path to each (every line must cite the graph, or it is dropped)" : "Evidence"}</p>
               {res.cited.map((c) => (
-                <div key={c.id} className="row">
+                <div key={c.id} className="row cited-row">
                   <Kind kind={c.kind} />
-                  <span className="item-label">{c.title}</span>
+                  <span className="item-label">{c.title || c.id}
+                    {c.paths?.slice(0, 2).map((p) => <code key={p} className="path">{p}</code>)}
+                  </span>
                   <code className="item-extra small">{c.id}</code>
                 </div>
               ))}
@@ -82,9 +108,10 @@ export default function Ask({ open }) {
   return (
     <>
       <Header title="Ask the agent">
-        The agent searches the <code>Chunk</code> nodes, follows the graph from each hit to the decisions it records and
-        the people who still know them, and answers from that evidence alone. Every line has to cite a node it was
-        shown; anything else is dropped.
+        The agent never writes Cypher. It picks from five tools built on fixed queries (full-text search, the why-trace,
+        who knows an item, a departure dry run, the PageRank radar), and every name it passes is looked up in the graph
+        first, so a misspelt file gets suggestions instead of a guess. It answers from what the tools return, and every
+        line has to cite a node it was shown; anything else is dropped.
       </Header>
 
       <form className="ask-form" onSubmit={(e) => { e.preventDefault(); setAsked(q.trim()); }}>
@@ -113,19 +140,16 @@ export default function Ask({ open }) {
       ))}
 
       <Cypher>{`
-// 1. full-text hits
-CALL db.idx.fulltext.queryNodes('Chunk', $q) YIELD node, score
-MATCH (node)-[:PART_OF]->(s:Source)
-OPTIONAL MATCH (node)-[:MENTIONS]->(f:File)
-RETURN s.ref, node.text, collect(f.path) AS files ORDER BY score DESC LIMIT 6
+// the tools the model can call; it only fills in their arguments
+search(query)      CALL db.idx.fulltext.queryNodes('Chunk', $q) YIELD node, score
+                   MATCH (node)-[:PART_OF]->(s:Source) ... then the decisions s RECORDS, and who KNOWS them
+why(item)          MATCH (s:Source)-[:RECORDS]->(:Decision {id: $id}), (d)-[:SUPERSEDES]->(old)<-[:CAUSED_BY]-(i:Incident) ...
+                   or for a file: MATCH (d:Decision)-[:ABOUT]->(:File {path: $path}), (p)-[:AUTHORED]->(c:Commit)-[:CHANGED]->(f)
+who_knows(item)    MATCH (p:Person)-[e:KNOWS|LEARNED]->(k) RETURN p.name, e.score, e.last_touched
+if_leaves(people)  GRAPH.COPY, then SET p.active = false and find what no active Person KNOWS any more
+radar()            CALL algo.pageRank('Service', 'DEPENDS_ON') over items exactly one active Person KNOWS
 
-// 2. walk from the hits to the decisions behind them, and who still knows them
-MATCH (d:Decision) WHERE d.status <> 'proposed'
-WITH d, [(s:Source)-[:RECORDS]->(d) | s.ref] AS recorded_in, [(d)-[:ABOUT]->(f:File) | f.path] AS about
-WHERE any(r IN recorded_in WHERE r IN $refs) OR any(f IN about WHERE f IN $files)
-RETURN d.id, d.what, d.why,
-       [(p:Person {active: true})-[:KNOWS]->(d) | p.name] AS knowers,
-       [(n:Decision)-[:SUPERSEDES]->(d) | n.id] AS superseded_by`}</Cypher>
+// before any tool runs, each name is resolved: MATCH (k) WHERE k:File OR k:Decision RETURN coalesce(k.id, k.path)`}</Cypher>
     </>
   );
 }

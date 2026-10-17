@@ -321,9 +321,18 @@ def find(q: str, u: dict = Depends(signed_in)):
 @app.get("/api/agent")
 def agent_ask(q: str, u: dict = Depends(signed_in)):
     """The agent on the company graph, limited to what this user may read."""
-    ids = visible_ids(u)
-    allowed = None if ids is None else set(company_view(u, ids)["decisions"])
+    ids, allowed = view_scope(u)
     return agent.ask(graph(u["graph"]), q, company_llm(u["company"]), ids, allowed)
+
+
+def view_scope(u: dict) -> tuple[list | None, set | None]:
+    """(people, items) the agent may show this user: None for an admin; for a member, the people whose sources they
+    may read, and the decisions and files in their view."""
+    ids = visible_ids(u)
+    if ids is None:
+        return None, None
+    view = company_view(u, ids)
+    return ids, set(view["decisions"]) | {k["item"] for k in view["knows"]}
 
 
 @app.get("/api/source")
@@ -614,11 +623,32 @@ def cli_token(u: dict = Depends(member)):
     return {"token": accounts.new_token(u["email"], "cli")}
 
 
-@app.post("/api/cli/sessions")
-def cli_sessions(body: CliSessions, request: Request, tasks: BackgroundTasks):
+def cli_user(request: Request) -> dict:
     u = accounts.user(request.headers.get("authorization", "").removeprefix("Bearer ").strip(), kind="cli")
     if not u or not u["person"]:
         raise HTTPException(401, "Bad or revoked CLI token")
+    return u
+
+
+@app.post("/api/cli/sessions")
+def cli_sessions(body: CliSessions, tasks: BackgroundTasks, u: dict = Depends(cli_user)):
     refs = uploads.add_sessions(graph(u["graph"]), u["person"], body.sessions)
     queue_extraction(tasks, u, refs)
     return {"refs": refs}
+
+
+# The agent's tools for a coding agent (cli/ktbrain.py mcp): the same catalogue and the same view as the Ask page.
+class ToolCall(BaseModel):
+    name: str
+    args: dict = {}
+
+
+@app.get("/api/cli/tools")
+def cli_tools(u: dict = Depends(cli_user)):
+    return agent.specs(u["role"] == "admin")
+
+
+@app.post("/api/cli/tool")
+def cli_tool(body: ToolCall, u: dict = Depends(cli_user)):
+    ids, allowed = view_scope(u)
+    return agent.call(graph(u["graph"]), body.name, body.args, ids, allowed)

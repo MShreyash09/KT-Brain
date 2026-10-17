@@ -436,7 +436,7 @@ export default function Admin({ path }) {
     ask: (
       <>
         <header className="step-head"><h1>Ask</h1><p>The agent answers from the whole company graph and cites every claim.</p></header>
-        <Find base={BASE} hint="Searches every doc, AI session and chat thread in the company." />
+        <Find base={BASE} hint="The agent sees the whole company: it can search every source, trace decisions, check who knows what, dry-run a departure and read the radar." />
       </>
     ),
     employees: <Employees reload={reload} />, graph: <Graph />, handovers: <Handovers />,

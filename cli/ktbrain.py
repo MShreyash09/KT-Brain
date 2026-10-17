@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
-"""ktbrain: push your Claude Code sessions for one repo to KT Brain. One file, stdlib only.
+"""ktbrain: push your Claude Code sessions for one repo to KT Brain, and let your coding agent ask it. One file,
+stdlib only.
 
     python ktbrain.py sync --server http://localhost:8000 --token <CLI token from your KT Brain dashboard> [--repo .]
+    claude mcp add ktbrain -- python ktbrain.py mcp --server http://localhost:8000 --token <CLI token>
 
-Reads ~/.claude/projects/*/*.jsonl, keeps only sessions whose working directory is inside --repo, and slims each one
+mcp serves the KT Brain agent's tools (search, why, who_knows; for admins also if_leaves and radar) over MCP, so
+Claude Code can ask why a file is the way it is, or who to ask about it, before it changes the file.
+
+sync reads ~/.claude/projects/*/*.jsonl, keeps only sessions whose working directory is inside --repo, and slims each one
 to your prompts, the assistant's text and the files it edited. Secrets are redacted here, on your laptop; the raw
 logs never leave it. Add --dry-run to see what would be sent.
 """
 import argparse
 import json
+import os
 import re
 import sys
 import urllib.error
@@ -74,15 +80,17 @@ def sessions(repo):
             yield s
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["sync"])
-    ap.add_argument("--server", default="http://localhost:8000")
-    ap.add_argument("--token", required=True)
-    ap.add_argument("--repo", default=".")
-    ap.add_argument("--dry-run", action="store_true")
-    args = ap.parse_args()
+def api(args, path, body=None):
+    req = urllib.request.Request(args.server.rstrip("/") + path, data=None if body is None else json.dumps(body).encode(),
+                                 headers={"Content-Type": "application/json", "Authorization": f"Bearer {args.token}"})
+    try:
+        with urllib.request.urlopen(req, timeout=120) as r:
+            return json.load(r)
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"KT Brain said {e.code}: {e.read().decode(errors='replace')[:300]}") from None
 
+
+def sync(args):
     repo = str(Path(args.repo).resolve())
     found = list(sessions(repo))
     print(f"{len(found)} Claude Code sessions for {repo}")
@@ -91,15 +99,53 @@ def main():
     if args.dry_run or not found:
         return
     for i in range(0, len(found), 20):  # small batches keep each request well under the upload limit
-        req = urllib.request.Request(args.server.rstrip("/") + "/api/cli/sessions",
-                                     data=json.dumps({"sessions": found[i:i + 20]}).encode(),
-                                     headers={"Content-Type": "application/json",
-                                              "Authorization": f"Bearer {args.token}"})
         try:
-            with urllib.request.urlopen(req, timeout=120) as r:
-                print(f"sent {len(json.load(r)['refs'])}")
-        except urllib.error.HTTPError as e:
-            sys.exit(f"KT Brain said {e.code}: {e.read().decode(errors='replace')}")
+            print(f"sent {len(api(args, '/api/cli/sessions', {'sessions': found[i:i + 20]})['refs'])}")
+        except RuntimeError as e:
+            sys.exit(str(e))
+
+
+def mcp(args):
+    """An MCP server on stdin/stdout (JSON-RPC, one message per line). The coding agent picks the tools and does the
+    reasoning; the server runs them on your graph, with the same view you have on the Ask page."""
+    for line in sys.stdin:
+        try:
+            msg = json.loads(line)
+        except ValueError:
+            continue
+        if msg.get("id") is None:  # a notification, such as notifications/initialized: no reply
+            continue
+        method, params, reply = msg.get("method"), msg.get("params") or {}, {"jsonrpc": "2.0", "id": msg["id"]}
+        try:
+            if method == "initialize":
+                reply["result"] = {"protocolVersion": params.get("protocolVersion", "2025-06-18"),
+                                   "capabilities": {"tools": {}}, "serverInfo": {"name": "ktbrain", "version": "0.1"}}
+            elif method == "tools/list":
+                reply["result"] = {"tools": [{"name": t["function"]["name"], "description": t["function"]["description"],
+                                              "inputSchema": t["function"]["parameters"]} for t in api(args, "/api/cli/tools")]}
+            elif method == "tools/call":
+                out = api(args, "/api/cli/tool", {"name": params.get("name"), "args": params.get("arguments") or {}})
+                reply["result"] = {"content": [{"type": "text", "text": out["text"]}], "isError": out["error"]}
+            elif method == "ping":
+                reply["result"] = {}
+            else:
+                reply["error"] = {"code": -32601, "message": f"Unknown method {method}"}
+        except (RuntimeError, OSError) as e:  # KT Brain refused, or is unreachable
+            reply["error"] = {"code": -32000, "message": str(e)}
+        print(json.dumps(reply), flush=True)
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("command", choices=["sync", "mcp"])
+    ap.add_argument("--server", default="http://localhost:8000")
+    ap.add_argument("--token", default=os.getenv("KTBRAIN_TOKEN"), help="or set KTBRAIN_TOKEN")
+    ap.add_argument("--repo", default=".")
+    ap.add_argument("--dry-run", action="store_true")
+    args = ap.parse_args()
+    if not args.token:
+        ap.error("--token (or KTBRAIN_TOKEN) is required")
+    sync(args) if args.command == "sync" else mcp(args)
 
 
 if __name__ == "__main__":

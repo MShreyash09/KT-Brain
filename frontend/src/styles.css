@@ -335,4 +335,11 @@ button.cite:hover { filter: brightness(1.1); text-decoration: underline; }
 .alert:first-of-type { border-top: 0; }
 .alert summary { display: flex; gap: 10px; align-items: center; cursor: pointer; flex-wrap: wrap; }
 .brief { padding: 10px 0 0 4px; font-size: 14px; }
+.how { margin: 4px 0 12px; }
+.how summary { cursor: pointer; }
+.steps-run { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 4px; }
+.steps-run code { font-family: var(--mono); font-size: 12px; }
+.cited-row .item-label { min-width: 0; }
+.path { display: block; font-family: var(--mono); font-size: 11px; color: var(--text-2); margin-top: 2px;
+  overflow-wrap: anywhere; }
 @media (max-width: 520px) { .ask-form { flex-direction: column; align-items: stretch; } }
