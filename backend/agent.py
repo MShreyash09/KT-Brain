@@ -355,7 +355,13 @@ def think(run, q: str, llm: dict) -> str:
     return extract.complete(llm, msgs)["content"] or ""
 
 
+BUSY = ("The free AI tier is busy right now (it answers a few questions a minute), so here is the evidence the graph "
+        "found. Ask again in a minute for a written answer.")
+
+
 def failed(e: Exception) -> str:
+    if str(e)[:3] == "429":  # rate limited: expected on a free tier, not a failure worth showing
+        return BUSY
     return f"The AI provider failed ({str(e)[:120]}), so here is the evidence the agent found."
 
 

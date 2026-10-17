@@ -168,11 +168,14 @@ def public_ask(q: str):
     while _asked and _asked[0] < now - 60:
         _asked.popleft()
     llm = extract.env_llm()
-    if llm and len(_asked) >= PUBLIC_ASKS_PER_MINUTE:
-        llm = None  # busy: the evidence alone, not cached
+    busy = bool(llm) and len(_asked) >= PUBLIC_ASKS_PER_MINUTE
+    if busy:
+        llm = None  # the evidence alone, not cached
     elif llm:
         _asked.append(now)
     out = agent.ask(graph(DAY_GRAPH), q, llm)
+    if busy:
+        out["note"] = agent.BUSY
     if out["answer"]:
         _answers[key] = out
     return out

@@ -123,6 +123,8 @@ export default function Ask({ open }) {
       <p className="chips">
         {SUGGEST.map((s) => <button key={s} className="chip" onClick={() => pick(s)}>{s}</button>)}
       </p>
+      <p className="muted small">The agent runs on a free AI tier that answers a few questions a minute. When it's busy
+        you still get the evidence and graph paths, just no written answer.</p>
 
       <AgentAnswer path={asked && `ask?q=${encodeURIComponent(asked)}`}
         link={(id) => (whyFor(id) === id ? () => open(id) : null)} />

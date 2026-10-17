@@ -87,6 +87,10 @@ try:
     out = agent.ask(g, "how do we run kubernetes", LLM, ["kavya"], {"ci.yml"})
     assert out["note"].endswith("or it is outside what you can see."), out["note"]
 
+    # a free tier's rate limit reads as busy, not as a crash; other failures keep their reason
+    assert agent.failed(RuntimeError("429 from https://api.groq.com: rate limit")) == agent.BUSY
+    assert agent.failed(RuntimeError("500 from x")).startswith("The AI provider failed (500")
+
     # no provider: no answer, but what a search finds
     out = agent.ask(g, "payment retries", None)
     assert out["answer"] is None and "D1" in [c["id"] for c in out["cited"]], out
