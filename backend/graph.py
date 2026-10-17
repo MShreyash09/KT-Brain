@@ -289,7 +289,9 @@ WITH DISTINCT k
 MATCH (o:Person {active: true})-[e:KNOWS]->(k)
 WITH k, collect(o) AS backups, max(e.links) AS links WHERE size(backups) = 1 AND links = 1
 WITH k, backups[0] AS o
-WHERE NOT (o)-[:AUTHORED|REVIEWED|POSTED_IN|ASSIGNED|RAN]->(:Source)-[:RECORDS]->(k)
+OPTIONAL MATCH (o)-[:AUTHORED|:REVIEWED|:POSTED_IN|:ASSIGNED|:RAN]->(s:Source)-[:RECORDS]->(k)
+WITH k, o, count(s) AS src_count
+WHERE src_count = 0
 RETURN coalesce(k.id, k.path) AS item, o.id AS backup ORDER BY item"""
 
 
@@ -394,7 +396,7 @@ MATCH (p:Person) RETURN p.id AS id, p.name AS name, p.role AS role, p.email AS e
 DECISIONS = """
 MATCH (d:Decision) OPTIONAL MATCH (d)-[:ABOUT]->(f:File)
 RETURN d.id AS id, d.what AS what, d.why AS why, d.evidence AS evidence, d.status AS status,
-       substring(d.at, 0, 10) AS at, collect(f.path) AS about ORDER BY d.ts"""
+       substring(d.at, 0, 10) AS at, d.ts AS ts, collect(f.path) AS about ORDER BY ts"""
 
 KNOWS = """
 MATCH (p:Person)-[e:KNOWS]->(k)
