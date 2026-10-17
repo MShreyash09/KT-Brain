@@ -177,14 +177,15 @@ ORDER BY score DESC LIMIT 6"""
 # A KNOWS edge exists only when score > KNOWS_THRESHOLD. Any single non-trivial link from the last 6 months counts
 # (the weakest, a chat post, scores 0.5 * 0.71 = 0.36), a trivial commit never does (at most 0.05), and an old
 # single chat post fades out after about 9 months.
-TRIVIAL = "(?i)^(fix typo|run formatter|update comment|fix lint|bump ).*"
+# ponytail: FalkorDB Cloud does not support Cypher regex '=~', so match trivial prefixes with STARTS WITH
+TRIVIAL_COND = "(toLower(c.message) STARTS WITH 'fix typo' OR toLower(c.message) STARTS WITH 'run formatter' OR toLower(c.message) STARTS WITH 'update comment' OR toLower(c.message) STARTS WITH 'fix lint' OR toLower(c.message) STARTS WITH 'bump ')"
 HALF_LIFE_DAYS = 365
 KNOWS_THRESHOLD = 0.3
 
 _KNOWS_LINKS = [
     # file: committed to it
-    """MATCH (p:Person)-[:AUTHORED]->(c:Commit)-[:CHANGED]->(k:File)
-    WITH p, k, CASE WHEN c.message =~ $trivial THEN 0.05 ELSE 1.0 END AS w, c.ts AS ts""",
+    f"""MATCH (p:Person)-[:AUTHORED]->(c:Commit)-[:CHANGED]->(k:File)
+    WITH p, k, CASE WHEN {TRIVIAL_COND} THEN 0.05 ELSE 1.0 END AS w, c.ts AS ts""",
     # file: ran an AI coding session that edited it. Session file lists are self-reported, so they only count in full
     # when the session PRODUCED a real commit; alone they stay under the threshold (0.25).
     """MATCH (p:Person)-[:RAN]->(s:AgentSession)-[:TOUCHED]->(k:File)
@@ -198,8 +199,8 @@ _KNOWS_LINKS = [
     WITH p, k, CASE type(r) WHEN 'AUTHORED' THEN 1.0 WHEN 'REVIEWED' THEN 0.6 WHEN 'POSTED_IN' THEN 0.5 ELSE 0.8 END AS w,
          coalesce(r.ts, s.ts) AS ts""",
     # decision: non-trivial commit to a file the decision is ABOUT
-    """MATCH (p:Person)-[:AUTHORED]->(c:Commit)-[:CHANGED]->(:File)<-[:ABOUT]-(k:Decision)
-    WHERE NOT c.message =~ $trivial
+    f"""MATCH (p:Person)-[:AUTHORED]->(c:Commit)-[:CHANGED]->(:File)<-[:ABOUT]-(k:Decision)
+    WHERE NOT {TRIVIAL_COND}
     WITH DISTINCT p, k, c
     WITH p, k, 0.7 AS w, c.ts AS ts""",
 ]
@@ -226,7 +227,7 @@ def derive(g, story=False):
     with LOCK:
         g.query("MATCH ()-[e:KNOWS]->() DELETE e")
         for links in _KNOWS_LINKS:
-            g.query(links + _KNOWS_ADD, {"now": now, "half_life": HALF_LIFE_DAYS, "trivial": TRIVIAL})
+            g.query(links + _KNOWS_ADD, {"now": now, "half_life": HALF_LIFE_DAYS})
         g.query("MATCH ()-[e:KNOWS]->() WHERE e.score <= $t DELETE e", {"t": KNOWS_THRESHOLD})
 
 
