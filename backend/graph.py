@@ -432,18 +432,22 @@ DELETE_SOURCE = [
 
 # What a member may read: docs shared with the company (docs are, unless the author made them private), plus every
 # source that they or someone they succeeded took part in. AI sessions and chat are never shared company-wide.
-VISIBLE = """((s:Doc AND coalesce(s.shared, true))
-    OR any(x IN [(s)<-[:AUTHORED|REVIEWED|POSTED_IN|ASSIGNED|RAN]-(p:Person) | p.id] WHERE x IN $people))"""
+# TOOK_PART collects those people as `by` for VISIBLE, with no pattern inside WHERE: FalkorDB Cloud rejected that
+# in ORPHANED too, and /api/source returned 500 there.
+TOOK_PART = """OPTIONAL MATCH (s)<-[:AUTHORED|:REVIEWED|:POSTED_IN|:ASSIGNED|:RAN]-(tp:Person)"""
+VISIBLE = "((s:Doc AND coalesce(s.shared, true)) OR any(x IN by WHERE x IN $people))"
 
-READABLE = "MATCH (s:Source {ref: $ref}) WHERE $people IS NULL OR " + VISIBLE + " RETURN s.title"
+READABLE = "MATCH (s:Source {ref: $ref}) " + TOOK_PART + """
+WITH s, collect(tp.id) AS by WHERE $people IS NULL OR """ + VISIBLE + " RETURN s.title"
 
-SHARE = """MATCH (s:Doc {ref: $ref}) WHERE $admin OR $me IN [(p:Person)-[:AUTHORED]->(s) | p.id]
+SHARE = """MATCH (s:Doc {ref: $ref}) OPTIONAL MATCH (p:Person)-[:AUTHORED]->(s)
+WITH s, collect(p.id) AS authors WHERE $admin OR $me IN authors
 SET s.shared = $shared RETURN s.ref"""
 
 SEARCH_MINE = """
 CALL db.idx.fulltext.queryNodes('Chunk', $q) YIELD node, score
-MATCH (node)-[:PART_OF]->(s:Source) WHERE """ + VISIBLE + """
-WITH DISTINCT node, score, s
+MATCH (node)-[:PART_OF]->(s:Source) """ + TOOK_PART + """
+WITH node, score, s, collect(tp.id) AS by WHERE """ + VISIBLE + """
 OPTIONAL MATCH (node)-[:MENTIONS]->(f:File)
 RETURN s.ref AS ref, node.seq AS seq, score, collect(f.path) AS files,
        [l IN labels(s) WHERE l <> 'Source'][0] AS kind, s.title AS title, node.text AS text
