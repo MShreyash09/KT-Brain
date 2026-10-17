@@ -5,7 +5,6 @@ KT Brain shows which knowledge is about to leave your company with a departing t
 
 > Built for **WeMakeDevs × FalkorDB "Graph Hacks: Context for AI Agents"** (Oct 15–18, 2026).
 > Tracks: **03 Company Brain** · **02 Agent Memory & Coordination** · (01 Agents That Act on Connected Data, if the MCP server ships)
-> Status: 🚧 in progress. Setup steps and live URL will be added as they land.
 
 ---
 

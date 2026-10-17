@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { DataProvider, api, fmt, go } from "./ui.jsx";
 import Landing from "./screens/Landing.jsx";
 import Team from "./screens/Team.jsx";
@@ -123,7 +124,11 @@ export default function App() {
     <>
       <div className="topbar">
         <a className="brand" href="#/">
-          <span className="logo" aria-hidden="true">◆</span> KT Brain
+          <svg className="logo" viewBox="-12 -12 24 24" width="22" height="22" aria-hidden="true">
+            <circle r="12" />
+            <path d="M-5-3.5L4.5-4.5L.5 5Z" />
+          </svg>
+          KT Brain
         </a>
         <span className="ws">
           {story && view !== "home" && demo && (
@@ -151,6 +156,7 @@ export default function App() {
         <ThemeToggle />
       </div>
       {page}
+      <Analytics />
     </>
   );
 }

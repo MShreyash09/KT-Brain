@@ -1,29 +1,34 @@
-/* Tokens: see design.md. Light by default, dark via [data-theme="dark"] (set before paint in index.html). */
+/* Tokens: see design.md. Light = drafting paper, dark = blueprint; set before paint in index.html.
+   Highlighter (--hl) means knowledge and nothing else; --risk means something broke. */
 :root {
-  --bg: #f7f7f5; --surface: #ffffff; --surface-2: #f0f0ed; --border: #e3e3df;
-  --text: #1b1b19; --text-2: #62625c;
-  --accent: #4f46e5; --accent-soft: #eef0ff; --on-accent: #ffffff;
-  --risk: #c92a2a; --risk-soft: #fff0f0;
-  --warn: #b45309; --warn-soft: #fff6e5;
-  --ok: #2b8a3e; --ok-soft: #ebfbee;
-  --radius: 10px;
+  --bg: #eef2f5; --surface: #fafbfc; --surface-2: #e3e9ef; --border: #cbd5df;
+  --text: #10243a; --text-2: #4e6378;
+  --accent: #1f5aa6; --accent-soft: #dce7f5; --on-accent: #ffffff;
+  --hl: #f2b705; --hl-ink: #7a5a00; --hl-soft: #fbefc4; --on-hl: #10243a;
+  --risk: #c8322f; --risk-soft: #fbe5e3;
+  --warn: #a35a00; --warn-soft: #fcebd5;
+  --ok: #2f7d4f; --ok-soft: #dff1e5;
+  --scene: #f5f7f9; --plan: #8fa6bd; --wall: #10243a;
+  --radius: 8px;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   color-scheme: light;
 }
 :root[data-theme="dark"] {
-  --bg: #0e0e10; --surface: #17171a; --surface-2: #202024; --border: #2c2c31;
-  --text: #ececef; --text-2: #a1a1aa;
-  --accent: #8b8cf8; --accent-soft: #23234a; --on-accent: #0e0e10;
-  --risk: #ff6b6b; --risk-soft: #3a1818;
-  --warn: #f0b429; --warn-soft: #3a2a0a;
-  --ok: #51cf66; --ok-soft: #12301a;
+  --bg: #0d2440; --surface: #12304f; --surface-2: #183a5e; --border: #2a4e75;
+  --text: #e8eff7; --text-2: #a3b7cc;
+  --accent: #8fbcf5; --accent-soft: rgba(143, 188, 245, .16); --on-accent: #0d2440;
+  --hl: #ffc93c; --hl-ink: #ffd866; --hl-soft: rgba(255, 201, 60, .16); --on-hl: #0d2440;
+  --risk: #ff7a6e; --risk-soft: rgba(255, 122, 110, .18);
+  --warn: #f5b451; --warn-soft: rgba(245, 180, 81, .16);
+  --ok: #6fd19a; --ok-soft: rgba(111, 209, 154, .16);
+  --scene: #0b2038; --plan: #4f78a3; --wall: #dce8f5;
   color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 body {
   margin: 0; background: var(--bg); color: var(--text);
-  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 15px/1.5 "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   transition: background-color .15s, color .15s;
 }
 a { color: var(--accent); }
@@ -41,7 +46,8 @@ button { font: inherit; color: inherit; }
   padding: 0 16px; background: var(--surface); border-bottom: 1px solid var(--border);
 }
 .brand { font-weight: 650; color: var(--text); text-decoration: none; display: flex; gap: 8px; align-items: center; }
-.logo { color: var(--accent); }
+.logo circle { fill: var(--hl); }
+.logo path { fill: none; stroke: var(--on-hl); stroke-width: 2; stroke-linejoin: round; }
 .ws { font-size: 13px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ws .dot { color: var(--text-2); margin: 0 4px; }
 .account { margin-left: auto; display: flex; align-items: center; gap: 12px; font-size: 14px; }
@@ -53,17 +59,107 @@ button { font: inherit; color: inherit; }
 }
 .icon-btn:hover { background: var(--surface-2); }
 
-/* landing: its own type and 8 px spacing scale; colours stay the app's tokens */
+/* landing: 8 px spacing scale; headlines use Archivo's expanded width, the floor plan its condensed width */
 .landing {
   --s1: 8px; --s2: 16px; --s3: 24px; --s4: 40px; --s5: 64px; --s6: 96px;
-  font-family: "Schibsted Grotesk", system-ui, sans-serif;
-  max-width: 1080px; margin: 0 auto; padding: var(--s6) var(--s2) var(--s5);
+  max-width: 1200px; margin: 0 auto; padding: var(--s5) var(--s2);
 }
-.landing button { font-family: inherit; }
-.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 440px); gap: var(--s5); align-items: start; }
-.landing h1 { font-size: clamp(36px, 5.5vw, 56px); font-weight: 650; line-height: 1.05; letter-spacing: -.025em; max-width: 13ch; }
-.lead { font-size: 17px; line-height: 1.55; color: var(--text-2); max-width: 62ch; margin: var(--s3) 0 var(--s4); }
-.landing .btn.lg { margin-bottom: var(--s2); }
+.hero h1 {
+  font-size: clamp(38px, 6vw, 76px); font-stretch: 125%; font-weight: 750; line-height: .96;
+  letter-spacing: -.025em; max-width: 15ch; text-wrap: balance;
+}
+.hero-row { display: flex; gap: var(--s4); align-items: flex-end; justify-content: space-between; margin: var(--s4) 0; }
+.lead { font-size: 17px; line-height: 1.55; color: var(--text-2); max-width: 58ch; margin: 0; }
+.hero-actions { display: flex; gap: var(--s1); flex-wrap: wrap; flex: none; }
+.landing .btn.lg { margin: 0; }
+
+/* the hero floor plan (RoomStory.jsx) */
+.story { margin: 0; }
+.story-stage { background: var(--scene); border: 1px solid var(--border); border-radius: 6px 6px 0 0; overflow: hidden; }
+.room { display: block; width: 100%; height: auto; font-stretch: 75%; }
+.room text { font-size: 14px; fill: var(--text-2); text-anchor: middle; }
+.grid-line { fill: none; stroke: var(--plan); stroke-width: .5; opacity: .35; }
+.wall { fill: none; stroke: var(--wall); stroke-width: 6; }
+.window { fill: var(--scene); stroke: var(--wall); stroke-width: 1.5; }
+.plan { fill: none; stroke: var(--plan); stroke-width: 1.5; }
+.desk, .table { fill: var(--surface); stroke: var(--plan); stroke-width: 1.5; }
+.chair { fill: var(--scene); stroke: var(--plan); stroke-width: 1.5; }
+.monitor { stroke: var(--text-2); stroke-width: 3; stroke-linecap: round; }
+.room .pod { font-size: 15px; font-weight: 600; letter-spacing: .02em; }
+.person circle { fill: var(--surface); stroke: var(--text-2); stroke-width: 1.5; }
+.person.named circle { stroke: var(--text); stroke-width: 2; }
+.person.newcomer circle { stroke: var(--accent); stroke-width: 3; }
+.person.ghost circle { fill: var(--hl-soft); stroke: var(--hl); stroke-width: 2; stroke-dasharray: 4 3; }
+.room .initial { font-size: 14px; font-weight: 700; font-stretch: 100%; fill: var(--text); }
+.room .name { font-size: 15px; font-weight: 650; fill: var(--text); }
+.room .name-right { text-anchor: start; }
+.room .ghost .initial, .room .ghost .name { fill: var(--hl-ink); }
+.module rect { fill: var(--surface); stroke: var(--text); stroke-width: 1.5; transition: fill .4s, stroke .4s; }
+.module.external rect { stroke: var(--text-2); stroke-dasharray: 5 4; }
+.module.broken rect { fill: var(--risk-soft); stroke: var(--risk); stroke-width: 2.5; }
+.module.healed rect { stroke: var(--hl); stroke-width: 3; }
+.room .module text { font-size: 16px; font-weight: 650; font-stretch: 100%; fill: var(--text); }
+.room .module .config { font-size: 12.5px; font-weight: 500; fill: var(--text-2); }
+.room .module.broken text { fill: var(--risk); }
+.flow { stroke: var(--text-2); stroke-width: 2; stroke-dasharray: 4 6; animation: flow .9s linear infinite; }
+.flow.stopped { stroke: var(--risk); stroke-dasharray: 2 4; animation: none; }
+@keyframes flow { to { stroke-dashoffset: -20; } }
+.thread { fill: none; stroke: var(--hl); stroke-width: 3; stroke-linecap: round; }
+.thread.wake { stroke-width: 2; }
+.thread.fix { stroke-width: 4; }
+.commit { fill: none; stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; }
+.crack { fill: none; stroke: var(--risk); stroke-width: 2.5; stroke-linejoin: round; }
+.ring { fill: none; stroke: var(--risk); stroke-width: 2; }
+.room .alarm { font-size: 15px; font-weight: 650; fill: var(--risk); }
+.doc rect { fill: var(--surface); stroke: var(--text-2); stroke-width: 1.2; stroke-dasharray: 3 3; }
+.room .doc text { font-size: 13px; }
+.room .doc .unknown { font-size: 17px; font-weight: 750; fill: var(--warn); }
+.decision rect { fill: var(--hl); }
+.room .decision text { font-size: 13px; font-weight: 750; font-stretch: 100%; fill: var(--on-hl); }
+.brain circle { fill: var(--hl); }
+.brain path { fill: none; stroke: var(--on-hl); stroke-width: 1.8; stroke-linejoin: round; }
+.brain .b-node { fill: var(--on-hl); }
+
+.story-bar {
+  display: flex; gap: var(--s2); padding: 10px 12px; background: var(--surface);
+  border: 1px solid var(--border); border-top: 0; border-radius: 0 0 6px 6px;
+}
+.story-bar .icon-btn { align-self: center; }
+.acts { list-style: none; margin: 0; padding: 0; flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+.acts button {
+  width: 100%; height: 100%; display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; text-align: left;
+  border: 0; border-radius: 4px; background: none; color: var(--text-2); cursor: pointer;
+}
+.acts button:hover { background: var(--surface-2); }
+.acts button[aria-current] { color: var(--text); }
+.act-date { font-size: 12.5px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.act-title { font-size: 14px; line-height: 1.3; }
+.act-bar { height: 3px; margin-top: auto; border-radius: 2px; background: var(--surface-2); overflow: hidden; }
+.acts button[aria-current] .act-bar:empty { background: var(--accent); }
+.act-bar span { display: block; height: 100%; background: var(--accent); transform-origin: left; animation: grow linear forwards; }
+@keyframes grow { from { transform: scaleX(0); } }
+.story-text { display: grid; gap: var(--s3); padding-top: var(--s3); min-height: 210px; align-items: start; }
+.story-text > p { margin: 0; font-size: 18px; line-height: 1.5; max-width: 60ch; }
+.story-text.with-why { grid-template-columns: minmax(0, 1fr) minmax(0, 440px); }
+.act-lead { display: none; }
+.why-card {
+  padding: 16px 18px; background: var(--surface); border-left: 4px solid var(--hl); border-radius: 0 6px 6px 0;
+  animation: rise .5s 3.4s both;
+}
+.why-card p { margin: 0 0 8px; }
+.why-q { font-weight: 700; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) {
+  .flow { animation: none; }
+  .why-card { animation: none; }
+}
+
+.split {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 460px); gap: var(--s5); align-items: start;
+  margin-top: var(--s4); padding-top: var(--s4); border-top: 1px solid var(--border);
+}
+.split h2, .tour h2 { font-size: 28px; font-stretch: 112%; font-weight: 700; letter-spacing: -.015em; line-height: 1.15; }
+.split .lead { margin: var(--s2) 0; }
 .hero-demo { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--s3); }
 .demo-label { margin: 0 0 var(--s1); font-weight: 600; }
 .hero-demo .segmented { margin-bottom: var(--s2); }
@@ -76,7 +172,6 @@ button { font: inherit; color: inherit; }
 .more { display: block; padding: var(--s1) 6px 0; border-top: 1px solid var(--border); font-size: 14px; }
 
 .tour { margin-top: var(--s6); padding-top: var(--s4); border-top: 1px solid var(--border); }
-.tour h2 { font-size: 24px; font-weight: 650; letter-spacing: -.01em; }
 .tour ol { list-style: none; margin: var(--s4) 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s4) var(--s3); }
 .tour a { display: grid; grid-template-columns: auto 1fr; gap: var(--s1) var(--s2); color: inherit; text-decoration: none; }
 .tour .n {
@@ -311,8 +406,14 @@ details.card summary { cursor: pointer; }
   .content { padding: 20px 16px 48px; }
   .two-col { grid-template-columns: 1fr; }
   .hide-sm { display: none; }
-  .landing { padding-top: var(--s5); }
-  .hero { grid-template-columns: minmax(0, 1fr); gap: var(--s4); }
+  .landing { padding-top: var(--s4); }
+  .hero-row { flex-direction: column; align-items: flex-start; gap: var(--s3); margin: var(--s3) 0; }
+  .split, .story-text.with-why { grid-template-columns: minmax(0, 1fr); }
+  .story-bar { padding: 8px; gap: var(--s1); }
+  .act-title { display: none; }
+  .act-lead { display: inline; font-weight: 700; }
+  .story-text { min-height: 0; }
+  .story-text > p { font-size: 16px; }
   .tour { margin-top: var(--s5); }
   .tour ol { grid-template-columns: minmax(0, 1fr); gap: var(--s3); }
   .form-grid { grid-template-columns: minmax(0, 1fr); }

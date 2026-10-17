@@ -1,5 +1,6 @@
 import { useData } from "../ui.jsx";
 import { DryRun } from "./Departure.jsx";
+import RoomStory from "./RoomStory.jsx";
 
 const steps = (data, h = data.handover) => [
   ["team", "Team", "Commits, reviews, tickets, chat, docs and AI sessions become weighted KNOWS edges. Nobody fills in a skills matrix."],
@@ -17,16 +18,30 @@ export default function Landing({ start }) {
   return (
     <main className="landing">
       <section className="hero">
-        <div className="hero-copy">
-          <h1>Know what walks out the door before it does.</h1>
+        <h1>Know what walks out the door before it does.</h1>
+        <div className="hero-row">
           <p className="lead">
             KT Brain records who knows what from a developer's first day: commits, reviews, tickets, chat, docs and AI
             coding sessions, all in one FalkorDB graph. When someone resigns, the handover plan is already written.
           </p>
-          <button className="btn primary lg" onClick={start}>Open the TiffinBox demo →</button>
+          <div className="hero-actions">
+            <button className="btn primary lg" onClick={start}>Open the TiffinBox demo</button>
+            <a className="btn lg" href="#/departure">Dry-run a resignation</a>
+          </div>
+        </div>
+        <RoomStory />
+      </section>
+
+      <section className="split">
+        <div>
+          <h2>Run the resignation before it happens</h2>
+          <p className="lead">
+            Pick who leaves. KT Brain copies the graph, takes them out, and lists everything nobody else knows. That list
+            is the KT agenda.
+          </p>
           <p className="muted small">
-            A synthetic meal-subscription startup: 6 months, {data.people.length} people, {c.Decision} decisions,{" "}
-            {c.edges} edges. Two engineers resign on Sep 15.
+            TiffinBox is a synthetic meal-subscription startup: 6 months, {data.people.length} people, {c.Decision}{" "}
+            decisions, {c.edges} edges.
           </p>
         </div>
         <div className="hero-demo">
