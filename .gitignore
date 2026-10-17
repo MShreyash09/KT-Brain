@@ -3,3 +3,7 @@ __pycache__/
 .env
 node_modules/
 dist/
+
+do_it.md
+idea_check.md
+CODEBASE.md

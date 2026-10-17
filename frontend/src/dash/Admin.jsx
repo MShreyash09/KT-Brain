@@ -382,8 +382,9 @@ function SettingsPage({ reload }) {
     <>
       <header className="step-head">
         <h1>Settings</h1>
-        <p>The AI provider reads uploaded docs and AI sessions and pulls out the decisions in them. Any OpenAI-compatible API
-          works, including free tiers.</p>
+        <p>One key for the whole company. The AI provider pulls decisions out of uploaded docs and AI sessions, answers
+          everyone's questions on the Ask page, and writes the agent's KT briefs. Employees never need their own key.
+          Any OpenAI-compatible API works, including free tiers.</p>
       </header>
       <form className="card form-grid" onSubmit={save}>
         <label className="field"><span>Provider</span>

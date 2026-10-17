@@ -13,8 +13,9 @@ import urllib.request
 from urllib.parse import urlparse
 
 PRESETS = {
-    "openrouter": {"base": "https://openrouter.ai/api/v1", "model": "meta-llama/llama-3.3-70b-instruct:free"},
-    "groq": {"base": "https://api.groq.com/openai/v1", "model": "llama-3.3-70b-versatile"},
+    # providers retire models often: these were checked against their model lists on 2026-10-17
+    "openrouter": {"base": "https://openrouter.ai/api/v1", "model": "google/gemma-4-31b-it:free"},
+    "groq": {"base": "https://api.groq.com/openai/v1", "model": "openai/gpt-oss-120b"},
     "google": {"base": "https://generativelanguage.googleapis.com/v1beta/openai", "model": "gemini-2.0-flash"},
     "ollama": {"base": "http://localhost:11434/v1", "model": "llama3.1"},
 }
@@ -74,7 +75,8 @@ def chat(base: str, key: str, model: str, prompt: str) -> str:
         base.rstrip("/") + "/chat/completions",
         data=json.dumps({"model": model, "temperature": 0,
                          "messages": [{"role": "user", "content": prompt}]}).encode(),
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}"})
+        # Cloudflare in front of Groq and OpenRouter rejects Python's default User-Agent (403, error code 1010)
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}", "User-Agent": "kt-brain/0.1"})
     try:
         with _open(req, timeout=90) as r:
             return json.load(r)["choices"][0]["message"]["content"]

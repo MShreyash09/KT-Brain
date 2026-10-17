@@ -131,10 +131,12 @@ def brief(g, r: dict, llm: dict | None) -> tuple[str | None, list]:
     for c in rows(g, BRIEF_COMMITS, p):
         blocks[f"commit:{c['sha'][:7]}"] = {"body": f"Commit on {c['at']}: {c['message']}"}
     label = f"{decision['id']} ({decision['what']})" if decision else r["item"]
+    if not llm:
+        return None, list(blocks)
     prompt = BRIEF_PROMPT.format(name=person["name"], first=person["name"].split()[0], label=label,
                                  evidence=evidence_text(blocks))
-    answer, used, _ = write(llm, prompt, blocks)
-    return answer, used or list(blocks)
+    answer, used = cited(extract.chat(llm["base"], llm["key"], llm["model"], prompt), set(blocks))  # raises if it fails
+    return answer or None, used or list(blocks)
 
 
 def watch(g, llm: dict | None) -> int:
@@ -162,7 +164,11 @@ def watch(g, llm: dict | None) -> int:
     todo = sorted(((aid, now_on[item]) for item, (aid, done) in open_.items()
                    if item in now_on and not done and (llm or aid in fresh)), key=lambda t: -t[1]["blast"])
     for aid, r in todo[:BRIEFS_PER_RUN] if llm else todo:
-        body, refs = brief(g, r, llm)
+        try:
+            body, refs = brief(g, r, llm)
+        except Exception as e:  # provider down or rate-limited (free tiers allow a few calls a minute): next run retries
+            print(f"agent: brief for {r['item']} failed, retrying next run: {str(e)[:200]}")
+            break
         g.query(SET_BRIEF, {"id": aid, "brief": body, "refs": refs, "tried": int(time.time()) if llm else None})
     return len(new)
 

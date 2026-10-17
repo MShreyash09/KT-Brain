@@ -37,6 +37,12 @@ try:
     assert agent.watch(g, None) == len(items) == 12  # no provider: alerts with evidence, no brief
     d1 = next(a for a in agent.alerts(g) if a["item"] == "D1")
     assert "brief" not in d1 and "pr:124" in d1["refs"] and d1["person"] == "arjun", d1
+    def rate_limited(*a):
+        raise RuntimeError("429 rate limit")
+    extract.chat = rate_limited
+    agent.watch(g, LLM)  # the provider fails: nothing is marked as tried, so the next run retries at once
+    assert not any("tried" in a for a in agent.alerts(g))
+    extract.chat = lambda *a: reply["text"]
     assert agent.watch(g, LLM) == 0  # a provider now: nothing new, but the missing briefs get written
     d1 = next(a for a in agent.alerts(g) if a["item"] == "D1")
     assert d1["brief"] == "- Retries cover the gateway pause [D1] [pr:124]", d1
