@@ -57,8 +57,10 @@ through the tools: call them until the evidence answers the question, then answe
 - Each piece of evidence starts with its id in square brackets. End every sentence or bullet of your answer with the
   ids it relies on, exactly as written: [pr:124] [D8]
 - Say who still knows it when the evidence says so, and if a decision was replaced, say by what.
-- If a tool says a name is unknown, say so and give its suggestions.
-- If the evidence does not answer the question, reply exactly: NOT IN GRAPH
+- If a tool says a name is unknown, do not guess another name: reply NOT IN GRAPH.
+- Evidence that only shares a word with the question (payment retries, for a question about refunds) does not answer it.
+- If the evidence answers part of the question, answer that part, then end with a line: NOT IN GRAPH: <the part it does
+  not answer>. If it answers none of it, reply only: NOT IN GRAPH: <what was asked, in a few words>
 - Under 150 words. No preamble, no headings."""
 ADMIN_HINT = "\n- What happens if someone leaves: if_leaves. Where the company is most at risk: radar."
 
@@ -67,7 +69,9 @@ ANSWER_PROMPT = """You answer questions about how a software company works, usin
 its knowledge graph. Each piece of evidence starts with its id in square brackets.
 - End every sentence or bullet with the ids it relies on, in square brackets, exactly as written: [pr:124] [D8]
 - Say who still knows it when the evidence says so, and if a decision was replaced, say by what.
-- If the evidence does not answer the question, reply exactly: NOT IN GRAPH
+- Evidence that only shares a word with the question (payment retries, for a question about refunds) does not answer it.
+- If the evidence answers part of the question, answer that part, then end with a line: NOT IN GRAPH: <the part it does
+  not answer>. If it answers none of it, reply only: NOT IN GRAPH: <what was asked, in a few words>
 - Under 120 words. No preamble, no headings.
 
 QUESTION: {q}
@@ -330,7 +334,8 @@ def tool(run, name: str, args) -> str:
     else:
         err = FUNCS[name](run, **args)
     run["steps"].append({"tool": name, "args": args, "found": list(run["new"]), "error": err})
-    return err or evidence_text({i: run["blocks"][i] for i in run["new"]}) or "Nothing in the graph matches."
+    return err or evidence_text({i: run["blocks"][i] for i in run["new"]}) or \
+        "Nothing in the graph matches: it may not be recorded yet."
 
 
 def think(run, q: str, llm: dict) -> str:
@@ -354,6 +359,17 @@ def failed(e: Exception) -> str:
     return f"The AI provider failed ({str(e)[:120]}), so here is the evidence the agent found."
 
 
+def refuse(run, gap: str, errors: list) -> str:
+    """A soft refusal: what the graph lacks, and why that may be, instead of an answer made up around it."""
+    if errors:  # a name the graph does not have, with suggestions
+        return " ".join(dict.fromkeys(errors))
+    note = f"The graph has nothing on {gap}." if gap else "The graph has nothing that answers this."
+    if run["blocks"]:
+        note += " The closest evidence it found is below: it shares words with the question but does not answer it."
+    return note + " It may not be written down anywhere KT Brain reads yet" + (
+        ", or it is outside what you can see." if run["people"] is not None else ".")
+
+
 def ask(g, q: str, llm: dict | None, people: list | None = None, allowed: set | None = None) -> dict:
     """Answer `q` from the graph. `people` limits what a member may read (graph.VISIBLE) and `allowed` the decisions
     and files in their view; None for both means an admin, or the public story."""
@@ -375,14 +391,20 @@ def ask(g, q: str, llm: dict | None, people: list | None = None, allowed: set | 
     if not run["steps"]:
         tool(run, "search", {"query": q})
     blocks = run["blocks"]
-    answer, used = cited(reply or "", set(blocks))
+    said = [l.strip() for l in (reply or "").splitlines() if l.strip()]
+    missing = [l for l in said if l.upper().startswith("NOT IN GRAPH")]
+    gap = "; ".join(filter(None, (l[12:].strip(" :.") for l in missing)))[:150]  # ponytail: the model's words, capped
+    answer, used = cited("\n".join(l for l in said if l not in missing), set(blocks))
     errors = [s["error"] for s in run["steps"] if s["error"]]
-    if answer:
-        note = None
-    elif not blocks:
-        note = " ".join(errors) if errors and reply is not None else "Nothing in the graph mentions that."
+    if answer:  # what the graph answers, and a word on what it left out
+        dropped = len(said) - len(missing) - len(answer.splitlines())
+        note = " ".join(filter(None, [
+            gap and f"Not in the graph: {gap}.",
+            dropped and f"Left out {dropped} sentence{'s' if dropped > 1 else ''} that cited nothing in the graph."])) or None
     elif reply is not None:
-        note = "The graph has no evidence that answers this."
+        note = refuse(run, gap, errors)
+    elif not blocks:
+        note = "Nothing in the graph mentions that."
     return {"answer": answer or None, "note": note, "hits": run["hits"], "steps": run["steps"],
             "cited": [{"id": i, "kind": blocks[i]["kind"], "title": blocks[i]["title"], "paths": blocks[i]["paths"]}
                       for i in used or blocks]}

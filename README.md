@@ -267,9 +267,49 @@ This project was planned and built with help from Claude Code (Anthropic). The T
 
 ## Setup
 
+The hosted version runs on Vercel (UI), Render (API) and FalkorDB Cloud; see [DEPLOY.md](DEPLOY.md). If the hosted
+version is down, everything runs on one machine in about five minutes.
+
+### Run it locally
+
+Needs Docker, [uv](https://docs.astral.sh/uv/) and Node 20.19+.
+
 ```bash
-docker compose up -d                      # FalkorDB on :6379, FalkorDB Browser on http://localhost:3000
-python data/tiffinbox/build.py            # regenerate the TiffinBox fixtures and check the answer key
-cd backend && uv run python check_db.py   # confirm GRAPH.COPY, algo.*, vector and full-text indexes
+git clone https://github.com/MShreyash09/KT-Brain.git && cd KT-Brain
+docker compose up -d                       # FalkorDB on 127.0.0.1:6379, FalkorDB Browser on http://localhost:3000
+
+cd backend
+uv sync
+uv run python check_db.py                  # confirm GRAPH.COPY, algo.*, vector and full-text indexes
+uv run uvicorn app:app --port 8000         # first start builds the TiffinBox graphs and the demo company
+
+# in a second terminal
+cd frontend
+npm install
+npm run dev                                # http://localhost:5173, /api is proxied to :8000
 ```
-_More as the build progresses: seed the TiffinBox template, open the app._
+
+Sign in with `admin@tiffinbox.example` / `demo123` (admin) or `meera@tiffinbox.example` / `demo123` (member), or
+register your own company at `#/register` and connect a public GitHub repo.
+
+**Optional: an AI key.** Without one, Ask shows the evidence a search finds but no written answer. Each company
+can save its own key in Admin → Settings. Or give the server one, which the public story and the demo company use.
+The backend doesn't read `.env`, so set it in the shell:
+
+```bash
+export LLM_KEY=gsk_...                     # PowerShell: $env:LLM_KEY = "gsk_..."
+# LLM_BASE and LLM_MODEL default to Groq's openai/gpt-oss-120b
+```
+
+**Tests** (from `backend/`, with FalkorDB running):
+
+```bash
+uv run python test_answer_key.py && uv run python test_integrity.py && uv run python test_agent.py && uv run python test_extract.py
+python ../data/tiffinbox/build.py          # regenerate the fixtures and check them against the answer key
+```
+
+**Connect Claude Code** (after creating a CLI token on the member dashboard):
+
+```bash
+claude mcp add ktbrain -- python /absolute/path/to/cli/ktbrain.py mcp --server http://localhost:8000 --token <CLI token>
+```

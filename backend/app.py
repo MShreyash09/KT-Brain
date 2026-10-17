@@ -9,6 +9,7 @@ import asyncio
 import base64
 import collections
 import functools
+import os
 import re
 import time
 from contextlib import asynccontextmanager
@@ -78,9 +79,11 @@ def radar_view(g) -> list:
              "blast": r["blast"]} for r in radar(g)]
 
 
-def company_llm(cid: str) -> dict | None:
-    """The company's own AI provider; the demo company falls back to the server's (LLM_KEY in the environment)."""
-    return accounts.llm(cid) or (extract.env_llm() if cid == DEMO["company"] else None)
+def company_llm(cid: str, background: bool = False) -> dict | None:
+    """The company's own AI provider, else the server's (LLM_KEY in the environment). The radar watch writes briefs in
+    the background for every company, so on the server's key it runs for the demo company only, which leaves the
+    shared quota for what people ask and upload."""
+    return accounts.llm(cid) or (extract.env_llm() if not background or cid == DEMO["company"] else None)
 
 
 # ── Public: the TiffinBox story ──────────────────────────────────────────────
@@ -498,13 +501,18 @@ def remove_source(ref: str, u: dict = Depends(admin)):
 def ingest_repo(cid: str, graph_name: str, url: str):
     status = lambda msg: accounts.update_company(cid, repo_status=msg)
     try:
-        status(github.ingest(graph(graph_name), url, accounts.company(cid).get("github_token"), status))
+        # without a token GitHub allows 60 requests an hour per IP, shared by every company on this server
+        token = accounts.company(cid).get("github_token") or os.getenv("GITHUB_TOKEN")
+        status(github.ingest(graph(graph_name), url, token, status))
     except Exception as e:
         status(f"failed: {e}")
 
 
 @app.post("/api/admin/github")
 def connect_github(body: Repo, tasks: BackgroundTasks, u: dict = Depends(admin)):
+    if u["company"] == DEMO["company"]:  # its admin login is public: a repo here would mix into everyone's demo
+        raise HTTPException(400, "The demo company is shared. Register your own company to connect a repo: it gets "
+                                 "its own graph.")
     try:
         github.repo_name(body.url)
     except ValueError as e:
@@ -551,7 +559,7 @@ async def auto_sync():
                 await asyncio.to_thread(ingest_repo, cid, graph_name, repo)
             # ponytail: every company every minute (two reads when nothing changed); trigger from derive if this grows
             for cid, graph_name in accounts.companies():
-                await asyncio.to_thread(agent.watch, graph(graph_name), company_llm(cid))
+                await asyncio.to_thread(agent.watch, graph(graph_name), company_llm(cid, background=True))
         except Exception as e:  # FalkorDB down for a moment: keep the loop alive
             print(f"auto-sync: {e}")
         await asyncio.sleep(60)

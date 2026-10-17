@@ -70,6 +70,23 @@ try:
     out = agent.ask(g, "who knows billing.go", LLM)
     assert out["answer"] is None and out["note"].startswith("Unknown item 'billing.go'"), out
 
+    # part answered: the graph's part stays, the made-up sentence goes, and the note says what is missing
+    model([("search", {"query": "payment retries refunds"})],
+          "Payments retry 7 times [D1].\nRefunds take 3 days.\nNOT IN GRAPH: how refunds work")
+    out = agent.ask(g, "why 7 retries, and how do refunds work", LLM)
+    assert out["answer"] == "Payments retry 7 times [D1].", out["answer"]
+    assert out["note"] == "Not in the graph: how refunds work. Left out 1 sentence that cited nothing in the graph.", out
+
+    # nothing answers it: a soft refusal that says why, with the closest evidence below it; a member is told it may
+    # be outside their view
+    model([("search", {"query": "payment refunds"})], "NOT IN GRAPH: how refunds work")
+    out = agent.ask(g, "how do refunds work", LLM)
+    assert out["answer"] is None and out["cited"], out
+    assert out["note"].startswith("The graph has nothing on how refunds work. The closest evidence"), out["note"]
+    model([("search", {"query": "kubernetes"})], "NOT IN GRAPH")
+    out = agent.ask(g, "how do we run kubernetes", LLM, ["kavya"], {"ci.yml"})
+    assert out["note"].endswith("or it is outside what you can see."), out["note"]
+
     # no provider: no answer, but what a search finds
     out = agent.ask(g, "payment retries", None)
     assert out["answer"] is None and "D1" in [c["id"] for c in out["cited"]], out

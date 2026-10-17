@@ -23,7 +23,8 @@ PRESETS = {
 
 
 def env_llm() -> dict | None:
-    """The server's own provider (LLM_KEY, plus LLM_BASE and LLM_MODEL, default Groq), for the public demo only."""
+    """The server's own provider (LLM_KEY, plus LLM_BASE and LLM_MODEL, default Groq), for the public story and any
+    company without its own key."""
     key = os.getenv("LLM_KEY")
     return {"base": os.getenv("LLM_BASE", PRESETS["groq"]["base"]), "key": key,
             "model": os.getenv("LLM_MODEL", PRESETS["groq"]["model"])} if key else None

@@ -64,7 +64,8 @@ export function AgentAnswer({ path, link }) {
       <h2>Agent</h2>
       {!res ? <p className="muted">The agent is picking tools and walking the graph…</p> : (
         <>
-          {res.answer ? <Cited text={res.answer} link={link} /> : <p className="muted">{res.note}</p>}
+          {res.answer && <Cited text={res.answer} link={link} />}
+          {res.note && <p className="muted">{res.note}</p>}
           {res.steps?.length > 0 && (
             <details className="how" open={!res.answer}>
               <summary className="muted small">How it got there: {res.steps.length} tool call{res.steps.length > 1 ? "s" : ""}</summary>
