@@ -117,8 +117,7 @@ export default function App() {
   else if (view === "login") page = <Login onIn={(u) => { setUser(u); go(u.role === "admin" ? "admin" : "me"); }} />;
   else if (view === "register") page = <Register onIn={(u) => { setUser(u); go("admin"); }} />;
   else if (!user) page = <Login onIn={(u) => { setUser(u); go(...route); }} />;
-  else if (view === "admin" && user.role === "admin") page = <Admin user={user} path={rest} />;
-  else if (view === "me" && user.person) page = <Member user={user} path={rest} />;
+  else if (view === "admin" && user.role === "admin") page = <Admin user={user} path={rest} />;  else if (view === "me" && user.person) page = <Member user={user} path={rest} />;
   else page = <p className="page-msg">Nothing here. <a href={`#/${home}`}>Go to your dashboard</a></p>;
 
   return (
@@ -131,6 +130,13 @@ export default function App() {
           </svg>
           KT Brain
         </a>
+        {view === "home" && (
+          <nav className="site-nav hide-sm" aria-label="Sections">
+            {[["product", "Product"], ["how", "How it works"], ["security", "Security"], ["pricing", "Pricing"], ["faq", "FAQ"]].map(([id, name]) => (
+              <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })}>{name}</button>
+            ))}
+          </nav>
+        )}
         <span className="ws">
           {story && view !== "home" && demo && (
             <>
@@ -150,8 +156,11 @@ export default function App() {
               <span className="muted hide-sm">{user.name}</span>
               <button className="btn" onClick={signOut}>Sign out</button>
             </>
-          ) : user === null && view !== "login" ? (
-            <a className="btn" href="#/login">Sign in</a>
+          ) : user === null ? (
+            <>
+              {view !== "login" && <a className="nav-link" href="#/login">Sign in</a>}
+              {view !== "register" && <a className="btn primary" href="#/register">Start free</a>}
+            </>
           ) : null}
         </nav>
         <ThemeToggle />

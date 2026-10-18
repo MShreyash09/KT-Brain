@@ -1,6 +1,6 @@
 // Pieces both dashboards use: the sidebar layout, data loading, why-trace page, search and the sources table.
 import { useCallback, useEffect, useState } from "react";
-import { DataProvider, Kind, Pill, Skeleton, api, fmt, go, useData } from "../ui.jsx";
+import { DataProvider, Icon, Kind, Pill, Skeleton, api, fmt, go, useData } from "../ui.jsx";
 import { AgentAnswer, Cited, Snippet, terms } from "../screens/Ask.jsx";
 import { Trace } from "../screens/Why.jsx";
 
@@ -19,12 +19,22 @@ export function useLoad(path, poll) {
   return [data, reload, error];
 }
 
-export function Dash({ base, nav, current, data, error, children }) {
+const NAV_ICONS = { overview: "grid", ask: "message", employees: "users", graph: "nodes", handovers: "swap",
+  sources: "upload", settings: "sliders", brain: "sparkle", docs: "file" };
+
+export function Dash({ base, nav, current, data, error, user, children }) {
   return (
-    <div className="shell">
+    <div className="shell dash">
       <nav className="steps" aria-label="Dashboard">
+        {user && (
+          <div className="org hide-sm">
+            <span className="org-mark" aria-hidden="true">{user.company_name?.[0] ?? "K"}</span>
+            <span className="org-name"><b>{user.company_name}</b><span>{base === "admin" ? "Admin workspace" : user.name}</span></span>
+          </div>
+        )}
         {nav.map(([id, name, count]) => (
           <a key={id} href={`#/${base}/${id}`} aria-current={id === current ? "page" : undefined}>
+            <Icon name={NAV_ICONS[id] ?? "userCheck"} />
             {name}
             {count ? <span className="count">{count}</span> : null}
           </a>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DataProvider, Item, Pill, Score, api, go, useData } from "../ui.jsx";
+import { DataProvider, Icon, Item, Pill, Score, api, go, useData } from "../ui.jsx";
 import KnowsGraph from "../screens/KnowsGraph.jsx";
 import { Alerts, Dash, DocPage, Find, Sources, WhyPage, openWhy, pending, share, useLoad } from "./common.jsx";
 import { Blast } from "../screens/Radar.jsx";
@@ -13,9 +13,10 @@ const repoBusy = (s) => s && !s.startsWith("done") && !s.startsWith("failed");
 const toUtc = (hhmm) => { const d = new Date(); d.setHours(...hhmm.split(":").map(Number), 0, 0); return d.toISOString().slice(11, 16); };
 const toLocal = (hhmm) => { const d = new Date(); d.setUTCHours(...hhmm.split(":").map(Number), 0, 0); return d.toTimeString().slice(0, 5); };
 
-function Stat({ value, children, tone }) {
+function Stat({ value, children, tone, icon }) {
   return (
     <div className="card stat">
+      <span className={`stat-icon ${tone ? "risk" : ""}`}><Icon name={icon} /></span>
       <span className={`big-num ${tone ?? ""}`}>{value}</span>
       <span className="muted">{children}</span>
     </div>
@@ -35,10 +36,10 @@ function Overview() {
         <p>Who knows what across the company, and what would leave with each person.</p>
       </header>
       <div className="stats">
-        <Stat value={data.people.filter((p) => p.active !== false).length}>people working</Stat>
-        <Stat value={data.radar.length} tone={data.radar.length ? "risk-text" : ""}>things only one person knows</Stat>
-        <Stat value={open_} tone={open_ ? "risk-text" : ""}>handover items not learned yet</Stat>
-        <Stat value={data.sources.length}>docs and AI sessions</Stat>
+        <Stat icon="users" value={data.people.filter((p) => p.active !== false).length}>people working</Stat>
+        <Stat icon="target" value={data.radar.length} tone={data.radar.length ? "risk-text" : ""}>things only one person knows</Stat>
+        <Stat icon="swap" value={open_} tone={open_ ? "risk-text" : ""}>handover items not learned yet</Stat>
+        <Stat icon="file" value={data.sources.length}>docs and AI sessions</Stat>
       </div>
       <h2 className="section-title">Only one person knows these</h2>
       {!groups.length && <p className="muted">Nothing yet. Connect a repo or ask people to add their docs and AI sessions.</p>}
@@ -419,7 +420,7 @@ function SettingsPage({ reload }) {
   );
 }
 
-export default function Admin({ path }) {
+export default function Admin({ user, path }) {
   const [section = "overview", id] = path;
   const [data, reload, error] = useLoad("admin", (d) => repoBusy(d.repo.status) || pending(d.sources));
   const nav = [
@@ -443,5 +444,5 @@ export default function Admin({ path }) {
     sources: <SourcesPage reload={reload} />, settings: <SettingsPage reload={reload} />,
     person: <Person id={id} />, why: <WhyPage base={BASE} id={id} />, doc: <DocPage id={id} />,
   }[section] ?? <p className="muted">Nothing here.</p>;
-  return <Dash base={BASE} nav={nav} current={section} data={data} error={error}>{page}</Dash>;
+  return <Dash base={BASE} nav={nav} current={section} data={data} error={error} user={user}>{page}</Dash>;
 }

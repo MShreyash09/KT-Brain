@@ -223,7 +223,7 @@ function AddSources({ reload }) {
   );
 }
 
-export default function Member({ path }) {
+export default function Member({ user, path }) {
   const [section = "brain", id] = path;
   const [data, reload, error] = useLoad("brain", (d) => pending(d.sources));
   const nav = [
@@ -246,5 +246,5 @@ export default function Member({ path }) {
     ),
     why: <WhyPage base={BASE} id={id} />,
   }[section] ?? <p className="muted">Nothing here.</p>;
-  return <Dash base={BASE} nav={nav} current={current} data={data} error={error}>{page}</Dash>;
+  return <Dash base={BASE} nav={nav} current={current} data={data} error={error} user={user}>{page}</Dash>;
 }
