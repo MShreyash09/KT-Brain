@@ -551,7 +551,8 @@ async def auto_sync():
        new commits and PRs and re-runs `derive` at today's date, so KNOWS scores keep decaying even when nothing new
        was committed. Only the sync time is a setting: every event keeps its own timestamp, whatever hour it happened.
     2. The agent watches every company's radar (agent.watch): a new item only one person knows gets an alert and a KT
-       brief, so a new risk from a sync, an upload or a CLI push is flagged within a minute."""
+       brief, so a new risk from a sync, an upload or a CLI push is flagged within a minute.
+    3. Uploads a free-tier rate limit held back are retried, two per company per minute (uploads.retry_waiting)."""
     while True:
         try:
             now = datetime.now(timezone.utc)
@@ -562,6 +563,8 @@ async def auto_sync():
                 await asyncio.to_thread(ingest_repo, cid, graph_name, repo)
             # ponytail: every company every minute (two reads when nothing changed); trigger from derive if this grows
             for cid, graph_name in accounts.companies():
+                # uploads a rate limit held back, on the same key the upload used (it is someone's upload, not the watch)
+                await asyncio.to_thread(uploads.retry_waiting, graph(graph_name), company_llm(cid))
                 await asyncio.to_thread(agent.watch, graph(graph_name), company_llm(cid, background=True))
         except Exception as e:  # FalkorDB down for a moment: keep the loop alive
             print(f"auto-sync: {e}")
@@ -598,9 +601,7 @@ def brain(u: dict = Depends(member)):
 
 
 def queue_extraction(tasks: BackgroundTasks, u: dict, refs: list):
-    llm = company_llm(u["company"])
-    for ref in refs:
-        tasks.add_task(uploads.extract_into, graph(u["graph"]), llm, ref, u["role"] == "admin")
+    tasks.add_task(uploads.extract_all, graph(u["graph"]), company_llm(u["company"]), refs, u["role"] == "admin")
 
 
 @app.post("/api/brain/upload")

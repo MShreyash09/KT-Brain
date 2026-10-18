@@ -16,6 +16,10 @@ API = "https://api.github.com"
 TRIVIAL_BOTS = ("[bot]",)
 
 
+class NotFound(RuntimeError):
+    pass
+
+
 def get(path: str, token: str | None):
     req = urllib.request.Request(path if path.startswith("http") else API + path, headers={
         "Accept": "application/vnd.github+json", "User-Agent": "kt-brain",
@@ -24,6 +28,8 @@ def get(path: str, token: str | None):
         with urllib.request.urlopen(req, timeout=30) as r:
             return json.load(r)
     except urllib.error.HTTPError as e:
+        if e.code == 404:
+            raise NotFound(f"GitHub 404 for {path} (is the repo public and spelled right?)") from None
         hint = " (rate limit: add a GitHub token in Settings)" if e.code in (403, 429) else ""
         raise RuntimeError(f"GitHub {e.code} for {path}{hint}") from None
 
@@ -74,7 +80,11 @@ def ingest(g, url: str, token: str | None, status) -> str:
 
     status(f"reading {repo}: pull requests")
     prs, reviews = [], []
-    for p in get(f"/repos/{repo}/pulls?state=all&per_page={n_prs}", token):
+    try:
+        pulls = get(f"/repos/{repo}/pulls?state=all&per_page={n_prs}", token)
+    except NotFound:  # the repo has pull requests turned off (torvalds/linux takes patches by email): commits only
+        pulls = None
+    for p in pulls or []:
         if p["user"]["login"].endswith(TRIVIAL_BOTS):
             continue
         prs.append({"id": p["number"], "author": person(p["user"]["login"], p["created_at"]),
@@ -96,4 +106,5 @@ def ingest(g, url: str, token: str | None, status) -> str:
     for q in LINKS:
         g.query(q)
     derive(g)
-    return f"done: {len(commits)} commits, {len(prs)} PRs, {len(reviews)} reviews, {len(people)} new contributors"
+    no_prs = " (pull requests are turned off on this repo)" if pulls is None else ""
+    return f"done: {len(commits)} commits, {len(prs)} PRs{no_prs}, {len(reviews)} reviews, {len(people)} new contributors"

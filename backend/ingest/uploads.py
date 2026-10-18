@@ -132,6 +132,38 @@ WITH d, count(DISTINCT p) AS people WHERE people > 1
 SET d.status = 'active'"""
 
 
+WAITING = "waiting: AI rate limit, retrying"
+STATE = "MATCH (s:Source {ref: $ref}) RETURN s.extract"
+# older builds stored a rate limit as 'failed: 429 …'; those are retried too
+WAITING_SOURCES = """MATCH (s:Source) WHERE s.extract = $w OR s.extract STARTS WITH 'failed: 429'
+RETURN s.ref, coalesce(s.trusted, false) ORDER BY s.at LIMIT $n"""
+
+
+def extract_all(g, llm: dict | None, refs: list, trusted: bool = False):
+    """extract_into for one upload's sources in turn. After the first rate limit the rest are marked waiting without
+    calling the provider, so a 30-session CLI sync is one 429, not 30."""
+    limited = False
+    for ref in refs:
+        if limited:
+            g.query("MATCH (s:Source {ref: $ref}) SET s.extract = $m, s.trusted = $t", {"ref": ref, "m": WAITING, "t": trusted})
+            continue
+        extract_into(g, llm, ref, trusted)
+        limited = g.ro_query(STATE, {"ref": ref}).result_set[0][0] == WAITING
+
+
+def retry_waiting(g, llm: dict | None, n: int = 2) -> int:
+    """Run up to `n` extractions a rate limit held back (called every minute); stop at the next rate limit."""
+    if not llm:
+        return 0
+    done = 0
+    for ref, trusted in g.ro_query(WAITING_SOURCES, {"w": WAITING, "n": n}).result_set:
+        extract_into(g, llm, ref, trusted)
+        if g.ro_query(STATE, {"ref": ref}).result_set[0][0] == WAITING:
+            break
+        done += 1
+    return done
+
+
 def extract_into(g, llm: dict | None, ref: str, trusted: bool = False):
     """Background step: ask the company's AI provider for decisions in one source and link them.
     New decisions are 'proposed' (kept out of the radar and handovers) unless the uploader is `trusted` (an admin)."""
@@ -143,7 +175,9 @@ def extract_into(g, llm: dict | None, ref: str, trusted: bool = False):
     try:
         found = extract.decisions(llm, text)
     except Exception as e:  # provider down, bad key, bad JSON: say so on the source instead of failing the upload
-        g.query("MATCH (s:Source {ref: $ref}) SET s.extract = $m", {"ref": ref, "m": f"failed: {e}"[:300]})
+        # a rate limit is only a delay: retry_waiting picks the source up again from the minute loop
+        m = WAITING if str(e)[:3] == "429" else f"failed: {e}"[:300]
+        g.query("MATCH (s:Source {ref: $ref}) SET s.extract = $m, s.trusted = $t", {"ref": ref, "m": m, "t": trusted})
         return
     existing = {what: did for did, what in g.ro_query("MATCH (d:Decision) RETURN d.id, d.what").result_set}
     n = max([int(i[1:]) for i in existing.values() if re.fullmatch(r"D\d+", i)] or [0])

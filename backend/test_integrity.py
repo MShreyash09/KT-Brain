@@ -90,6 +90,25 @@ def test_uploaded_decisions_are_proposed_until_corroborated():
     assert status() == [["active"]], status()  # a second person recorded it
 
 
+def test_rate_limited_uploads_wait_and_retry():
+    from ingest import uploads
+    calls = []
+
+    def limited(*a):
+        calls.append(1)
+        raise RuntimeError("429 from https://api.groq.com: rate limit")
+    extract.chat = limited
+    refs = [add_doc(g, "eve", f"burst{i}.md", f"# Burst {i}\n\nNotes number {i}.\n") for i in range(3)]
+    state = lambda ref: g.ro_query(uploads.STATE, {"ref": ref}).result_set[0][0]
+    uploads.extract_all(g, {"base": "", "key": "", "model": ""}, refs)
+    assert len(calls) == 1, "after the first 429 the rest must not call the provider"
+    assert all(state(r) == uploads.WAITING for r in refs), [state(r) for r in refs]
+    extract.chat = lambda *a: json.dumps({"decisions": []})
+    assert uploads.retry_waiting(g, {"base": "", "key": "", "model": ""}, n=2) == 2
+    assert uploads.retry_waiting(g, {"base": "", "key": "", "model": ""}, n=2) == 1
+    assert all(state(r).startswith("done") for r in refs), [state(r) for r in refs]
+
+
 def test_remove_source():
     extract.chat = lambda *a: json.dumps({"decisions": [{"what": "Made up", "why": "", "evidence": "never happened"}]})
     ref = add_doc(g, "eve", "fake.md", "# Fake\n\nThis never happened.\n")
@@ -123,6 +142,22 @@ def test_github_login_does_not_overwrite_employee():
     github.ingest(g, "o/r", None, lambda msg: None)
     assert g.ro_query("MATCH (p:Person {id: 'eve'}) RETURN p.name, p.github").result_set == [["Eve", None]]
     assert g.ro_query("MATCH (p:Person {github: 'eve'}) RETURN p.id").result_set == [["eve-2"]]
+
+
+def test_github_repo_without_pull_requests():
+    # torvalds/linux has pull requests turned off: GitHub answers /pulls with 404, the commits must still load
+    fake = {"/repos/o/nopr/commits?per_page=25": [{"sha": "np1", "url": "c/np1", "author": None,
+                                                   "commit": {"message": "y", "author": {"name": "Linus", "date": iso(now)}}}],
+            "c/np1": {"files": [{"filename": "kernel/fork.c", "additions": 2, "deletions": 1}]}}
+
+    def get(path, token):
+        if "/pulls" in path:
+            raise github.NotFound(path)
+        return fake[path]
+    github.get = get
+    result = github.ingest(g, "o/nopr", None, lambda msg: None)
+    assert result.startswith("done: 1 commits, 0 PRs (pull requests are turned off"), result
+    assert g.ro_query("MATCH (:Commit {sha: 'np1'})-[:CHANGED]->(f:File) RETURN f.path").result_set == [["kernel/fork.c"]]
 
 
 def test_daily_sync_runs_once_after_its_time():

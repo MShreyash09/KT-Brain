@@ -109,7 +109,7 @@ export function Find({ base, hint }) {
   );
 }
 
-const extractTone = (x) => (!x || x === "off" ? "muted" : x.startsWith("failed") ? "risk" : x === "pending" ? "warn" : "ok");
+const extractTone = (x) => (!x || x === "off" ? "muted" : x.startsWith("failed") ? "risk" : x === "pending" || x.startsWith("waiting") ? "warn" : "ok");
 const extractText = (x) => (!x ? "fixture" : x === "off" ? "no AI provider" : x === "pending" ? "extracting…" : x);
 
 const docLink = (base, ref) => `#/${base}/doc/${encodeURIComponent(ref)}`;
