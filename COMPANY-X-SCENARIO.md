@@ -122,9 +122,3 @@ Optional realism (+45 min): a tiny real git repo for TiffinBox with the ~20 file
 | 9 | Switch to *Real OSS repo* | the backtest numbers | "And it isn't just our toy company." |
 
 ---
-
-## 5. Where this fits in the roadmap
-- **Today:** finish this file. Change names or the product if you like; keep D2 (decoy), D8 (combination) and D13 (superseded). They are what make the demo convincing.
-- **Day 1:** generate fixtures → ingest Company X first (you know the answers, so query bugs are obvious) → the tests in §2.
-- **Day 2:** dry run, why-trace, then the OSS repo for the backtest only.
-- **Day 3:** replay button + per-visitor sandbox (`GRAPH.COPY` + expiry) + deploy.
