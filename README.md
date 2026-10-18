@@ -2,11 +2,14 @@
 
 **🔗 Live demo: [kt-brain-devs.vercel.app](https://kt-brain-devs.vercel.app/)** · Sign in as `admin@tiffinbox.example` / `demo123`
 
+**🔗 Demo video: https://youtu.be/yG-YKcJTyhk**
+
+
 **Knowledge transfer is a coverage problem, not a Q&A problem.**
 KT Brain shows which knowledge is about to leave your company with a departing teammate, shows that nobody else has a recorded copy of it, and counts the handover down to zero.
 
 > Built for **WeMakeDevs × FalkorDB "Graph Hacks: Context for AI Agents"** (Oct 15–18, 2026).
-> Tracks: **03 Company Brain** · **02 Agent Memory & Coordination** · **01 Agents That Act on Connected Data**
+> Tracks: **03 Company Brain**
 
 ---
 
