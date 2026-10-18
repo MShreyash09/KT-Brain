@@ -10,6 +10,9 @@ KT Brain shows which knowledge is about to leave your company with a departing t
 
 ---
 
+<img width="1895" height="860" alt="image" src="https://github.com/user-attachments/assets/6229c8ef-53bf-4b5d-bed3-01695b0be37e" />
+
+
 ## The problem
 
 When a developer leaves a startup, the team does **KT (knowledge transfer)**. Sometimes it's a one-hour call, sometimes a few weeks, depending on how busy both people are. After a layoff, it's often a rushed call on the last day.
