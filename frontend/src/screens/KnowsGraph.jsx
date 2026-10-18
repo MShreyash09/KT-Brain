@@ -4,7 +4,8 @@ import { Skeleton, useData } from "../ui.jsx";
 // loaded only on pages that show a graph, so the landing page stays light
 const ForceGraph2D = lazy(() => import("react-force-graph-2d"));
 
-const HEIGHT = 560;
+// taller on big screens, never so tall the legend falls off a laptop screen
+const HEIGHT = Math.round(Math.min(Math.max(window.innerHeight - 330, 480), 820));
 
 // People, the files and decisions they KNOW, and which file each decision is ABOUT.
 function build(data) {
@@ -107,8 +108,9 @@ export default function KnowsGraph({ sel, onPerson, open }) {
       ctx.textBaseline = "middle";
       ctx.fillText(n.text[0], n.x, n.y + 0.5);
     }
-    // labels: always for people and the hovered neighbourhood, for everything else once zoomed in
-    if (n.person || scale > 1.8 || (focus && near.has(n.id))) {
+    // labels: always for people, for the hovered node's neighbours, for everything else once zoomed in (a selected
+    // person can know hundreds of files, so selection alone lights their links but doesn't label them all)
+    if (n.person || scale > 1.8 || (hover && near.has(n.id))) {
       const size = Math.max(10 / scale, 2.5);
       ctx.font = `${n.person ? 600 : 400} ${size}px Archivo, sans-serif`;
       ctx.textAlign = "center";

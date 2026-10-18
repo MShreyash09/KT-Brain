@@ -385,7 +385,8 @@ a.btn.primary { color: var(--on-accent); }
   width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px;
   border: 1px solid currentColor;
 }
-.content { padding: 36px 40px 72px; max-width: 1080px; width: 100%; min-width: 0; }
+.content { padding: 32px 32px 72px; width: 100%; min-width: 0; }
+.step-head p { max-width: 90ch; }
 .step-head { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
 .step-head h1 { font-size: 26px; font-weight: 700; letter-spacing: -.015em; font-stretch: 108%; }
 .step-head p { color: var(--text-2); margin: 6px 0 0; }
