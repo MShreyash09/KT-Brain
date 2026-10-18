@@ -442,26 +442,19 @@ a.btn.primary { color: var(--on-accent); }
 }
 .pname { font-weight: 600; }
 
-/* knowledge graph (team) */
-.graph-card { padding: 8px 8px 12px; }
-.kgraph { display: block; width: 100%; height: auto; }
-.kgraph .edge { stroke: var(--border); transition: stroke .15s, opacity .15s; }
-.kgraph .edge.about { stroke-dasharray: 3 3; }
-.kgraph .edge.lit { stroke: var(--accent); }
-.kgraph .node { cursor: pointer; transition: opacity .15s; }
-.kgraph .node:focus { outline: none; }
-.kgraph .node:focus-visible circle, .kgraph .node:focus-visible rect { stroke: var(--accent); stroke-width: 3; }
-.kgraph circle, .kgraph rect { fill: var(--surface-2); stroke: var(--text-2); stroke-width: 1.5; }
-.kgraph .is-person circle { fill: var(--accent-soft); stroke: var(--accent); }
-.kgraph .leaving circle { fill: var(--risk-soft); stroke: var(--risk); }
-.kgraph .is-decision rect { fill: var(--accent-soft); stroke: var(--accent); }
-.kgraph .only circle, .kgraph .only rect { stroke: var(--risk); stroke-width: 2.5; }
-.kgraph .superseded { opacity: .45; }
-.kgraph .dim { opacity: .15; }
-.kgraph text { text-anchor: middle; fill: var(--text-2); font-size: 11px; pointer-events: none; }
-.kgraph .is-person .lbl { fill: var(--text); font-weight: 600; font-size: 12px; }
-.kgraph .initial { fill: var(--accent); font-weight: 650; font-size: 12px; }
-.kgraph .leaving .initial { fill: var(--risk); }
+/* knowledge graph (KnowsGraph.jsx): a live canvas, like the FalkorDB Browser */
+.graph-card { padding: 0; overflow: hidden; }
+.graph-tools { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.graph-buttons { display: flex; gap: 6px; }
+.graph-buttons .btn { padding: 4px 10px; min-width: 34px; }
+.graph-canvas { background: radial-gradient(circle at 50% 40%, var(--surface), var(--scene)); touch-action: none; }
+.graph-canvas:active { cursor: grabbing; }
+.graph-card .legend { margin: 0; padding: 10px 12px; border-top: 1px solid var(--border); }
+.float-tooltip-kap, .graph-tooltip {
+  background: var(--text) !important; color: var(--surface) !important; font: 12.5px/1.4 "Archivo", system-ui, sans-serif !important;
+  padding: 6px 9px !important; border-radius: 6px !important; max-width: 320px; box-shadow: var(--shadow);
+}
 .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 4px 8px 0; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--text-2); background: var(--surface-2); }

@@ -1,7 +1,10 @@
-import { useMemo, useState } from "react";
-import { useData } from "../ui.jsx";
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
+import { Skeleton, useData } from "../ui.jsx";
 
-const W = 880, H = 540, PAD = 28;
+// loaded only on pages that show a graph, so the landing page stays light
+const ForceGraph2D = lazy(() => import("react-force-graph-2d"));
+
+const HEIGHT = 560;
 
 // People, the files and decisions they KNOW, and which file each decision is ABOUT.
 function build(data) {
@@ -15,88 +18,157 @@ function build(data) {
       superseded: data.decisions[i]?.status === "superseded", only: radar.has(i) })),
   ];
   const max = Math.max(...data.knows.map((k) => k.score));
-  const edges = [
-    ...data.knows.map((k) => ({ a: `p:${k.person}`, b: k.item, w: 1 + (k.score / max) * 3 })),
+  const links = [
+    ...data.knows.map((k) => ({ source: `p:${k.person}`, target: k.item, w: 0.6 + (k.score / max) * 2.4 })),
     ...Object.values(data.decisions).flatMap((d) => d.about.filter((f) => items.includes(f) && items.includes(d.id))
-      .map((f) => ({ a: d.id, b: f, about: true }))),
+      .map((f) => ({ source: d.id, target: f, about: true, w: 0.8 }))),
   ];
-  return { nodes, edges };
+  return { nodes, links };
 }
 
-// ponytail: plain O(n²) force layout run once (~50 nodes); swap for d3-force if workspaces grow to hundreds of nodes
-function layout({ nodes, edges }) {
-  const at = Object.fromEntries(nodes.map((n, i) => {
-    const a = (2 * Math.PI * i) / nodes.length;
-    return [n.id, Object.assign(n, { x: W / 2 + 300 * Math.cos(a), y: H / 2 + 200 * Math.sin(a), vx: 0, vy: 0 })];
-  }));
-  for (let t = 0; t < 400; t++) {
-    const k = 1 - t / 400;
-    for (let i = 0; i < nodes.length; i++)
-      for (let j = i + 1; j < nodes.length; j++) {
-        const a = nodes[i], b = nodes[j], dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy + 1;
-        const f = (40000 / d2) * k;
-        a.vx -= dx * f / Math.sqrt(d2); a.vy -= dy * f / Math.sqrt(d2);
-        b.vx += dx * f / Math.sqrt(d2); b.vy += dy * f / Math.sqrt(d2);
-      }
-    for (const e of edges) {
-      const a = at[e.a], b = at[e.b], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1;
-      const f = ((d - (e.about ? 55 : 110)) * 0.04 * k) / d;
-      a.vx += dx * f; a.vy += dy * f; b.vx -= dx * f; b.vy -= dy * f;
-    }
-    for (const n of nodes) {
-      n.vx += (W / 2 - n.x) * 0.003; n.vy += (H / 2 - n.y) * 0.0045;
-      n.x = Math.min(W - PAD, Math.max(PAD, n.x + (n.vx *= 0.55)));
-      n.y = Math.min(H - PAD, Math.max(PAD, n.y + (n.vy *= 0.55)));
-    }
-  }
-  return at;
+// The theme's colours for the canvas, read again when the light/dark toggle flips data-theme.
+function readColors() {
+  const s = getComputedStyle(document.documentElement);
+  const v = (name) => s.getPropertyValue(name).trim();
+  return { text: v("--text"), muted: v("--text-2"), surface: v("--surface"), surface2: v("--surface-2"), border: v("--border"),
+    accent: v("--accent"), accentSoft: v("--accent-soft"), risk: v("--risk"), riskSoft: v("--risk-soft") };
 }
 
+function useColors() {
+  const [colors, setColors] = useState(readColors);
+  useEffect(() => {
+    const o = new MutationObserver(() => setColors(readColors()));
+    o.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => o.disconnect();
+  }, []);
+  return colors;
+}
+
+const end = (x) => (typeof x === "object" ? x.id : x); // a link end: an id before the simulation starts, a node after
+
+// A live force-directed graph, like the FalkorDB Browser: scroll to zoom, drag to pan, drag a node to pin it,
+// hover to light up its neighbours. Labels appear as you zoom in, so a big workspace stays readable.
 export default function KnowsGraph({ sel, onPerson, open }) {
   const data = useData();
   const { label, whyFor } = data;
   const g = useMemo(() => build(data), [data]);
-  const at = useMemo(() => layout(g), [g]);
+  const colors = useColors();
+  const box = useRef(null);
+  const fg = useRef(null);
+  const fitted = useRef(false);
+  const [width, setWidth] = useState(800);
   const [hover, setHover] = useState(null);
-  const focus = hover ?? `p:${sel}`;
-  const near = new Set([focus, ...g.edges.flatMap((e) => (e.a === focus ? [e.b] : e.b === focus ? [e.a] : []))]);
+
+  const neighbours = useMemo(() => {
+    const m = new Map(g.nodes.map((n) => [n.id, new Set([n.id])]));
+    for (const l of g.links) {
+      m.get(end(l.source))?.add(end(l.target));
+      m.get(end(l.target))?.add(end(l.source));
+    }
+    return m;
+  }, [g]);
+
+  useEffect(() => {
+    if (!box.current) return;
+    const o = new ResizeObserver(([e]) => setWidth(e.contentRect.width));
+    o.observe(box.current);
+    return () => o.disconnect();
+  }, []);
+
+  useEffect(() => {
+    fitted.current = false;
+    fg.current?.d3Force("charge")?.strength(-140);
+    fg.current?.d3Force("link")?.distance((l) => (l.about ? 35 : 80));
+  }, [g]);
 
   if (!g.nodes.length) return <p className="muted">No knowledge yet.</p>;
+
+  const focus = hover ?? (sel ? `p:${sel}` : null);
+  const near = (focus && neighbours.get(focus)) || new Set();
+  const lit = (l) => focus && (end(l.source) === focus || end(l.target) === focus);
   const act = (n) => (n.person ? onPerson(n.person) : whyFor(n.item) && open(whyFor(n.item)));
+  const zoom = (f) => fg.current?.zoom(fg.current.zoom() * f, 250);
+
+  const draw = (n, ctx, scale) => {
+    const r = n.person ? 8 : n.decision ? 4.5 : 4;
+    ctx.globalAlpha = hover && !near.has(n.id) ? 0.12 : n.superseded ? 0.45 : 1;
+    ctx.beginPath();
+    if (n.decision) ctx.rect(n.x - r, n.y - r, r * 2, r * 2);
+    else ctx.arc(n.x, n.y, r, 0, 2 * Math.PI);
+    ctx.fillStyle = n.leaving ? colors.riskSoft : n.person || n.decision ? colors.accentSoft : colors.surface2;
+    ctx.fill();
+    ctx.lineWidth = n.only ? 1.6 : 1;
+    ctx.strokeStyle = n.only || n.leaving ? colors.risk : n.person || n.decision ? colors.accent : colors.muted;
+    ctx.stroke();
+    if (n.person) {
+      ctx.fillStyle = n.leaving ? colors.risk : colors.accent;
+      ctx.font = "600 8px Archivo, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(n.text[0], n.x, n.y + 0.5);
+    }
+    // labels: always for people and the hovered neighbourhood, for everything else once zoomed in
+    if (n.person || scale > 1.8 || (focus && near.has(n.id))) {
+      const size = Math.max(10 / scale, 2.5);
+      ctx.font = `${n.person ? 600 : 400} ${size}px Archivo, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillStyle = n.person ? colors.text : colors.muted;
+      ctx.fillText(n.text, n.x, n.y + r + 2);
+    }
+    ctx.globalAlpha = 1;
+  };
 
   return (
     <section className="card graph-card">
-      <svg viewBox={`0 0 ${W} ${H}`} className="kgraph" role="img"
-        aria-label="Knowledge graph: people linked to the files and decisions they know">
-        {g.edges.map((e, i) => {
-          const a = at[e.a], b = at[e.b], lit = e.a === focus || e.b === focus;
-          return <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y} strokeWidth={e.w ?? 1}
-            className={`edge ${e.about ? "about" : ""} ${lit ? "lit" : ""}`} />;
-        })}
-        {g.nodes.map((n) => {
-          const p = at[n.id];
-          const cls = ["node", n.person ? "is-person" : n.decision ? "is-decision" : "is-file", n.leaving && "leaving",
-            n.only && "only", n.superseded && "superseded", hover && !near.has(n.id) && "dim"].filter(Boolean).join(" ");
-          return (
-            <g key={n.id} className={cls} transform={`translate(${p.x},${p.y})`} tabIndex={0} role="button"
-              onClick={() => act(n)} onKeyDown={(e) => e.key === "Enter" && act(n)}
-              onMouseEnter={() => setHover(n.id)} onMouseLeave={() => setHover(null)}
-              onFocus={() => setHover(n.id)} onBlur={() => setHover(null)}>
-              <title>{n.person ? `${n.text}: click to see what they know` : `${n.decision ? `${n.item} ${label(n.item)}` : n.item}`}</title>
-              {n.decision ? <rect x={-7} y={-7} width={14} height={14} rx={3} /> : <circle r={n.person ? 15 : 6} />}
-              {n.person ? <text dy={4} className="initial">{n.text[0]}</text> : null}
-              <text dy={n.person ? 30 : 18} className="lbl">{n.text}</text>
-            </g>
-          );
-        })}
-      </svg>
+      <div className="graph-tools">
+        <span className="muted small">{g.nodes.filter((n) => n.person).length} people · {g.nodes.filter((n) => !n.person).length} files
+          and decisions · scroll to zoom, drag to pan, drag a node to pin it</span>
+        <span className="graph-buttons">
+          <button className="btn" onClick={() => zoom(1.4)} aria-label="Zoom in">+</button>
+          <button className="btn" onClick={() => zoom(1 / 1.4)} aria-label="Zoom out">−</button>
+          <button className="btn" onClick={() => fg.current?.zoomToFit(400, 40)}>Fit</button>
+        </span>
+      </div>
+      <div ref={box} className="graph-canvas" style={{ cursor: hover ? "pointer" : "grab" }}>
+        <Suspense fallback={<div style={{ padding: 16, height: HEIGHT }}><Skeleton lines={6} /></div>}>
+        <ForceGraph2D
+          ref={fg}
+          graphData={g}
+          width={width}
+          height={HEIGHT}
+          backgroundColor="rgba(0,0,0,0)"
+          nodeCanvasObject={draw}
+          nodePointerAreaPaint={(n, color, ctx) => {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, n.person ? 11 : 7, 0, 2 * Math.PI);
+            ctx.fill();
+          }}
+          nodeLabel={(n) => (n.person ? `${n.text}: click to see what they know`
+            : n.decision ? `${n.item} ${label(n.item)}` : n.item)}
+          linkColor={(l) => (lit(l) ? colors.accent : colors.border)}
+          linkWidth={(l) => (lit(l) ? l.w + 0.6 : l.w)}
+          linkLineDash={(l) => (l.about ? [3, 3] : null)}
+          onNodeHover={(n) => setHover(n?.id ?? null)}
+          onNodeClick={act}
+          onNodeDragEnd={(n) => { n.fx = n.x; n.fy = n.y; }}
+          onBackgroundClick={() => setHover(null)}
+          cooldownTicks={150}
+          onEngineStop={() => {
+            if (!fitted.current) fg.current?.zoomToFit(400, 40);
+            fitted.current = true;
+          }}
+        />
+        </Suspense>
+      </div>
       <p className="legend muted small">
         <span><i className="sw sw-person" /> person</span>
         <span><i className="sw sw-leaving" /> leaving</span>
         <span><i className="sw" /> file</span>
         <span><i className="sw sw-decision" /> decision</span>
         <span><i className="sw sw-only" /> only one person knows it</span>
-        <span>line width = KNOWS score · dashed = decision is about that file</span>
+        <span>line width = KNOWS score · dashed = decision is about that file · click an item for its why-trace</span>
       </p>
     </section>
   );
