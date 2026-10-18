@@ -226,6 +226,31 @@ Every Cypher query lives in [`backend/graph.py`](backend/graph.py). These are th
 
 Without an AI key, Ask still returns the evidence and Watch still raises alerts, just without the written brief.
 
+### How the agent queries the graph
+
+Every fact the agent states comes from one of these graph queries (all in [`backend/graph.py`](backend/graph.py)). The model only picks the tool and writes the sentence; the answer can cite only node ids the queries returned.
+
+| Agent tool | Graph query | What it walks |
+|---|---|---|
+| `search` | `SEARCH` / `SEARCH_MINE`, then `ASK_DECISIONS`, `ASK_FILES` | `db.idx.fulltext.queryNodes('Chunk')` → `(Chunk)-[:PART_OF]->(Source)-[:RECORDS]->(Decision)` and `(Person)-[:KNOWS]->(File)` |
+| `why` | `TRACE_*`, `FILE_DECISIONS`, `FILE_COMMITS` | `(Decision)<-[:RECORDS]-(Source)<-[:AUTHORED\|RAN\|POSTED_IN]-(Person)`, `-[:SUPERSEDES]->(old)<-[:CAUSED_BY]-(Incident)`, `-[:INFORMED_BY]->(Research)-[:CITES]->(External)` |
+| `who_knows` | `ITEM_KNOWERS` | `(Person)-[k:KNOWS]->(item)` with the derived score and last touch |
+| `if_leaves` (admin) | `AGENDA`, `WEAK_BACKUP` on a `GRAPH.COPY` | leavers deactivated on the copy; items left with zero active knowers, and combination risk |
+| `radar` (admin) | `RADAR` + `CALL algo.pageRank('Service', 'DEPENDS_ON')` | items with exactly one active knower, ranked by their service's blast radius |
+| Watch (no tool call) | `RADAR`, `OPEN_ALERTS`, `ITEM_STATE`, `CREATE_ALERT`, `SET_BRIEF`, `CLOSE_ALERT` | opens an `Alert` node per new single-knower item and stores its KT brief; closes it when a second `KNOWS` edge appears |
+
+```mermaid
+flowchart LR
+  Q([Question]) --> M[Model picks a tool]
+  M --> T["Tool runs a fixed Cypher query<br/>(names resolved in the graph first)"]
+  T --> E["Evidence: node ids + the graph path"]
+  E --> M
+  M --> A["Answer: every line cites an id"]
+  A --> V{"Cited id was<br/>in the evidence?"}
+  V -- yes --> OUT([Shown])
+  V -- no --> DROP([Line dropped])
+```
+
 ---
 
 ## Capturing AI coding sessions and local docs
