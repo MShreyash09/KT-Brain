@@ -33,7 +33,7 @@ export function withHelpers(data) {
 export const useData = () => useContext(DataCtx);
 
 export function DataProvider({ data, children }) {
-  const value = useMemo(() => withHelpers(data), [data]);
+  const value = useMemo(() => data && withHelpers(data), [data]); // null while loading: useData() returns null
   return <DataCtx.Provider value={value}>{children}</DataCtx.Provider>;
 }
 
@@ -55,6 +55,13 @@ export async function api(path, body, method) {
 }
 
 export const Pill = ({ tone = "muted", children }) => <span className={`pill ${tone}`}>{children}</span>;
+
+// shimmering placeholder lines while data is on its way (a sleeping Render instance can take ~30 s to wake)
+export const Skeleton = ({ lines = 4 }) => (
+  <div className="skeleton" role="status" aria-label="Loading">
+    {Array.from({ length: lines }, (_, i) => <span key={i} />)}
+  </div>
+);
 
 const KIND = { Decision: "Decision", File: "File", PR: "PR", Ticket: "Ticket", Thread: "Chat",
   AgentSession: "AI session", Doc: "Doc", Research: "Research", Incident: "Incident", External: "External" };

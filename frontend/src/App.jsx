@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
-import { DataProvider, api, fmt, go } from "./ui.jsx";
+import { DataProvider, Skeleton, api, fmt, go } from "./ui.jsx";
 import Landing from "./screens/Landing.jsx";
 import Team from "./screens/Team.jsx";
 import Radar from "./screens/Radar.jsx";
@@ -55,7 +55,8 @@ function Story({ view, demo }) {
   const i = STEPS.findIndex((s) => s.id === view);
   const step = STEPS[i];
   const next = STEPS[i + 1];
-  if (!demo) return <p className="page-msg muted">Loading the TiffinBox graph…</p>;
+  // the landing page renders before the data arrives (see Landing); the steps wait for it
+  if (!demo && step) return <div className="page-msg"><Skeleton lines={6} /></div>;
   return (
     <DataProvider data={demo}>
       {!step ? (
@@ -112,7 +113,7 @@ export default function App() {
   let page;
   if (down) page = <p className="page-msg">The KT Brain API is not running. Start it with: <code>cd backend && uv run uvicorn app:app</code></p>;
   else if (story) page = <Story view={view} demo={demo} />;
-  else if (user === undefined) page = null;
+  else if (user === undefined) page = <div className="page-msg"><Skeleton /></div>;
   else if (view === "login") page = <Login onIn={(u) => { setUser(u); go(u.role === "admin" ? "admin" : "me"); }} />;
   else if (view === "register") page = <Register onIn={(u) => { setUser(u); go("admin"); }} />;
   else if (!user) page = <Login onIn={(u) => { setUser(u); go(...route); }} />;

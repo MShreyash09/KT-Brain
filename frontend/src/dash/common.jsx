@@ -1,6 +1,6 @@
 // Pieces both dashboards use: the sidebar layout, data loading, why-trace page, search and the sources table.
 import { useCallback, useEffect, useState } from "react";
-import { DataProvider, Kind, Pill, api, fmt, go, useData } from "../ui.jsx";
+import { DataProvider, Kind, Pill, Skeleton, api, fmt, go, useData } from "../ui.jsx";
 import { AgentAnswer, Cited, Snippet, terms } from "../screens/Ask.jsx";
 import { Trace } from "../screens/Why.jsx";
 
@@ -31,7 +31,7 @@ export function Dash({ base, nav, current, data, error, children }) {
         ))}
       </nav>
       <main className="content">
-        {error ? <p className="form-error">{error}</p> : !data ? <p className="muted">Loading…</p> : (
+        {error ? <p className="form-error">{error}</p> : !data ? <Skeleton lines={6} /> : (
           <DataProvider data={data}>{children}</DataProvider>
         )}
       </main>

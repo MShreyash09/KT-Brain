@@ -155,7 +155,7 @@ button { font: inherit; color: inherit; }
 .why-q { font-weight: 700; }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 @media (prefers-reduced-motion: reduce) {
-  .flow, .worker .bob { animation: none; }
+  .flow, .worker .bob, .skeleton span { animation: none; }
   .why-card { animation: none; }
 }
 
@@ -349,6 +349,14 @@ mark { background: var(--warn-soft); color: var(--text); border-radius: 3px; pad
 
 /* accounts and dashboards */
 .page-msg { max-width: 640px; margin: 64px auto; padding: 0 16px; }
+.skeleton { display: grid; gap: 12px; width: 100%; }
+.skeleton span {
+  height: 14px; border-radius: 4px; background-size: 200% 100%; animation: shimmer 1.4s linear infinite;
+  background-image: linear-gradient(90deg, var(--surface-2) 25%, var(--surface) 50%, var(--surface-2) 75%);
+}
+.skeleton span:first-child { height: 28px; width: 45%; }
+.skeleton span:last-child { width: 60%; }
+@keyframes shimmer { to { background-position: -200% 0; } }
 .auth { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; max-width: 880px;
   margin: 48px auto; padding: 0 16px; align-items: start; }
 .auth-card { display: flex; flex-direction: column; gap: 12px; padding: 24px; margin: 0; }

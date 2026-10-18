@@ -290,7 +290,7 @@ TiffinBox and its people, messages, tickets and sessions are **synthetic**. The 
 
 ## AI-assistance disclosure
 
-This project was planned and built with help from Claude Code (Anthropic). The TiffinBox fixtures were expanded by Claude from hand-written story beats, and every artifact behind the answer key was checked by hand. The core logic (Cypher queries, the knowledge score, dry-run and agenda logic) is written by us. Our planning notes and AI reviews are in the repo root (`HACK-PLAN.md`, `idea_check.md`, `progress.md`).
+This project was planned and built with help from Claude Code (Anthropic). The TiffinBox fixtures were expanded by Claude from hand-written story beats, and every artifact behind the answer key was checked by hand. The core logic (Cypher queries, the knowledge score, dry-run and agenda logic) is written by us. Our planning notes are in the repo root (`HACK-PLAN.md`, `progress.md`).
 
 ## Setup
 

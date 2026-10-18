@@ -1,4 +1,4 @@
-import { useData } from "../ui.jsx";
+import { Skeleton, useData } from "../ui.jsx";
 import { DryRun } from "./Departure.jsx";
 import RoomStory from "./RoomStory.jsx";
 
@@ -11,10 +11,9 @@ const steps = (data, h = data.handover) => [
   ["ask", "Ask", "Full-text search over docs, AI sessions and chat, in the same FalkorDB graph."],
 ];
 
+// the hero and the office story need no data, so they show at once; the rest waits for /api/workspace
 export default function Landing({ start }) {
   const data = useData();
-  const STEPS = steps(data);
-  const c = data.workspace.counts;
   return (
     <main className="landing">
       <section className="hero">
@@ -32,6 +31,21 @@ export default function Landing({ start }) {
         <RoomStory />
       </section>
 
+      {data ? <Sections data={data} /> : <div className="split"><Skeleton lines={6} /></div>}
+
+      <div className="soon">
+        <span className="pill muted">Coming soon</span>
+        Bring your own: a public GitHub repo, docs, or Claude Code session logs.
+      </div>
+    </main>
+  );
+}
+
+function Sections({ data }) {
+  const STEPS = steps(data);
+  const c = data.workspace.counts;
+  return (
+    <>
       <section className="split">
         <div>
           <h2>Run the resignation before it happens</h2>
@@ -64,11 +78,6 @@ export default function Landing({ start }) {
           ))}
         </ol>
       </section>
-
-      <div className="soon">
-        <span className="pill muted">Coming soon</span>
-        Bring your own: a public GitHub repo, docs, or Claude Code session logs.
-      </div>
-    </main>
+    </>
   );
 }
