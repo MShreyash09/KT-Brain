@@ -139,16 +139,57 @@ export function Sources({ sources, base, who, onRemove, onShare, extract = true 
 
 export const share = (s) => api("source/share", { ref: s.ref, shared: !s.shared });
 
+// AI sessions and chat threads are stored as "speaker: text" lines; split them back into turns
+const TURN = /^([A-Za-z][\w .'-]{0,40}):\s(.*)$/;
+function turns(text) {
+  const out = [];
+  for (const line of text.split("\n")) {
+    const m = line.match(TURN);
+    if (m) out.push({ who: m[1], body: m[2] });
+    else if (out.length) out.at(-1).body += "\n" + line;
+    else out.push({ who: "", body: line });
+  }
+  return out;
+}
+
+// Markdown → sanitised HTML; the two libraries load only when someone opens a document
+function useMarkdown() {
+  const [md, setMd] = useState(null);
+  useEffect(() => {
+    Promise.all([import("marked"), import("dompurify")]).then(([{ marked }, { default: purify }]) =>
+      setMd(() => (src) => ({ __html: purify.sanitize(marked.parse(src, { gfm: true, breaks: true })) })));
+  }, []);
+  return md;
+}
+
 export function DocPage({ id }) {
   const [res, , error] = useLoad(`source?ref=${encodeURIComponent(id)}`);
+  const md = useMarkdown();
+  const chat = /^(session|thread):/.test(id);
+  const words = res ? res.text.split(/\s+/).filter(Boolean).length : 0;
   return (
     <>
       <p><a href="#" onClick={(e) => { e.preventDefault(); history.back(); }}>← Back</a></p>
       {error && <p className="form-error">{error}</p>}
       {res && (
         <>
-          <header className="step-head"><h1>{res.title || res.ref}</h1></header>
-          <section className="card"><pre className="doc-text">{res.text}</pre></section>
+          <header className="step-head">
+            <h1>{res.title || res.ref}</h1>
+            <p className="muted small">{chat ? (id.startsWith("thread:") ? "Chat thread" : "AI coding session") : "Document"} ·{" "}
+              {words.toLocaleString()} words · about {Math.max(1, Math.round(words / 230))} min read</p>
+          </header>
+          <section className="card doc-card">
+            {!md ? <pre className="doc-text">{res.text}</pre> : chat ? (
+              <div className="transcript">
+                {turns(res.text).map((t, i) => (
+                  <div key={i} className={`turn ${/^(user|human|you)/i.test(t.who) ? "turn-user" : ""}`}>
+                    {t.who && <span className="turn-who">{t.who.replace(/_/g, " ")}</span>}
+                    <div className="prose" dangerouslySetInnerHTML={md(t.body)} />
+                  </div>
+                ))}
+              </div>
+            ) : <article className="prose" dangerouslySetInnerHTML={md(res.text)} />}
+          </section>
         </>
       )}
     </>

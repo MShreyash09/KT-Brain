@@ -583,6 +583,39 @@ details.card summary { cursor: pointer; }
 .command { font-family: var(--mono); font-size: 12.5px; background: var(--surface-2); border: 1px solid var(--border);
   border-radius: 8px; padding: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
 .doc-text { font: inherit; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+
+/* rendered documents (DocPage): a centred reading column */
+.doc-card { padding: 40px 48px; }
+.prose { max-width: 78ch; margin: 0 auto; font-size: 16px; line-height: 1.7; overflow-wrap: anywhere; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h1, .prose h2, .prose h3, .prose h4 { line-height: 1.25; letter-spacing: -.01em; margin: 1.8em 0 .6em; }
+.prose h1 { font-size: 28px; font-stretch: 110%; }
+.prose h2 { font-size: 22px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.prose h3 { font-size: 18px; }
+.prose h4 { font-size: 16px; color: var(--text-2); }
+.prose p, .prose ul, .prose ol, .prose table, .prose pre, .prose blockquote { margin: 0 0 1em; }
+.prose ul, .prose ol { padding-left: 1.4em; }
+.prose li { margin: .25em 0; }
+.prose li > input[type=checkbox] { margin-right: 6px; }
+.prose a { color: var(--accent); }
+.prose code { font-family: var(--mono); font-size: .88em; background: var(--surface-2); padding: .12em .4em; border-radius: 4px; }
+.prose pre { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; overflow-x: auto; }
+.prose pre code { background: none; padding: 0; font-size: 13px; line-height: 1.55; }
+.prose table { border-collapse: collapse; display: block; overflow-x: auto; font-size: 14.5px; }
+.prose th, .prose td { border: 1px solid var(--border); padding: 7px 12px; text-align: left; vertical-align: top; }
+.prose th { background: var(--surface-2); font-weight: 650; }
+.prose hr { border: 0; border-top: 1px solid var(--border); margin: 2em 0; }
+.prose img { max-width: 100%; border-radius: 8px; }
+
+/* AI sessions and chat threads as a conversation */
+.transcript { max-width: 82ch; margin: 0 auto; display: grid; gap: 14px; }
+.turn { padding: 14px 18px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); }
+.turn-user { background: var(--accent-soft); border-color: transparent; }
+.turn-who { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); }
+.turn-user .turn-who { color: var(--accent); }
+.turn .prose { max-width: none; font-size: 15px; }
+@media (max-width: 900px) { .doc-card { padding: 20px 16px; } }
 .empty { text-align: left; }
 
 /* phone: sidebar becomes a scrolling tab row */
