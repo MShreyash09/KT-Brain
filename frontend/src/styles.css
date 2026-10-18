@@ -86,14 +86,19 @@ button { font: inherit; color: inherit; }
 .chair { fill: var(--scene); stroke: var(--plan); stroke-width: 1.5; }
 .monitor { stroke: var(--text-2); stroke-width: 3; stroke-linecap: round; }
 .room .pod { font-size: 15px; font-weight: 600; letter-spacing: .02em; }
-.person circle { fill: var(--surface); stroke: var(--text-2); stroke-width: 1.5; }
-.person.named circle { stroke: var(--text); stroke-width: 2; }
-.person.newcomer circle { stroke: var(--accent); stroke-width: 3; }
-.person.ghost circle { fill: var(--hl-soft); stroke: var(--hl); stroke-width: 2; stroke-dasharray: 4 3; }
-.room .initial { font-size: 14px; font-weight: 700; font-stretch: 100%; fill: var(--text); }
+.worker .head, .worker .body { fill: var(--surface); stroke: var(--text-2); stroke-width: 1.5; }
+.worker .collar { fill: none; stroke: var(--text-2); stroke-width: 1.5; stroke-linejoin: round; }
+.worker.named .head, .worker.named .body { fill: var(--surface-2); stroke: var(--text); stroke-width: 2; }
+.worker.named .collar { stroke: var(--text); }
+.worker.newcomer .head, .worker.newcomer .body, .worker.newcomer .collar { stroke: var(--accent); stroke-width: 2.5; }
+.worker.ghost .head, .worker.ghost .body { fill: var(--hl-soft); stroke: var(--hl); stroke-dasharray: 4 3; }
+.worker.ghost .collar { stroke: var(--hl); }
+.worker .bob { animation: type 1.6s ease-in-out infinite; }
+.worker.ghost .bob { animation: none; }
+@keyframes type { 50% { transform: translateY(1.5px); } }
 .room .name { font-size: 15px; font-weight: 650; fill: var(--text); }
 .room .name-right { text-anchor: start; }
-.room .ghost .initial, .room .ghost .name { fill: var(--hl-ink); }
+.room .ghost .name { fill: var(--hl-ink); }
 .module rect { fill: var(--surface); stroke: var(--text); stroke-width: 1.5; transition: fill .4s, stroke .4s; }
 .module.external rect { stroke: var(--text-2); stroke-dasharray: 5 4; }
 .module.broken rect { fill: var(--risk-soft); stroke: var(--risk); stroke-width: 2.5; }
@@ -150,7 +155,7 @@ button { font: inherit; color: inherit; }
 .why-q { font-weight: 700; }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 @media (prefers-reduced-motion: reduce) {
-  .flow { animation: none; }
+  .flow, .worker .bob { animation: none; }
   .why-card { animation: none; }
 }
 

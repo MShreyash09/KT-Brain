@@ -31,14 +31,12 @@ const PODS = [
   ["Recommendations", 230, 490], ["Product", 600, 490], ["Mobile", 970, 490],
 ];
 const SEATS = [[-50, -62], [50, -62], [-50, 62], [50, 62]];
-// everyone who stays: [x, y, name]
+// everyone who stays, one per desk: [x, y, name]. Mobile has no one in data/tiffinbox, so its seat stays unnamed
 const TEAM = [
-  [280, 108], [180, 232],
-  [550, 108], [550, 232],
-  [920, 108, "Kavya"], [1020, 108], [920, 232],
-  [180, 428, "Rohan"], [280, 428], [180, 552],
-  [550, 428, "Neha"], [650, 428], [550, 552],
-  [920, 428], [1020, 428], [920, 552],
+  [920, 108, "Kavya"],
+  [180, 428, "Rohan"],
+  [550, 428, "Neha"],
+  [920, 428],
 ];
 const MODULES = [["App", 330], ["Orders", 510], ["Payments", 690], ["Gateway", 870]];
 const ARJUN = [180, 108], PRIYA = [650, 108], MEERA = [280, 232];
@@ -92,11 +90,15 @@ const fade = (delay) => ({
   on: { opacity: 1, transition: { delay, duration: 0.5 } },
 });
 
+// a seated worker: head, shoulders and a shirt collar, bobbing at the keyboard (offset per seat so nobody types in sync)
 function Person({ x, y, name, className = "", right }) {
   return (
-    <g className={`person ${name ? "named" : ""} ${className}`} transform={`translate(${x} ${y})`}>
-      <circle r={name ? 15 : 12} />
-      {name && <text className="initial" y="4.5">{name[0]}</text>}
+    <g className={`worker ${name ? "named" : ""} ${className}`} transform={`translate(${x} ${y})`}>
+      <g className="bob" style={{ animationDelay: `-${(x * 7 + y * 3) % 1600}ms` }}>
+        <path className="body" d="M-14 15v-4a10 10 0 0 1 10-10h8a10 10 0 0 1 10 10v4Z" />
+        <path className="collar" d="M-4 1l4 5 4-5" />
+        <circle className="head" cy="-9" r="8" />
+      </g>
       {name && (right ? <text className="name name-right" x="22" y="5">{name}</text> : <text className="name" y="-24">{name}</text>)}
     </g>
   );
