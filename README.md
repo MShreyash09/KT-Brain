@@ -23,7 +23,7 @@ Six months later, the new developer changes a payment retry count from 7 to 3 an
 
 ## The idea
 
-KT Brain starts recording **from the first day** a person joins, not at their exit interview. Commits, PRs, reviews, tickets, docs, design decisions, incident write-ups, product research and **AI coding sessions** (Claude Code, Codex) all go into a **FalkorDB knowledge graph**. When someone leaves, nothing has to be pulled out of them at the last minute, because the graph already holds it.
+KT Brain starts recording **from the first day** a person joins, not at their exit interview. Commits, PRs, reviews, tickets, docs, design decisions, incident write-ups, product research and **AI coding sessions** (Claude Code, Antigravity, or any agent's logs) all go into a **FalkorDB knowledge graph**. When someone leaves, nothing has to be pulled out of them at the last minute, because the graph already holds it.
 
 | | What it does | How the graph does it |
 |---|---|---|
@@ -66,7 +66,7 @@ The history covers four kinds of knowledge:
 6. **Meera joins**: `LEARNED` edges are added, and the counter drops from 12 to 6.
 7. **6 DevOps items remain**: KT Brain suggests a mentor (Kavya, a weak backup) or hiring. *The graph just wrote the hiring req.*
 
-You can also **bring your own data**: paste a public GitHub repo URL, upload docs, or upload Claude Code session logs, and the same engine runs on it.
+You can also **bring your own data**: paste a public GitHub repo URL, upload docs, or upload AI coding agent logs, and the same engine runs on it.
 
 ### What the graph knows: the demo talk track
 
@@ -100,15 +100,15 @@ flowchart LR
   end
 
   subgraph LAPTOP["Developer laptop (local-first)"]
-    LOGS["~/.claude/projects · ~/.codex/sessions<br/>company docs folder"]
-    HOOK["Claude Code SessionEnd hook<br/>git post-commit hook"]
+    LOGS["~/.claude/projects · ~/.gemini/antigravity<br/>any agent log via --path"]
+    HOOK["optional: your own SessionEnd<br/>or post-commit hook"]
     CLI["ktbrain sync CLI<br/>redact secrets · extract metadata"]
     LOGS --> CLI
     HOOK --> CLI
   end
 
   subgraph API["FastAPI backend"]
-    ING["Connectors<br/>github · docs · claude_code · codex · fixtures"]
+    ING["Connectors<br/>github · uploads · CLI sessions · fixtures"]
     NORM["Normalize to timestamped events"]
     EXT["Extractor (LLM)<br/>Decision · Pattern · Incident · Insight"]
     CHK["Chunker"]
@@ -232,13 +232,15 @@ Without an AI key, Ask still returns the evidence and Watch still raises alerts,
 
 | Way in | How it works |
 |---|---|
-| **Web upload** | Drag in `.md`/`.pdf` docs or Claude Code `.jsonl` sessions |
-| **`ktbrain sync` CLI** | Reads `~/.claude/projects/*/*.jsonl`, `~/.codex/sessions/**`, and a docs folder. Keeps only sessions for this repo and **removes secrets on your laptop**. Sends only the extracted facts and short snippets; raw logs never leave the machine |
-| **Automatic** | A Claude Code `SessionEnd` hook, or a git `post-commit` hook, runs the sync |
+| **Web upload** | Drag in `.md`/`.txt`/`.pdf` docs, or any AI coding agent's `.jsonl`/`.json` log |
+| **`ktbrain sync` CLI** | Reads Claude Code (`~/.claude/projects/*/*.jsonl`) and Antigravity (`~/.gemini/antigravity/brain/<id>/`: step log and plans) for this repo, plus any files or folders you pass with `--path` (`--tool codex` labels them). Keeps only sessions that touched this repo, **removes secrets on your laptop**, and sends the slimmed text; raw logs never leave the machine |
+| **Automatic** | Not installed by KT Brain: add `ktbrain sync` to your own Claude Code `SessionEnd` hook or git `post-commit` hook |
 | Google Chat | The TiffinBox chat is shaped like the Google Chat API (`spaces.list`, `spaces.messages.list`). A live connector is planned: it needs a Google Workspace account and admin approval, and it reads only company spaces (no DMs, no external spaces, no bots) |
-| Cursor | Planned (its chat storage format is undocumented and changes often) |
+| Cursor and other agents | Export the chat (Cursor: Export chat → Markdown) and upload it, or pass its log folder with `--path` |
 
 Each Claude Code log line carries `sessionId`, `cwd`, `gitBranch` and `timestamp`, and its edit tools record `file_path`. A session is linked to the commit it produced by overlapping files, matching branch and time window.
+
+**Tested formats:** Claude Code and Antigravity. Every other agent goes through one generic reader instead of a parser per tool: it collects records that have a role-like key (`role`, `type`, `source`, …) and a text field (`content`, `text`, `message`, …), ISO timestamps, and absolute or `file:///` paths inside the repo. Antigravity's full conversation file (`conversations/<id>.pb`) is binary, so only its readable step log and plans are used. Conversations that never touched the repo are skipped, so personal chats in the same tool are not sent.
 
 ---
 

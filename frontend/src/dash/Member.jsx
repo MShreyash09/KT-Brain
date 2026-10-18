@@ -33,7 +33,7 @@ function Brain() {
       ) : (
         <section className="card empty">
           <h2>Your graph is empty</h2>
-          <p className="muted">Add a design doc, research notes or a Claude Code session log, or connect the CLI. If your
+          <p className="muted">Add a design doc, research notes or an AI coding session log, or connect the CLI. If your
             admin connected the company repo, your commits show up here too.</p>
           <a className="btn primary" href="#/me/sources">Add sources</a>
         </section>
@@ -183,11 +183,11 @@ function AddSources({ reload }) {
       <label className={`card dropzone ${drag ? "over" : ""}`}
         onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
         onDrop={(e) => { e.preventDefault(); setDrag(false); send([...e.dataTransfer.files]); }}>
-        <input type="file" multiple accept=".md,.markdown,.txt,.pdf,.jsonl" className="visually-hidden"
+        <input type="file" multiple accept=".md,.markdown,.txt,.pdf,.jsonl,.json" className="visually-hidden"
           onChange={(e) => { send([...e.target.files]); e.target.value = ""; }} />
         <b>Drop files here or click to choose</b>
-        <span className="muted small">Design docs, research notes and ADRs (.md, .txt, .pdf), or Claude Code session logs
-          (.jsonl, from ~/.claude/projects). Up to 8 MB each. Passwords and API keys are redacted before storing.</span>
+        <span className="muted small">Design docs, research notes and ADRs (.md, .txt, .pdf), or any AI coding agent's
+          session log (.jsonl or .json, e.g. from ~/.claude/projects). Up to 8 MB each. Passwords and API keys are redacted before storing.</span>
       </label>
       {log.length > 0 && (
         <section className="card">
@@ -197,8 +197,8 @@ function AddSources({ reload }) {
 
       <section className="card">
         <h2>Connect your laptop</h2>
-        <p className="muted small">The <code>ktbrain</code> CLI reads your Claude Code sessions for one repo, strips them to
-          prompts, answers and edited file paths, redacts secrets on your machine, and sends only that. It also gives
+        <p className="muted small">The <code>ktbrain</code> CLI reads your Claude Code and Antigravity sessions for one repo (and
+          any other agent's logs you pass with <code>--path</code>), strips them to prompts, answers and file paths, redacts secrets on your machine, and sends only that. It also gives
           Claude Code the agent's tools over MCP, so before it changes a file it can ask why the file is the way it is
           and who knows it, from what you can see here.</p>
         {token ? (

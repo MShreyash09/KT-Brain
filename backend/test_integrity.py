@@ -109,6 +109,37 @@ def test_rate_limited_uploads_wait_and_retry():
     assert all(state(r).startswith("done") for r in refs), [state(r) for r in refs]
 
 
+def test_any_agent_log():
+    import importlib.util
+    from ingest import uploads
+    spec = importlib.util.spec_from_file_location("ktbrain", __file__.replace("backend", "cli").replace("test_integrity.py", "ktbrain.py"))
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+    repo = "C:\\work\\shop"
+    # Antigravity-shaped step log: a role key, a text field, a timestamp, and file paths in tool-call arguments
+    steps = [{"source": "USER_EXPLICIT", "type": "USER_INPUT", "created_at": "2026-05-01T08:00:00Z",
+              "content": "<USER_REQUEST>\nWhy does checkout retry?\n</USER_REQUEST>"},
+             {"source": "MODEL", "type": "PLANNER_RESPONSE", "created_at": "2026-05-01T08:05:00Z", "content": "Reading it.",
+              "tool_calls": [{"args": {"path": "c:\\\\work\\\\shop\\\\api\\\\retry.py"}}, {"args": {"uri": "file:///c:/work/other/x.py"}}]},
+             {"type": "plan", "content": "See [cart](file:///c:/work/shop/web/cart%20page.tsx) and token=hunter2secret"}]
+    s = cli.any_log(steps, repo, "conv1", "antigravity", "2026-01-01T00:00:00Z")
+    assert s["files"] == ["api/retry.py", "web/cart page.tsx"], s["files"]  # paths outside the repo are dropped
+    assert s["title"] == "Why does checkout retry?", s["title"]
+    assert (s["started"], s["ended"]) == ("2026-05-01T08:00:00Z", "2026-05-01T08:05:00Z")
+    assert "hunter2" not in s["text"]
+    personal = [{"role": "user", "content": "plan my internship applications"}]
+    assert cli.any_log(personal, repo, "c2", "antigravity", "2026-01-01T00:00:00Z") is None  # never touched the repo
+    assert cli.any_log(personal, repo, "c2", "ai-agent", "2026-01-01T00:00:00Z", need_repo=False)  # --path: you chose it
+    # web upload: any agent's JSONL or JSON goes through the same reader; Claude Code's own format still wins
+    jsonl = b'{"role": "user", "content": "add a retry", "timestamp": "2026-05-02T10:00:00Z"}\n{"role": "assistant", "content": "done"}\n'
+    kind, parsed = uploads.parse_upload("codex-rollout.jsonl", jsonl)
+    assert kind == "sessions" and parsed[0]["text"] == "user: add a retry\nassistant: done" and parsed[0]["tool"] == "ai-agent"
+    kind, parsed = uploads.parse_upload("chat.json", b'{"messages": [{"author": "user", "text": "why 7?"}]}')
+    assert parsed[0]["title"] == "why 7?", parsed
+    ref = uploads.add_sessions(g, "eve", parsed)[0]
+    assert g.ro_query("MATCH (s:AgentSession) WHERE s.ref = $r RETURN s.tool", {"r": ref}).result_set == [["ai-agent"]]
+
+
 def test_remove_source():
     extract.chat = lambda *a: json.dumps({"decisions": [{"what": "Made up", "why": "", "evidence": "never happened"}]})
     ref = add_doc(g, "eve", "fake.md", "# Fake\n\nThis never happened.\n")

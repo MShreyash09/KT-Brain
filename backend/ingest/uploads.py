@@ -95,8 +95,9 @@ def add_sessions(g, person: str, sessions: list) -> list:
     for s in sessions:
         sid = f"{person}:{s['id']}"  # per uploader, so nobody can overwrite another person's session by reusing its id
         g.query("UNWIND $paths AS p MERGE (:File {path: p})", {"paths": s["files"]})
+        tool = re.sub(r"[^a-z0-9-]", "", str(s.get("tool") or "claude-code").lower())[:30] or "ai-agent"
         load(g, "session", [{"id": sid, "person": person, "files": s["files"], "props": {
-            "tool": "claude-code", "branch": s.get("branch"), "title": s.get("title") or "AI coding session",
+            "tool": tool, "branch": s.get("branch"), "title": s.get("title") or "AI coding session",
             "at": s["started"], "ts": ts(s["started"]), "ended_at": s.get("ended"), "extract": "pending"}}])
         ref = f"session:{sid}"
         _reset_chunks(g, ref)
@@ -106,23 +107,69 @@ def add_sessions(g, person: str, sessions: list) -> list:
     return refs
 
 
+# Any other agent's log: the generic reader cli/ktbrain.py uses (records with a role-like key and a text field, plus
+# ISO timestamps). A web upload has no repo to anchor paths to, so it stores the text without file links.
+ROLE_KEYS = ("role", "type", "source", "author", "speaker", "sender")
+TEXT_KEYS = ("content", "text", "message", "prompt", "response", "output")
+ISO = re.compile(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?(?:Z|[+-]\d\d:?\d\d)?")
+
+
+def _walk(x):
+    if isinstance(x, dict):
+        yield x
+        for v in x.values():
+            yield from _walk(v)
+    elif isinstance(x, list):
+        for v in x:
+            yield from _walk(v)
+    elif isinstance(x, str):
+        yield x
+
+
+def parse_any_log(name: str, records: list) -> dict | None:
+    text, times = [], []
+    for x in _walk(records):
+        if isinstance(x, dict):
+            role = next((x[k] for k in ROLE_KEYS if isinstance(x.get(k), str)), None)
+            body = next((x[k] for k in TEXT_KEYS if isinstance(x.get(k), str) and x[k].strip()), None)
+            if role and body:
+                text.append(f"{role.lower()}: {body.strip()}")
+        elif ISO.fullmatch(x):
+            times.append(x)
+    if not text:
+        return None
+    first = next((t.split(": ", 1)[1] for t in text if "user" in t.split(": ", 1)[0]), text[0].split(": ", 1)[-1])
+    when = now_iso()
+    return {"id": f"upload:{re.sub(r'[^A-Za-z0-9._-]', '-', name)[:80]}", "tool": "ai-agent", "branch": None,
+            "title": re.sub(r"<[^>]+>", "", first).strip().split("\n")[0][:100], "files": [],
+            "started": min(times, default=when), "ended": max(times, default=when), "text": "\n".join(text)}
+
+
 def parse_upload(name: str, raw: bytes) -> tuple[str, object]:
-    """('sessions', [...]) for a Claude Code log, ('doc', text) for anything else we can read."""
+    """('sessions', [...]) for an AI coding agent's log (Claude Code's own format, else the generic reader),
+    ('doc', text) for anything else we can read."""
     low = name.lower()
-    if low.endswith(".jsonl"):
-        lines = [json.loads(l) for l in raw.decode("utf-8").splitlines() if l.strip()]
+    if low.endswith((".jsonl", ".json")):
+        body = raw.decode("utf-8", errors="replace")
+        try:
+            records = [json.loads(body)]
+        except json.JSONDecodeError:
+            records = [json.loads(l) for l in body.splitlines() if l.strip() and l.lstrip().startswith(("{", "["))]
+        lines = [r for r in records if isinstance(r, dict)]
         by_id = {}
         for l in lines:
             by_id.setdefault(l.get("sessionId"), []).append(l)
         sessions = [s for s in (parse_claude_session(ls) for ls in by_id.values()) if s]
         if not sessions:
-            raise ValueError("No Claude Code turns found in this .jsonl")
+            sessions = [s for s in [parse_any_log(name, records)] if s]
+        if not sessions:
+            raise ValueError("No conversation found in this log (expected records with a role and a text field)")
         return "sessions", sessions
     if low.endswith(".pdf"):
         return "doc", pdf_text(raw)
     if low.endswith((".md", ".txt", ".markdown", ".rst")):
         return "doc", raw.decode("utf-8", errors="replace")
-    raise ValueError("Upload .md, .txt, .pdf or a Claude Code .jsonl session log")
+    raise ValueError("Upload .md, .txt, .pdf, or an AI coding agent's .jsonl / .json log")
 
 
 # A proposed decision becomes active once sources from two different people record it.

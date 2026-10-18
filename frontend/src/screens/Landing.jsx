@@ -14,7 +14,7 @@ const steps = (data, h = data.handover) => [
 ];
 
 // what the product reads today (README "Capturing AI coding sessions"); nothing planned is listed
-const SOURCES = [["branch", "GitHub commits, PRs & reviews"], ["terminal", "Claude Code sessions"], ["terminal", "Codex sessions"],
+const SOURCES = [["branch", "GitHub commits, PRs & reviews"], ["terminal", "Claude Code sessions"], ["terminal", "Antigravity sessions"], ["file", "Any agent's JSON/JSONL logs"],
   ["file", "Markdown & PDF docs"], ["message", "MCP for coding agents"], ["database", "FalkorDB graph"]];
 
 const FEATURES = [
@@ -27,7 +27,7 @@ const FEATURES = [
 ];
 
 const HOW = [
-  ["Connect", "Point it at your GitHub repo. Teammates drop in docs, or sync Claude Code and Codex sessions with the CLI, which redacts secrets on their laptop."],
+  ["Connect", "Point it at your GitHub repo. Teammates drop in docs, or sync their AI coding sessions with the CLI, which redacts secrets on their laptop."],
   ["Watch", "KT Brain derives who KNOWS what from real work, fading with age. The agent flags anything only one person knows, the day it happens."],
   ["Hand over", "When someone resigns, dry-run it first, then offboard to a successor and track the agenda down to zero."],
 ];
