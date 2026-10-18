@@ -114,6 +114,16 @@ def users(cid: str) -> list:
     return [dict(zip(["email", "name", "role", "person", "disabled"], r)) for r in rows]
 
 
+S3_FIELDS = ("endpoint", "region", "bucket", "prefix", "key_id", "secret")
+
+
+def s3(cid: str) -> dict | None:
+    """The company's own document bucket (ingest/s3.py), or None when it hasn't connected one."""
+    c = company(cid) or {}
+    cfg = {f: c.get(f"s3_{f}") or "" for f in S3_FIELDS}
+    return cfg if cfg["bucket"] and cfg["key_id"] and cfg["secret"] else None
+
+
 def update_company(cid: str, **props):
     SYS.query("MATCH (c:Company {id: $id}) SET c += $p", {"id": cid, "p": props})
 

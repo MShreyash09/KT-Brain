@@ -438,7 +438,7 @@ TOOK_PART = """OPTIONAL MATCH (s)<-[:AUTHORED|:REVIEWED|:POSTED_IN|:ASSIGNED|:RA
 VISIBLE = "((s:Doc AND coalesce(s.shared, true)) OR any(x IN by WHERE x IN $people))"
 
 READABLE = "MATCH (s:Source {ref: $ref}) " + TOOK_PART + """
-WITH s, collect(tp.id) AS by WHERE $people IS NULL OR """ + VISIBLE + " RETURN s.title"
+WITH s, collect(tp.id) AS by WHERE $people IS NULL OR """ + VISIBLE + " RETURN s.title, s.original"
 
 SHARE = """MATCH (s:Doc {ref: $ref}) OPTIONAL MATCH (p:Person)-[:AUTHORED]->(s)
 WITH s, collect(p.id) AS authors WHERE $admin OR $me IN authors

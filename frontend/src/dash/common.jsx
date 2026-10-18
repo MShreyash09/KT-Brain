@@ -162,9 +162,28 @@ function useMarkdown() {
   return md;
 }
 
+// The original file from the company's own bucket, through a link the server signs after checking access
+function Original({ id }) {
+  const [url, setUrl] = useState(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    api(`source/original?ref=${encodeURIComponent(id)}`).then((r) => setUrl(r.url)).catch((e) => setError(e.message));
+  }, [id]);
+  if (error) return <p className="form-error">{error}</p>;
+  if (!url) return <Skeleton lines={4} />;
+  return (
+    <>
+      <p className="muted small" style={{ marginTop: 0 }}>From your company's bucket. The link expires in 5 minutes.{" "}
+        <a href={url} target="_blank" rel="noreferrer">Open in a new tab</a></p>
+      <iframe className="original" src={url} title="Original document" />
+    </>
+  );
+}
+
 export function DocPage({ id }) {
   const [res, , error] = useLoad(`source?ref=${encodeURIComponent(id)}`);
   const md = useMarkdown();
+  const [view, setView] = useState("readable");
   const chat = /^(session|thread):/.test(id);
   const words = res ? res.text.split(/\s+/).filter(Boolean).length : 0;
   return (
@@ -178,8 +197,15 @@ export function DocPage({ id }) {
             <p className="muted small">{chat ? (id.startsWith("thread:") ? "Chat thread" : "AI coding session") : "Document"} ·{" "}
               {words.toLocaleString()} words · about {Math.max(1, Math.round(words / 230))} min read</p>
           </header>
+          {res.original && (
+            <div className="segmented" role="group" aria-label="View">
+              {[["readable", "Readable"], ["original", "Original file"]].map(([v, name]) => (
+                <button key={v} aria-pressed={view === v} onClick={() => setView(v)}>{name}</button>
+              ))}
+            </div>
+          )}
           <section className="card doc-card">
-            {!md ? <pre className="doc-text">{res.text}</pre> : chat ? (
+            {view === "original" ? <Original id={id} /> : !md ? <pre className="doc-text">{res.text}</pre> : chat ? (
               <div className="transcript">
                 {turns(res.text).map((t, i) => (
                   <div key={i} className={`turn ${/^(user|human|you)/i.test(t.who) ? "turn-user" : ""}`}>

@@ -25,7 +25,7 @@ from agent import search_words
 from graph import (COVERED, DECISIONS, DELETE_SOURCE, EDGE_COUNTS, INHERITED, KNOWS, MARK_LEARNED, MENTOR, NODE_COUNTS,
                    OFFBOARD, ORPHANED, PEOPLE, PREDECESSORS, READABLE, RECORDED_BY, SEARCH, SEARCH_MINE, SHARE,
                    SOURCE_DECISIONS, SOURCES, SUCCESSORS, db, derive, dry_run, graph, radar, rows, text, trace)
-from ingest import github, uploads
+from ingest import github, s3, uploads
 from ingest.fixtures import build
 
 # The public story shows TiffinBox at two moments: the dry-run day (after the resignations, before Meera joins) and
@@ -348,7 +348,20 @@ def read_source(ref: str, u: dict = Depends(signed_in)):
     found = g.ro_query(READABLE, {"ref": ref, "people": visible_ids(u)}).result_set
     if not found:
         raise HTTPException(404, "Not in your graph")
-    return {"ref": ref, "title": found[0][0], "text": text(g, ref)}
+    return {"ref": ref, "title": found[0][0], "text": text(g, ref), "original": bool(found[0][1])}
+
+
+@app.get("/api/source/original")
+def read_original(ref: str, u: dict = Depends(signed_in)):
+    """A short-lived link to a doc's original file in the company's own bucket, for anyone allowed to read the doc."""
+    found = graph(u["graph"]).ro_query(READABLE, {"ref": ref, "people": visible_ids(u)}).result_set
+    cfg = accounts.s3(u["company"])
+    if not found or not found[0][1] or not cfg:
+        raise HTTPException(404, "No original file for this source")
+    try:
+        return {"url": s3.link(cfg, found[0][1])}
+    except Exception as e:
+        raise HTTPException(502, f"The bucket didn't answer: {str(e)[:200]}")
 
 
 class Share(BaseModel):
@@ -412,6 +425,9 @@ def admin_overview(u: dict = Depends(admin)):
                          "model": c.get("llm_model") or "", "key": masked(c.get("llm_key")),
                          "github_token": masked(c.get("github_token"))},
             "repo": {"url": c.get("repo") or "", "status": c.get("repo_status") or "", "sync_at": c.get("sync_at") or ""},
+            "s3": {"endpoint": c.get("s3_endpoint") or "", "region": c.get("s3_region") or "", "bucket": c.get("s3_bucket") or "",
+                   "prefix": c.get("s3_prefix") or "", "key_id": masked(c.get("s3_key_id")), "secret": masked(c.get("s3_secret")),
+                   "status": c.get("s3_status") or "", "connected": bool(accounts.s3(u["company"]))},
             "presets": extract.PRESETS}
 
 
@@ -525,6 +541,64 @@ def connect_github(body: Repo, tasks: BackgroundTasks, u: dict = Depends(admin))
     return {"ok": True}
 
 
+class Bucket(BaseModel):
+    endpoint: str = ""  # empty for AWS S3; https://<account>.r2.cloudflarestorage.com for R2, your MinIO URL, ...
+    region: str = ""
+    bucket: str
+    prefix: str = ""
+    key_id: str = ""  # empty keeps the saved one
+    secret: str = ""
+
+
+@app.put("/api/admin/s3")
+def connect_s3(body: Bucket, u: dict = Depends(admin)):
+    if u["company"] == DEMO["company"]:
+        raise HTTPException(400, "The demo company is shared. Register your own company to connect a bucket.")
+    saved = accounts.company(u["company"]) or {}
+    cfg = {"endpoint": body.endpoint.strip().rstrip("/"), "region": body.region.strip(), "bucket": body.bucket.strip(),
+           "prefix": body.prefix.strip().strip("/"), "key_id": body.key_id.strip() or saved.get("s3_key_id") or "",
+           "secret": body.secret.strip() or saved.get("s3_secret") or ""}
+    if not (cfg["bucket"] and cfg["key_id"] and cfg["secret"]):
+        raise HTTPException(400, "Bucket, access key ID and secret are required")
+    try:
+        s3.check(cfg)
+    except Exception as e:
+        raise HTTPException(400, f"Couldn't read the bucket with these settings: {str(e)[:200]}")
+    accounts.update_company(u["company"], **{f"s3_{k}": v for k, v in cfg.items()}, s3_status="connected")
+    return {"ok": True}
+
+
+@app.delete("/api/admin/s3")
+def disconnect_s3(u: dict = Depends(admin)):
+    """Forget the bucket. Imported docs keep their text in the graph; their originals simply can't be opened."""
+    accounts.update_company(u["company"], **{f"s3_{f}": "" for f in accounts.S3_FIELDS}, s3_status="")
+    return {"ok": True}
+
+
+def import_s3(cid: str, graph_name: str, person: str):
+    status = lambda msg: accounts.update_company(cid, s3_status=msg)
+    try:
+        g = graph(graph_name)
+        refs, summary = s3.import_docs(g, accounts.s3(cid), person, status)
+        status(summary)
+        uploads.extract_all(g, company_llm(cid), refs, trusted=True)  # an admin's import: decisions are active
+    except Exception as e:
+        status(f"failed: {str(e)[:250]}")
+
+
+@app.post("/api/admin/s3/import")
+def start_s3_import(tasks: BackgroundTasks, u: dict = Depends(admin)):
+    if not accounts.s3(u["company"]):
+        raise HTTPException(400, "Connect a bucket in Settings first")
+    if (accounts.company(u["company"]) or {}).get("s3_status", "").startswith(("queued", "reading")):
+        raise HTTPException(409, "An import is already running")
+    if not u["person"]:
+        raise HTTPException(400, "Imported docs need an author: this admin account has no personal graph")
+    accounts.update_company(u["company"], s3_status="queued")
+    tasks.add_task(import_s3, u["company"], u["graph"], u["person"])
+    return {"ok": True}
+
+
 class AutoSync(BaseModel):
     at: str = ""  # UTC "HH:MM"; empty turns the daily sync off
 
@@ -614,8 +688,14 @@ def upload(body: Upload, tasks: BackgroundTasks, u: dict = Depends(member)):
     except ValueError as e:
         raise HTTPException(400, str(e))
     g = graph(u["graph"])
+    original, cfg = None, accounts.s3(u["company"]) if kind == "doc" else None
+    if cfg:
+        try:
+            original = s3.put(cfg, f"{u['person']}/{body.name}", raw)
+        except Exception as e:  # the bucket is down or read-only: the upload still works, just without an original
+            print(f"s3 upload: {e}")
     refs = uploads.add_sessions(g, u["person"], parsed) if kind == "sessions" else \
-        [uploads.add_doc(g, u["person"], body.name, parsed)]
+        [uploads.add_doc(g, u["person"], body.name, parsed, did=f"uploads/{u['person']}/{body.name}", original=original)]
     queue_extraction(tasks, u, refs)
     return {"refs": refs}
 

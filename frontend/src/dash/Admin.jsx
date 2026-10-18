@@ -326,6 +326,7 @@ function SourcesPage({ reload }) {
         <p className="muted small">Commit authors are matched to employees by GitHub login. Anyone unmatched shows up as a
           contributor you can add later. Without a GitHub token (Settings) the first sync reads the last 25 commits and 10 PRs.</p>
       </section>
+      <BucketCard reload={reload} />
       {proposed.length > 0 && (
         <section className="card">
           <h2>Proposed decisions <span className="count">{proposed.length}</span></h2>
@@ -416,13 +417,89 @@ function SettingsPage({ reload }) {
         {msg?.error && <p className="form-error wide">{msg.error}</p>}
       </form>
       <p className="muted small">Keys are stored in the company record in FalkorDB and never sent back to the browser.</p>
+      <BucketForm reload={reload} />
     </>
+  );
+}
+
+// The company's own S3-compatible bucket for original documents (backend/ingest/s3.py)
+function BucketForm({ reload }) {
+  const s3 = useData().s3 ?? {};  // {} until the backend that sends it is deployed
+  const [form, setForm] = useState({ endpoint: s3.endpoint, region: s3.region, bucket: s3.bucket, prefix: s3.prefix, key_id: "", secret: "" });
+  const [msg, setMsg] = useState(null);
+  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const run = async (fn, ok) => {
+    setMsg({ ok: "Checking the bucket…" });
+    try {
+      await fn();
+      setForm({ ...form, key_id: "", secret: "" });
+      setMsg({ ok });
+      reload();
+    } catch (err) {
+      setMsg({ error: err.message });
+    }
+  };
+  return (
+    <>
+      <h2 className="section-title">Document storage <span className="pill muted">optional</span></h2>
+      <form className="card form-grid" onSubmit={(e) => { e.preventDefault(); run(() => api("admin/s3", form, "PUT"), "Connected. Import your documents from the Sources page."); }}>
+        <p className="muted small wide" style={{ margin: 0 }}>Keep original documents in your own S3-compatible bucket (AWS S3,
+          Cloudflare R2, MinIO). KT Brain reads them into the graph for search and decisions, and readers can open the
+          original file with its formatting through a link that expires after 5 minutes. Originals stay in your bucket.</p>
+        <label className="field"><span>Bucket</span><input required value={form.bucket} onChange={set("bucket")} placeholder="acme-docs" /></label>
+        <label className="field"><span>Folder prefix (optional)</span><input value={form.prefix} onChange={set("prefix")} placeholder="engineering/docs" /></label>
+        <label className="field"><span>Region</span><input value={form.region} onChange={set("region")} placeholder="us-east-1 (auto for R2)" /></label>
+        <label className="field"><span>Endpoint (empty for AWS S3)</span>
+          <input value={form.endpoint} onChange={set("endpoint")} placeholder="https://<account>.r2.cloudflarestorage.com" /></label>
+        <label className="field"><span>Access key ID {s3.key_id && <span className="muted">(saved: {s3.key_id})</span>}</span>
+          <input autoComplete="off" value={form.key_id} onChange={set("key_id")} /></label>
+        <label className="field"><span>Secret access key {s3.secret && <span className="muted">(saved: {s3.secret})</span>}</span>
+          <input type="password" autoComplete="off" value={form.secret} onChange={set("secret")} /></label>
+        <div className="form-actions">
+          <button className="btn primary">{s3.connected ? "Save and test" : "Connect bucket"}</button>
+          {s3.connected && <button type="button" className="btn" onClick={() => run(() => api("admin/s3", undefined, "DELETE"), "Disconnected.")}>Disconnect</button>}
+        </div>
+        {msg?.ok && <p className="muted wide">{msg.ok}</p>}
+        {msg?.error && <p className="form-error wide">{msg.error}</p>}
+        <p className="muted small wide" style={{ margin: 0 }}>Use a key limited to this bucket: read access to import and open
+          originals, plus write access if web uploads should be kept there too.</p>
+      </form>
+    </>
+  );
+}
+
+function BucketCard({ reload }) {
+  const s3 = useData().s3 ?? {};  // {} until the backend that sends it is deployed
+  const [error, setError] = useState("");
+  if (!s3.connected) return null;
+  const busy = /^(queued|reading)/.test(s3.status);
+  const start = async () => {
+    setError("");
+    try {
+      await api("admin/s3/import", {});
+      reload();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+  return (
+    <section className="card">
+      <h2>S3 documents</h2>
+      <div className="inline-form">
+        <span className="grow"><code>s3://{s3.bucket}/{s3.prefix}</code></span>
+        <button className="btn primary" disabled={busy} onClick={start}>{busy ? "Importing…" : "Import documents"}</button>
+      </div>
+      {s3.status && s3.status !== "connected" && <p className={s3.status.startsWith("failed") ? "form-error" : "muted small"}>{s3.status}</p>}
+      {error && <p className="form-error">{error}</p>}
+      <p className="muted small">Reads .md, .txt and .pdf files under the prefix (up to 200 per import, 8 MB each). Files that
+        haven't changed since the last import are skipped.</p>
+    </section>
   );
 }
 
 export default function Admin({ user, path }) {
   const [section = "overview", id] = path;
-  const [data, reload, error] = useLoad("admin", (d) => repoBusy(d.repo.status) || pending(d.sources));
+  const [data, reload, error] = useLoad("admin", (d) => repoBusy(d.repo.status) || /^(queued|reading)/.test(d.s3?.status) || pending(d.sources));
   const nav = [
     ["overview", "Overview", data?.alerts.filter((a) => a.status === "open").length],
     ["ask", "Ask"],

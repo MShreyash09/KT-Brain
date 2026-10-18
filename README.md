@@ -234,6 +234,7 @@ Without an AI key, Ask still returns the evidence and Watch still raises alerts,
 |---|---|
 | **Web upload** | Drag in `.md`/`.txt`/`.pdf` docs, or any AI coding agent's `.jsonl`/`.json` log |
 | **`ktbrain sync` CLI** | Reads Claude Code (`~/.claude/projects/*/*.jsonl`) and Antigravity (`~/.gemini/antigravity/brain/<id>/`: step log and plans) for this repo, plus any files or folders you pass with `--path` (`--tool codex` labels them). Keeps only sessions that touched this repo, **removes secrets on your laptop**, and sends the slimmed text; raw logs never leave the machine |
+| **Company S3 bucket** (optional) | An admin connects the company's own S3-compatible bucket (AWS S3, Cloudflare R2, MinIO) in Settings and imports the `.md`/`.txt`/`.pdf` files under a prefix. The graph gets the redacted text chunks and each file's key; readers can switch a document to **Original file**, served through a 5-minute signed link after the usual access check. Originals stay in the company's bucket |
 | **Automatic** | Not installed by KT Brain: add `ktbrain sync` to your own Claude Code `SessionEnd` hook or git `post-commit` hook |
 | Google Chat | The TiffinBox chat is shaped like the Google Chat API (`spaces.list`, `spaces.messages.list`). A live connector is planned: it needs a Google Workspace account and admin approval, and it reads only company spaces (no DMs, no external spaces, no bots) |
 | Cursor and other agents | Export the chat (Cursor: Export chat → Markdown) and upload it, or pass its log folder with `--path` |

@@ -140,6 +140,36 @@ def test_any_agent_log():
     assert g.ro_query("MATCH (s:AgentSession) WHERE s.ref = $r RETURN s.tool", {"r": ref}).result_set == [["ai-agent"]]
 
 
+def test_s3_bucket_docs():
+    import boto3
+    from moto import mock_aws
+    from ingest import s3
+    cfg = {"endpoint": "", "region": "us-east-1", "bucket": "acme-docs", "prefix": "kt", "key_id": "AKIATEST", "secret": "x"}
+    with mock_aws():
+        b = boto3.client("s3", region_name="us-east-1", aws_access_key_id="AKIATEST", aws_secret_access_key="x")
+        b.create_bucket(Bucket="acme-docs")
+        b.put_object(Bucket="acme-docs", Key="kt/adr/retries.md", Body=b"# Retries\n\nWe retry **7** times. password=hunter2secret\n")
+        b.put_object(Bucket="acme-docs", Key="kt/notes.txt", Body=b"plain notes")
+        b.put_object(Bucket="acme-docs", Key="other/outside.md", Body=b"# outside the prefix")
+        b.put_object(Bucket="acme-docs", Key="kt/logo.png", Body=b"\x89PNG")
+        s3.check(cfg)
+        refs, summary = s3.import_docs(g, cfg, "eve", lambda m: None)
+        assert summary == "done: 2 documents read, 0 unchanged", summary  # only docs, only under the prefix
+        ref = "doc:s3/kt/adr/retries.md"
+        assert ref in refs and "hunter2" not in chunks(ref)[0], chunks(ref)  # the graph keeps redacted text only
+        assert app.read_source(ref, u("eve"))["original"] is True
+        refs, summary = s3.import_docs(g, cfg, "eve", lambda m: None)
+        assert refs == [] and summary == "done: 0 documents read, 2 unchanged", summary
+        url = s3.link(cfg, "kt/adr/retries.md")
+        assert "kt/adr/retries.md" in url and "X-Amz-Signature" in url and "X-Amz-Expires=300" in url, url
+    raises(404, app.read_original, ref, u("eve"))  # this test company has no bucket connected
+    try:
+        s3.client({**cfg, "endpoint": "http://localhost:9000"})
+        raise AssertionError("a private endpoint was accepted")
+    except ValueError:
+        pass
+
+
 def test_remove_source():
     extract.chat = lambda *a: json.dumps({"decisions": [{"what": "Made up", "why": "", "evidence": "never happened"}]})
     ref = add_doc(g, "eve", "fake.md", "# Fake\n\nThis never happened.\n")

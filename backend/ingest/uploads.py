@@ -78,13 +78,16 @@ def _reset_chunks(g, ref: str):
     g.query("MATCH (c:Chunk)-[:PART_OF]->(:Source {ref: $ref}) DETACH DELETE c", {"ref": ref})
 
 
-def add_doc(g, person: str, name: str, text: str) -> str:
-    did, at = f"uploads/{person}/{name}", now_iso()
+def add_doc(g, person: str, name: str, text: str, did: str = None, original: str = None, etag: str = None) -> str:
+    """A Doc from a web upload, or (with `original`) from the company's S3 bucket, where that key holds the file."""
+    did, at = did or f"uploads/{person}/{name}", now_iso()
     text = redact(text).strip()
     title = next((l.lstrip("# ").strip() for l in text.splitlines() if l.strip()), name)[:120]
     _reset_chunks(g, f"doc:{did}")
-    load(g, "doc", [{"id": did, "author": person, "props": {"title": title, "kind": "upload", "at": at, "ts": ts(at),
-                                                           "extract": "pending"}}])
+    props = {"title": title, "kind": "s3" if original else "upload", "at": at, "ts": ts(at), "extract": "pending"}
+    if original:
+        props.update(original=original, etag=etag)
+    load(g, "doc", [{"id": did, "author": person, "props": props}])
     load(g, "chunk", chunk_rows(f"doc:{did}", text))
     _finish(g)
     return f"doc:{did}"

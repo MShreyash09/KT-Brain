@@ -4,8 +4,14 @@ version = "0.1.0"
 description = "KT Brain backend: FastAPI + FalkorDB"
 requires-python = ">=3.11"
 dependencies = [
+    "boto3>=1.40",
     "falkordb>=1.8.0",
     "fastapi>=0.143.1",
     "pypdf>=6.20.1",
     "uvicorn[standard]>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "moto[s3]>=5.1",
 ]
