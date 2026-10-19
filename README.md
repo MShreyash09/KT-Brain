@@ -4,6 +4,7 @@
 
 **🔗 Demo video: https://youtu.be/yG-YKcJTyhk**
 
+**🔗 Blog post: https://medium.com/@shreyashmandlapure09/kt-brain-ec541ce68984**
 
 **Knowledge transfer is a coverage problem, not a Q&A problem.**
 KT Brain shows which knowledge is about to leave your company with a departing teammate, shows that nobody else has a recorded copy of it, and counts the handover down to zero.
